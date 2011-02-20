@@ -37,9 +37,14 @@ struct Size {
 	float w, h;
 };
 
+struct Crop {
+	bool use;
+	float x, y, w, h;
+};
 // Types of resources.
+#define NUM_BUFS 3
 struct sound {
-	sound(const char*);
+	sound(const char*, bool = false);
 	~sound();
 	
 	void gain(float);
@@ -47,18 +52,32 @@ struct sound {
 	void pan(float);
 	void repeat(bool);
 	
+	// Stream.
+	void update();
+	
 	private:
-	ALuint buffer, source;
+	ALuint buffer[NUM_BUFS], source;
+	alureStream* stream;
+	bool is_stream, is_playing, looping;
 	
 	friend struct speaker;
 };
 
 struct image {
 	image(const char*);
-	// The OpenGL texture ID,
-	int id;
+	image(int, int);
 	// The width and height of the image.
 	float w, h;
+	
+	void set(const char*);
+	
+	private:
+	// The OpenGL texture ID,
+	GLuint id;
+	
+	friend struct display;
+	friend struct program;
+	friend struct fbo;
 };
 
 struct text {};
@@ -87,7 +106,7 @@ struct shader {
 	void compile();
 	
 	private:
-	GLenum s;
+	GLint s;
 	
 	friend struct program;
 };
@@ -99,8 +118,29 @@ struct program {
 	void attach(shader*);
 	void link();
 	
+	void uniform1i(const char*, int);
+	void uniform1f(const char*, float);
+	void uniform2f(const char*, float, float);
+	void uniform3f(const char*, float, float, float);
+	void uniform4f(const char*, float, float, float, float);
+	
+	void bind_image(const char*, int, image*);
+	
+	//private:
+	GLhandleARB p;
+	
+	friend struct display;
+};
+
+struct fbo {
+	display* d;
+	image* i;
+
+	fbo(display*);
+	~fbo();
+	
 	private:
-	GLenum p;
+	GLuint id;
 	
 	friend struct display;
 };
@@ -141,7 +181,10 @@ struct display {
 	// Set the font to write with.
 	void use_font(font*);
 	
-	// Draw an image_resource on the display.
+	// Use a portion of the image for drawing.
+	void set_image_crop(int = NULL, int = NULL, int = NULL, int = NULL);
+	
+	// Draw an image on the display.
 	void draw(float = 0, float = 0, float = 1, float = NULL, float = NULL, float = 0, float = NULL);
 	
 	// Write a font on the screen.
@@ -156,9 +199,6 @@ struct display {
 	// Enable/disable various things.
 	void set(const char*, bool);
 	
-	// Change image filter.
-	void image_set(const char*);
-	
 	// Set the point rendering size.
 	void point_size(float);
 	
@@ -171,14 +211,26 @@ struct display {
 	// draw a rectangle.
 	void quad(float, float, float, float);
 	
+	// draw a mapped rectangle.
+	void mquad(float, float, float, float);
+	
 	// draw a textured rectangle.
 	void background_image(float = 0, float = 0, float = 0);
 	
 	// draw a point.
 	void point(float, float);
 	
-	// Use a shader program.
+	// use a shader program.
 	void use_program(program*);
+	
+	// Apply a 2D filter.
+	void apply_filter(program*);
+	
+	// Remove 2D filter.
+	void apply_filter();
+	
+	// sleep for specified seconds.
+	void sleep(float);
 	
 	// Use no shader program.
 	void use_program();
@@ -192,12 +244,11 @@ struct display {
 	// Fullscreen.
 	bool fs;
 	
-	// Percentage to shade the display with blackness.
-	float black;
-	
-	private:
+	fbo* framebuffer;
+	program* filter;
 	image* current_image;
 	font* current_font;
+	Crop image_crop;
 };
 
 struct timer {
@@ -206,12 +257,14 @@ struct timer {
 	void update();
 	float delta();
 	int tick();
+	float total();
 	int fps();
 	
 	private:
 	float f;
 	int t;
 	float l;
+	float s;
 };
 
 // Speaker
@@ -224,17 +277,35 @@ struct speaker {
 	
 	// Play a sound.
 	void play(sound*);
+	void stop(sound*);
+	void pause(sound*);
 	
 	friend struct sound;
 };
 
 // Mouse
 struct mouse {
+	mouse();
+	
 	// Hide the mouse.
 	void hide();
 	
 	// Show the mouse.
 	void show();
+	
+	int x, y;
+	
+	bool clicked(short);
+	bool clicked(const char *);
+	
+	int wheel();
+	int scroll();
+	
+	// Fill x and y.
+	void update();
+	
+	private:
+	int wheel_pos;
 };
 
 // Keyboard

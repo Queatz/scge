@@ -1,26 +1,25 @@
-// Include the engine
 #include "../engine/engine.hpp"
 
 int main(int argc, char** argv) {
-	// Open a display in windowed mode
-	display d("window", 640, 480);
-	// Init the keyboard for use
-	keyboard k;
-	// Init the mouse for use
-	mouse m;
+	//call initiate first
+	initiate();
+
+	//open a window
+	window(320, 240);
+
+	//set up a 2D display, mapped with 0,0 in the bottom-left
+	orthographic(0.0, 320.0, 0.0, 240.0);
+
+	//here is our main loop
+	while(!key("esc") && window_opened()) {
 	
-	// Open the display and set the window title
-	d.on("Game");
+		//draw a point in the center of the screen
+		point(160.0, 120.0);
 	
-	// While no one is pressing escape, q, or the X button on the window, run the game
-	while(!k.key("esc") && !k.key("q") && d.opened()) {
-		// Update display
-		d.update();
+		//make the drawing of the point visible on the screen
+		swap();
 	}
-	
-	// Exit time, close display
-	d.off();
-	
-	// We exit successfully
-	return EXIT_SUCCESS;
+
+	//finish up
+	done();
 }

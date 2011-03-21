@@ -1,0 +1,1670 @@
+<!doctype HTML>
+<html>
+	<head>
+		<title>Simple C++ Game Engine Documentation</title>
+		<style>
+			@font-face {
+				font-family: WhiteRabbit;
+				src: url('WhiteRabbit.ttf');
+			} 
+			
+			body {
+				background: #ca8;
+				font-family: sans;
+			}
+			
+			a {
+				text-decoration: none;
+			}
+			
+			.section, .sections {
+				background: #fffffe;
+				padding: 1em;
+				margin: 1em;
+			}
+			
+			.sections {
+				background: #f0f8ff !important;
+			}
+			
+			.definition {
+				display: block;
+				font-size: 150%;
+				font-weight: bold;
+			}
+			
+			.description {
+				font-size: 80%;
+				color: #444;
+			}
+			
+			.example {
+				background: #ddd;
+				padding: 1em;
+				margin: 0.25em;
+				white-space: pre;
+				font-family: White Rabbit, WhiteRabbit, monospace;
+			}
+			
+			.type {
+				font-size: 80%;
+				color: darkred;
+			}
+			
+			.notice {
+				font-size: 80%;
+				background: #fde;
+				padding: 0.25em;
+				margin: 0.5em;
+				color: darkred;
+			}
+			
+			.note {
+				font-size: 80%;
+				background: #fed;
+				padding: 0.25em;
+				margin: 0.5em;
+				color: darkred;
+			}
+			
+			.wip {
+				font-size: 120%;
+				background: #ff8;
+				padding: 0.5em;
+				margin: 0.5em;
+				color: #202;
+				-moz-border-radius: 8px;
+				-webkit-border-radius: 8px;
+				box-shadow: 1px 1px 8px black;
+			}
+		</style>
+	</head>
+	<body>
+		<br />
+		<div class="wip">
+			This document is a work-in-progress and will change and be updated sooner or later.<br />
+			I will be adding full-scale tutorials soon and better examples throughout.<br />
+			If you find any errors let me know so that they can be fixed ASAP!<br />
+			<br />
+			JacobF<br />
+			queatz@gmail.com<br />
+		</div><br />
+		<a name="preperations"></a>
+		<h1>Preperations</h1>
+		<div class="section">
+			<div class="notice">This section is not too flexible at the moment.</div>
+			<div class="notice">The engine has only been tested on Linux 64-bit with nVidia graphics.</div>
+			<div class="note">This section will become more easy and clear later on.</div>
+			<div class="description">First, you need to have some libraries installed to compile: glfw GLEW SOIL freetype ftgl vorbisfile alure openal enet eigen<br />
+			On Debian based systems, search for the -dev packages and install them all.<br />
+			<br />
+			You also need CMake 2.8 or greater installed.<br />
+			<br />
+			<b>C++</b><br />
+			Make your game in game/game.cpp<br />
+			<br />
+			Then do:<br />
+			cd cmake<br />
+			cmake ..<br />
+			make<br />
+			<br />
+			<b>Python</b><br />
+			You need SWIG 2.0.3 or later, or you can uncomment line 7 in python_engine/compile.<br />
+			Run python_engine/compile to genereate the Python bindings.<br />
+			<br />
+			Make your game anywhere and be happy about not having to recompile.<br /></div>
+		</div>
+		
+		<a name="helloworld"></a>
+		<h1>Hello World</h1>
+		<div class="section">
+			<div class="description">Say hi to the world, little app.</div>
+			<div class="note">This will get smaller soon...</div>
+			<br />C++:
+			<div class="example">#include "../engine/engine.hpp"
+
+int main(int argc, char** argv) {
+	//call initiate first
+	<a href="#initiate">initiate</a>();
+
+	//open a window
+	<a href="#window">window</a>(320, 240);
+	
+	//set the window title
+	<a href="#window_title">window_title</a>("Hello World");
+
+	//set up a 2D display, mapped with 0,0 in the bottom-left
+	<a href="#orthographic">orthographic</a>(0.0, 320.0, 0.0, 240.0);
+
+	//here is our main loop
+	while(!<a href="#key">key</a>("esc") && <a href="#window_opened">window_opened</a>()) {
+	
+		//draw a point in the center of the screen
+		<a href="#shapes">point</a>(160.0, 120.0);
+	
+		//make the drawing of the point visible on the screen
+		<a href="#swap">swap</a>();
+	}
+
+	//finish up
+	<a href="#done">done</a>();
+}</div>
+			<br />Python:
+			<div class="example">import sys
+sys.path.append('../python_engine')
+
+from scge import *
+		
+#call initiate first
+<a href="#initiate">initiate</a>()
+
+#open a window
+<a href="#window">window</a>(320, 240)
+
+#set the window title
+<a href="#window_title">window_title</a>('Hello World')
+
+#set up a 2D display, mapped with 0,0 in the bottom-left
+<a href="#orthographic">orthographic</a>(0.0, 320.0, 0.0, 240.0)
+
+#here is our main loop
+while not <a href="#key">key</a>('esc') and <a href="#window_opened">window_opened</a>():
+	
+	#draw a point in the center of the screen
+	<a href="#shapes">point</a>(160.0, 120.0)
+	
+	#make the drawing of the point visible on the screen
+	<a href="#swap">swap</a>()
+}
+
+#finish up
+<a href="#done">done</a>()</div>
+		</div>
+		<br />
+		<h1>Jump!</h1>
+		<a href="#types">Types</a><br />
+		<a href="#resources">Resources</a><br />
+		<a href="#generalfunctions">General Functions</a><br />
+		<a href="#drawfunctions">Draw Functions</a><br />
+		<a href="#mouseandkeyboard">Mouse and Keyboard</a><br />
+		<a href="#audiofunctions">Audio Functions</a><br />
+		<a href="#network">Network</a><br />
+		<a href="#other">Other</a><br />
+		<br />
+		<a href="#conclusion">Conclusion & The Future</a><br />
+		<br />
+		<a name="types"></a>
+		<h1>Types</h1>
+		<a name="box"></a>
+		<div class="section">
+			<a class="definition" href="#box">box</a>
+			<span class="description">A box, containing a width and height.</span><br />
+			<ul>
+				<li>w <span class="type">float</span><br /><span class="description">the width of the box</span></li>
+				<li>h <span class="type">float</span><br /><span class="description">the height of the box</span></li>
+			</ul>
+			C++:
+			<div class="example">box a();
+a.w = 12.0;
+a.h = 12.0;
+
+box b(12.0, 12.0);</div>
+			<br />
+			Python:
+			<div class="example">a = box()
+a.w = 12.0
+a.h = 12.0
+
+b = box(12.0, 12.0)</div>
+		</div>
+		
+		
+		
+		<a name="ibox"></a>
+		<div class="section">
+			<a class="definition" href="#ibox">ibox</a>
+			<span class="description">An integer box, containing a width and height.</span><br />
+			<ul>
+				<li>w <span class="type">int</span><br /><span class="description">the width of the box</span></li>
+				<li>h <span class="type">int</span><br /><span class="description">the height of the box</span></li>
+			</ul>
+			C++:
+			<div class="example">ibox a();
+a.w = 12;
+a.h = 12;
+
+ibox b(12, 12);</div>
+			<br />
+			Python:
+			<div class="example">a = ibox()
+a.w = 12
+a.h = 12
+
+b = ibox(12, 12)</div>
+		</div>
+		
+		
+		
+		<a name="offset"></a>
+		<div class="section">
+			<a class="definition" href="#offset">offset</a>
+			<span class="description">A 2d offset.</span><br />
+			<ul>
+				<li>x <span class="type">float</span><br /><span class="description">the x offset</span></li>
+				<li>y <span class="type">float</span><br /><span class="description">the y offset</span></li>
+			</ul>
+			C++:
+			<div class="example">offset a();
+a.x = 12.0;
+a.y = 12.0;
+
+offset b(12.0, 12.0);</div>
+			<br />
+			Python:
+			<div class="example">a = offset()
+a.x = 12.0
+a.y = 12.0
+
+b = offset(12.0, 12.0)</div>
+		</div>
+		
+		
+		
+		<a name="rect"></a>
+		<div class="section">
+			<a class="definition" href="#rect">rect</a>
+			<span class="description">A rect, with offset and dimention.</span><br />
+			<ul>
+				<li>x <span class="type">float</span><br /><span class="description">the x offset</span></li>
+				<li>y <span class="type">float</span><br /><span class="description">the y offset</span></li>
+				<li>w <span class="type">float</span><br /><span class="description">the width</span></li>
+				<li>h <span class="type">float</span><br /><span class="description">the height</span></li>
+			</ul>
+			C++:
+			<div class="example">rect a();
+a.x = 12.0;
+a.y = 32.0;
+a.w = 12.0;
+a.h = 32.0;
+
+rect b(12.0, 32.0, 12.0, 32.0);</div>
+			<br />
+			Python:
+			<div class="example">a = rect()
+a.x = 12.0
+a.y = 32.0
+a.w = 12.0
+a.h = 32.0
+
+b = rect(12.0, 32.0, 12.0, 32.0)</div>
+		</div>
+		
+		
+		
+		<a name="irect"></a>
+		<div class="section">
+			<a class="definition" href="#irect">irect</a>
+			<span class="description">An integer rect, with offset and dimention.</span><br />
+			<ul>
+				<li>x <span class="type">int</span><br /><span class="description">the x offset</span></li>
+				<li>y <span class="type">int</span><br /><span class="description">the y offset</span></li>
+				<li>w <span class="type">int</span><br /><span class="description">the width</span></li>
+				<li>h <span class="type">int</span><br /><span class="description">the height</span></li>
+			</ul>
+			C++:
+			<div class="example">irect a();
+a.x = 12;
+a.y = 32;
+a.w = 12;
+a.h = 32;
+
+irect b(12, 32, 12, 32);</div>
+			<br />
+			Python:
+			<div class="example">a = irect()
+a.x = 12
+a.y = 32
+a.w = 12
+a.h = 32
+
+b = irect(12, 32, 12, 32)</div>
+		</div>
+		
+		
+		
+		<a name="crop"></a>
+		<div class="section">
+			<a class="definition" href="#crop">crop</a>
+			<span class="description">A crop, with an enabled option and a rect.</span><br />
+			<ul>
+				<li>use <span class="type">bool</span><br /><span class="description">whether or not the crop is enabled</span></li>
+				<li>x <span class="type">float</span><br /><span class="description">the x offset</span></li>
+				<li>y <span class="type">float</span><br /><span class="description">the y offset</span></li>
+				<li>w <span class="type">float</span><br /><span class="description">the width</span></li>
+				<li>h <span class="type">float</span><br /><span class="description">the height</span></li>
+			</ul>
+			C++:
+			<div class="example">crop a();
+a.use = true;
+a.x = 12.0;
+a.y = 32.0;
+a.w = 12.0;
+a.h = 32.0;
+
+crop b(true, 12.0, 32.0, 12.0, 32.0);</div>
+			<br />
+			Python:
+			<div class="example">a = crop()
+a.use = True
+a.x = 12.0
+a.y = 32.0
+a.w = 12.0
+a.h = 32.0
+
+b = crop(True, 12.0, 32.0, 12.0, 32.0)</div>
+		</div>
+		
+		
+		
+		<a name="icrop"></a>
+		<div class="section">
+			<a class="definition" href="#icrop">icrop</a>
+			<span class="description">An integer crop, with an enabled option and a rect.</span><br />
+			<ul>
+				<li>use <span class="type">bool</span><br /><span class="description">whether or not the crop is enabled</span></li>
+				<li>x <span class="type">int</span><br /><span class="description">the x offset</span></li>
+				<li>y <span class="type">int</span><br /><span class="description">the y offset</span></li>
+				<li>w <span class="type">int</span><br /><span class="description">the width</span></li>
+				<li>h <span class="type">int</span><br /><span class="description">the height</span></li>
+			</ul>
+			C++:
+			<div class="example">icrop a();
+a.use = true;
+a.x = 12;
+a.y = 32;
+a.w = 12;
+a.h = 32;
+
+icrop b(true, 12, 32, 12, 32);</div>
+			<br />
+			Python:
+			<div class="example">a = icrop()
+a.use = True
+a.x = 12
+a.y = 32
+a.w = 12
+a.h = 32
+
+b = icrop(True, 12, 32, 12, 32)</div>
+		</div>
+		
+		
+		
+		<a name="rgba"></a>
+		<div class="section">
+			<a class="definition" href="#rgba">rgba</a>
+			<span class="description">A color, with alpha.</span><br />
+			<ul>
+				<li>r <span class="type">float</span><br /><span class="description">the red amount</span></li>
+				<li>g <span class="type">float</span><br /><span class="description">the green component</span></li>
+				<li>b <span class="type">float</span><br /><span class="description">the blue factor</span></li>
+				<li>a <span class="type">float</span><br /><span class="description">the alpha value</span></li>
+			</ul>
+			C++:
+			<div class="example">rgba a();
+a.r = 1.0;
+a.g = 0.8;
+a.b = 0.6;
+a.a = 0.4;
+
+rgba b(1.0, 0.8, 0.6, 0.4);
+rgba c(1.0, 0.8, 0.6); //alpha is 1.0</div>
+			<br />
+			Python:
+			<div class="example">a = rgba()
+a.r = 1.0
+a.g = .8
+a.b = .6
+a.a = .4
+
+b = rgba(1.0, .8, .6, .4)
+c = rgba(1.0, .8, .6) #alpha is 1.0</div>
+		</div>
+		
+		
+		
+		<a name="resources"></a>
+		<h1>Resources</h1>
+		<a name="sound"></a>
+		<div class="section">
+			<a class="definition" href="#sound">sound</a>
+			<span class="description">A sound.</span><br />
+			<ul>
+				<li>gain(<span class="type">float</span>)<br /><span class="description">set the gain of the sound</span></li>
+				<li>pitch(<span class="type">float</span>)<br /><span class="description">set the pitch of the sound</span></li>
+				<li>pan(<span class="type">float</span>)<br /><span class="description">set the pan of the sound</span></li>
+				<li>repeat(<span class="type">bool</span>)<br /><span class="description">turn on and off repeating of the sound</span></li>
+				<li>update()<br /><span class="description">update the sound, if it is a stream</span><br /><div class="notice">Usually you do not update each individual sound.  Instead, you simply call update_audio().</div></li>
+			</ul>
+			C++:
+			<div class="example">sound a("click.ogg");
+a.pan(-1.0); //pan fully to the left
+
+sound b("music.ogg", true);
+b.repeat(true); //set the music to repeat itself</div>
+			<br />
+			Python:
+			<div class="example">a = sound('click.ogg')
+a.pan(-1.0) #pan fully to the left
+
+b = sound('music.ogg', True)
+b.repeat(True) #set the music to repeat itself</div>
+		<br />
+			See also: <a href="#play">play</a>, <a href="#update_audio">update_audio</a>
+		</div>
+		
+		
+		
+		<a name="pixelcache"></a>
+		<div class="section">
+			<a class="definition" href="#pixelcache">pixelcache</a>
+			<span class="description">A cache of pixels.</span><br />
+			<ul>
+				<li>width <span class="type">int</span><br /><span class="description">the width of the cache</span></li>
+				<li>height <span class="type">int</span><br /><span class="description">the height of the cache</span></li>
+				<li>data <span class="type">GLubyte</span><br /><span class="description">the cache data</span></li>
+			</ul>
+			C++:
+			<div class="example">pixelcache a(24, 24);
+
+pixelcache b(a); //copy a</div>
+			<br />
+			Python:
+			<div class="example">a = pixelcache(24, 24)
+
+b = pixelcache(a) #copy a</div>
+		<br />
+			See also: <a href="#image">image.cache</a>
+		</div>
+		
+		
+		
+		<a name="image"></a>
+		<div class="section">
+			<a class="definition" href="#image">image</a>
+			<span class="description">An image.</span><br />
+			<ul>
+				<li>width <span class="type">float</span><br /><span class="description">the width of the image</span></li>
+				<li>height <span class="type">float</span><br /><span class="description">the height of the image</span></li>
+				<li>cache <span class="type">pixelcache</span><br /><span class="description">the image's cache</span></li>
+				<li>set(<span class="type">string</span>)<br /><span class="description">set options on the image:<br />
+				"linear" - draw the image smoothly<br />
+				"nearest" - draw the image pixelated<br />
+				"mirrored repeat" - repeat the image coordinates, mirrored<br />
+				"repeat" - repeat the image coordinates<br />
+				"clamp" - clamp te image coordinates<br /></span></li>
+				<li>from_pixelcache()<br /><span class="description">restore the image to it's cached state<br /></li>
+				<li>from_pixelcache(<span class="type"><a href="#pixelcache">pixelcache</a></span>)<br /><span class="description">overwrites pixels with data from a pixelcache<br /></li>
+				<li>refresh_pixel_cache()<br /><span class="description">caches the images current state<br /></li>
+				<li>pixel(<span class="type">int</span> x, <span class="type">int</span> y)<br /><span class="description">returns an <a href="#rgba">rgba</a> containing the pixel color of x and y<br /></li>
+			</ul>
+			C++:
+			<div class="example">image a("tux.png");
+a.set("linear");
+<a href="#rgba">rgba</a> b();
+b = a.pixel(0, 0);
+
+image c(64, 64, false); //creates a blank image sized 64 by 64, and not high quality
+</div>
+			<br />
+			Python:
+			<div class="example">a = image('tux.png')
+a.set('linear')
+b = a.pixel(0, 0)
+
+c = image(64, 64, False); #creates a blank image sized 64 by 64, and not high quality</div>
+		<br />
+			See also: <a href="#use_image">use_image</a>
+		</div>
+		
+		
+		
+		<a name="font"></a>
+		<div class="section">
+			<a class="definition" href="#font">font</a>
+			<span class="description">A font.</span><br />
+			<ul>
+				<li>width(<span class="type">string</span>)<br /><span class="description">returns a <span class="type">float</span> representing the width of the computed string</span></li>
+				<li>height(<span class="type">string</span>)<br /><span class="description">returns the caclulated height of the string as a <span class="type">float</span></span></li>
+				<li>size(<span class="type">float</span>)<br /><span class="description">set the font size</span></li>
+				<li>push_size()<br /><span class="description">store the current font size into a stack</span></li>
+				<li>pop_size()<br /><span class="description">reset the font size to the last stored value</span></li>
+			</ul>
+			C++:
+			<div class="example">font a("sans.ttf");
+
+font b("serif.ttf", 16.0); //default to size 16 instead of 12, the default
+b.push_size();
+b.size(12.0);
+b.pop_size();</div>
+			<br />
+			Python:
+			<div class="example">a = font('sans.ttf')
+
+b = font('serif.ttf', 16.0) #default to size 16 instead of 12, the default
+b.push_size()
+b.size(12.0)
+b.pop_size()</div><br />
+			See also: <a href="#use_font">use_font</a>, <a href="#write">write</a>
+		</div>
+		
+		
+		
+		<a name="shader"></a>
+		<div class="section">
+			<a class="definition" href="#shader">shader</a>
+			<span class="description">A shader object.</span><br />
+			<ul>
+				<li>compile()<br /><span class="description">compile the shader</span></li>
+			</ul>
+			C++:
+			<div class="example">shader a("fragment", "burgundy.frag"); //create a fragment shader from a file
+a.compile();
+
+shader b("vertex", "jitter.vert");</div>
+			<br />
+			Python:
+			<div class="example">a = shader('fragment', 'burgundy.frag') #create a fragment shader from a file
+a.compile()
+
+b = shader('vertex', 'jitter.vert')</div><br />
+			<div class="notice">Vertex shaders are not very useful yet.  Fragment shaders are the ones you would use for post-processed image effects.</div>
+		</div>
+		
+		
+		
+		<a name="program"></a>
+		<div class="section">
+			<a class="definition" href="#program">program</a>
+			<span class="description">A program that processes draw operations.</span><br />
+			<ul>
+				<li>attach(<span class="type">shader</span>)<br /><span class="description">attaches a shader to this program</span></li>
+				<li>link()<br /><span class="description">links and completes the program, making it ready for use</span></li>
+				<li>uniform_int(<span class="type">string</span>, <span class="type">int</span>)<br /><span class="description">set a uniform integer on the program</span></li>
+				<li>uniform_float(<span class="type">string</span>, <span class="type">float</span>, ...)<br /><span class="description">set a uniform float on the program</span></li>
+				<li>uniform_image(<span class="type">string</span>, <span class="type">int</span>, <span class="type">image</span>)<br /><span class="description">set a uniform sampler2D with a multitexture ID</span></li>
+			</ul>
+			C++:
+			<div class="example">program a();</div>
+			<br />
+			Python:
+			<div class="example">a = program()</div><br />
+			See also: <a href="#use_program">use_program</a>
+		</div>
+		
+		
+		
+		<a name="fbo"></a>
+		<div class="section">
+			<a class="definition" href="#fbo">fbo</a>
+			<span class="description">A frame buffer object.</span><br />
+			<br />
+			C++:
+			<div class="example">fbo a(320, 240);
+
+fbo b(320, 240, true); //high quality</div>
+			<br />
+			Python:
+			<div class="example">a = fbo(320, 240)
+
+b = fbo(320, 240, true) #high quality</div><br />
+			See also: <a href="#use_fbo">use_fbo</a>
+		</div>
+		
+		
+		
+		<a name="generalfunctions"></a>
+		<h1>General Functions</h1>
+		<a name="initiate"></a>
+		<div class="section">
+			<a class="definition" href="#initiate">initiate()</a>
+			<span class="description">Initiate the context.  Returns true if it could happen, otherwise false.</span><br />
+			<div class="note">Keyboard, mouse, and window functions will not work without calling this first.</div>
+			<br />
+			C++:
+			<div class="example">initiate();</div>
+			<br />
+			Python:
+			<div class="example">initiate()</div><br />
+			See also: <a href="#window">window</a>, <a href="#key">key</a>, <a href="#button">button</a>
+		</div>
+		
+		
+		
+		<a name="done"></a>
+		<div class="section">
+			<a class="definition" href="#done">done()</a>
+			<span class="description">Done with the context.</span><br />
+			<br />
+			C++:
+			<div class="example">initiate();</div>
+			<br />
+			Python:
+			<div class="example">initiate()</div><br />
+			See also: <a href="#initiate">initiate</a>
+		</div>
+		
+		
+		
+		<a name="window"></a>
+		<div class="section">
+			<a class="definition" href="#window">window(int w, int h, bool fullscreen = false)</a>
+			<span class="description">Open a window, optionally fullscreen.  Returns true if the window was able to be opened, else false.</span><br />
+			<div class="note">Before opening a window, you need badly to call <a href="#initiate">initiate()</a> first.</div>
+			<div class="note">In order to be able to draw into the window you need to set up the display matrix.  For regular 2D this is done with a call to <a href="#orthographic">orthographic()</a>.  Afterwards, you will call <a href="#swap">swap()</a> in your main loop.</div>
+			<br />
+			C++:
+			<div class="example">window(320, 240);
+
+window(320, 240, true); //fullscreen</div>
+			<br />
+			Python:
+			<div class="example">window(320, 240)
+
+window(320, 240, True) //fullscreen</div><br />
+			See also: <a href="#initiate">initiate</a>, <a href="#orthographic">orthographic</a>, <a href="#perspective">perspective</a>, <a href="#swap">swap</a>, <a href="#poll">poll</a>
+		</div>
+		
+		
+		
+		<a name="close_window"></a>
+		<div class="section">
+			<a class="definition" href="#close_window">close_window()</a>
+			<span class="description">Close the window.</span><br />
+			<br />
+			C++:
+			<div class="example">close_window();</div>
+			<br />
+			Python:
+			<div class="example">close_window()</div><br />
+			See also: <a href="#initiate">window</a>
+		</div>
+		
+		
+		
+		<a name="window_title"></a>
+		<div class="section">
+			<a class="definition" href="#window_title">window_title(string)</a>
+			<span class="description">Set the title of the window.</span><br />
+			<br />
+			C++:
+			<div class="example">window_title("Hello World");</div>
+			<br />
+			Python:
+			<div class="example">window_title('Hello World')</div>
+		</div>
+		
+		
+		
+		<a name="window_opened"></a>
+		<div class="section">
+			<a class="definition" href="#window_opened">window_opened()</a>
+			<span class="description">Returns true if the window is still open.</span><br />
+			<br />
+			C++:
+			<div class="example">bool a = window_opened();</div>
+			<br />
+			Python:
+			<div class="example">a = window_opened()</div>
+		</div>
+		
+		
+		
+		<a name="window_active"></a>
+		<div class="section">
+			<a class="definition" href="#window_active">window_active()</a>
+			<span class="description">Returns true if the window has focus.</span><br />
+			<br />
+			C++:
+			<div class="example">bool a = window_active();</div>
+			<br />
+			Python:
+			<div class="example">a = window_active()</div>
+		</div>
+		
+		
+		
+		<a name="rest"></a>
+		<div class="section">
+			<a class="definition" href="#rest">rest(float)</a>
+			<span class="description">Rest for some seconds.</span><br />
+			<br />
+			C++:
+			<div class="example">rest(2.0);</div>
+			<br />
+			Python:
+			<div class="example">rest(2.0)</div>
+		</div>
+		
+		
+		
+		<a name="display_dimensions"></a>
+		<div class="section">
+			<a class="definition" href="#display_dimensions">display_dimensions()</a>
+			<span class="description">Returns an <a href="#ibox">ibox</a> filled out with the resolution of the display.</span><br />
+			<br />
+			C++:
+			<div class="example">ibox a = display_dimentions();</div>
+			<br />
+			Python:
+			<div class="example">a = display_dimentions()</div>
+		</div>
+		
+		
+		
+		<a name="window_dimensions"></a>
+		<div class="section">
+			<a class="definition" href="#window_dimensions">window_dimensions()</a>
+			<span class="description">Returns an <a href="#ibox">ibox</a> filled out with the resolution of the window.</span><br />
+			<br />
+			C++:
+			<div class="example">ibox a = window_dimentions();</div>
+			<br />
+			Python:
+			<div class="example">a = window_dimentions()</div>
+		</div>
+		
+		
+		
+		<a name="position_window"></a>
+		<div class="section">
+			<a class="definition" href="#position_window">position_window(int x, int y)</a>
+			<span class="description">Move the window around.</span><br />
+			<br />
+			C++:
+			<div class="example">position_window(12, 12);</div>
+			<br />
+			Python:
+			<div class="example">position_window(12, 12)</div>
+		</div>
+		
+		
+		
+		<a name="vsync"></a>
+		<div class="section">
+			<a class="definition" href="#vsync">vsync(bool)</a>
+			<span class="description">Sync the display refresh to the monitor refresh rate, which is usually around 60, or not.</span><br />
+			<br />
+			C++:
+			<div class="example">vsync(false); //framerate unlimited
+vsync(true); //framerate 60</div>
+			<br />
+			Python:
+			<div class="example">vsync(False) #framerate unlimited
+vsync(True); #framerate 60</div>
+		</div>
+		
+		
+		
+		<a name="swap"></a>
+		<div class="section">
+			<a class="definition" href="#swap">swap()</a>
+			<span class="description">Show all the drawn things on the screen and update other states, such as the window, keyboard, and mouse.</span><br />
+			<br />
+			C++:
+			<div class="example">swap();</div>
+			<br />
+			Python:
+			<div class="example">swap()</div>
+			<br />See also: <a href="#poll">poll</a>
+		</div>
+		
+		
+		
+		<a name="poll"></a>
+		<div class="section">
+			<a class="definition" href="#poll">poll()</a>
+			<span class="description">Update the state of the keyboard, mouse, and window.</span><br />
+			<br />
+			C++:
+			<div class="example">poll();</div>
+			<br />
+			Python:
+			<div class="example">poll()</div>
+			<br />See also: <a href="#swap">swap</a>
+		</div>
+		
+		
+		
+		<a name="screenshot"></a>
+		<div class="section">
+			<a class="definition" href="#screenshot">screenshot(string)</a>
+			<span class="description">Save a screenshot to a TGA file.</span><br />
+			<br />
+			C++:
+			<div class="example">screenshot("outcome.tga");</div>
+			<br />
+			Python:
+			<div class="example">screenshot('outcome.tga')</div>
+		</div>
+		
+		
+		
+		<a name="orthographic"></a>
+		<div class="section">
+			<a class="definition" href="#orthographic">orthographic(float left, float right, float bottom, float top, float near = -1.0, float far = 1.0)</a>
+			<span class="description">Set up an orthographic display matrix.</span><br />
+			<br />
+			C++:
+			<div class="example">orthographic(0.0, 320.0, 0.0, 240.0); //0,0 is in the bottom-left
+orthographic(0.0, 320.0, 240.0, 0.0); //0,0 is in the top-left</div>
+			<br />
+			Python:
+			<div class="example">orthographic(0.0, 320.0, 0.0, 240.0) #0,0 is in the bottom-left
+orthographic(0.0, 320.0, 240.0, 0.0) #0,0 is in the top-left</div>
+			<br />See also: <a href="#pushpopget">push_matrix</a>, <a href="#pushpopget">pop_matrix</a>
+		</div>
+		
+		
+		
+		<a name="perspective"></a>
+		<div class="section">
+			<a class="definition" href="#perspective">perspective(float left, float right, float bottom, float top, float near = 0.1, float far = 1000.0)</a>
+			<span class="description">Set up a perspective display matrix.</span><br />
+			<br />
+			C++:
+			<div class="example">perspective(0.0, 320.0, 0.0, 240.0);</div>
+			<br />
+			Python:
+			<div class="example">perspective(0.0, 320.0, 0.0, 240.0)</div>
+			<br />See also: <a href="#pushpopget">push_matrix</a>, <a href="#pushpopget">pop_matrix</a>
+		</div>
+		
+		
+		
+		<a name="pixel"></a>
+		<div class="section">
+			<a class="definition" href="#pixel">pixel(int x, int y)</a>
+			<span class="description">Returns and <a href="#rgba">rgba</a> containing the pixel color on the screen.</span><br />
+			<br />
+			C++:
+			<div class="example">rgba a();
+a = pixel(0, 0);</div>
+			<br />
+			Python:
+			<div class="example">a = pixel(0, 0)</div><br />
+		</div>
+		
+		
+		
+		<a name="drawfunctions"></a>
+		<h1>Draw Functions</h1>
+		<a name="polygon_mode"></a>
+		<div class="section">
+			<a class="definition" href="#polygon_mode">polygon_mode(string)</a>
+			<span class="description">Set the draw type of polygons; either<br />
+				"dot",<br />
+				"outline", or<br />
+				"fill", the default.</span><br />
+			<br />
+			C++:
+			<div class="example">polygon_mode("outline");</div>
+			<br />
+			Python:
+			<div class="example">polygon_mode('outline')</div><br />
+		</div>
+		
+		
+		
+		<a name="enable"></a>
+		<div class="section">
+			<a class="definition" href="#enable">enable(string, bool = true)</a>
+			<span class="description">Enable or disable different things:<br />
+				"texture" - use texure when drawing<br />
+				"point smooth" - draw points smoothly<br />
+				"polygon smooth" - draw polygons smoothly<br />
+				"line smooth" - draw lines smoothly<br />
+				"blend" - blending, such as with alpha<br />
+				"depth" - depth testing</span><br />
+			<br />
+			C++:
+			<div class="example">enable("texture");
+
+enable("texture", false);</div>
+			<br />
+			Python:
+			<div class="example">enable('texture')
+
+enable('texture', False)</div><br />
+		</div>
+		
+		
+		
+		<a name="clear_color"></a>
+		<div class="section">
+			<a class="definition" href="#clear_color">clear_color(float, float, float, float = 1.0)</a>
+			<span class="description">Set the color used by <a href="#clear">clear()</a>.</span><br />
+			<br />
+			C++:
+			<div class="example">clear_color(1.0, 1.0, 1.0);</div>
+			<br />
+			Python:
+			<div class="example">clear_color(1.0, 1.0, 1.0)</div><br />
+			See also: <a href="#clear">clear</a>
+		</div>
+		
+		
+		
+		<a name="clear"></a>
+		<div class="section">
+			<a class="definition" href="#clear">clear()</a>
+			<span class="description">Clear the window.</span><br />
+			<br />
+			C++:
+			<div class="example">clear();</div>
+			<br />
+			Python:
+			<div class="example">clear()</div><br />
+			See also: <a href="#clear_color">clear_color</a>
+		</div>
+		
+		
+		
+		<a name="point_size"></a>
+		<div class="section">
+			<a class="definition" href="#point_size">point_size(float)</a>
+			<span class="description">Set the size of points are to be drawn with.</span><br />
+			<br />
+			C++:
+			<div class="example">point_size(2.0);</div>
+			<br />
+			Python:
+			<div class="example">point_size(2.0)</div><br />
+			See also: <a href="#shapes">point</a>
+		</div>
+		
+		
+		
+		<a name="line_width"></a>
+		<div class="section">
+			<a class="definition" href="#line_width">line_width(float)</a>
+			<span class="description">Set the width lines ought to be drawn with.</span><br />
+			<br />
+			C++:
+			<div class="example">line_width(0.5);</div>
+			<br />
+			Python:
+			<div class="example">line_width(.5)</div><br />
+			See also: <a href="#shapes">line</a>
+		</div>
+		
+		
+		
+		<a name="line_stipple"></a>
+		<div class="section">
+			<a class="definition" href="#line_stipple">line_stipple(int, string)</a>
+			<span class="description">Set the stipple pattern of drawn lines multiplied by an integer value.</span><br />
+			<br />
+			C++:
+			<div class="example">line_stipple(1, "dashed");</div>
+			<br />
+			Python:
+			<div class="example">line_stipple(1, 'dashed')</div><br />
+		</div>
+		
+		
+		
+		<a name="blend_color"></a>
+		<div class="section">
+			<a class="definition" href="#blend_color">blend_color(float, float, float, float = 1.0)</a>
+			<span class="description">Set the blending color.</span><br />
+			<div class="notice">There is no way to make use of this function.</div>
+			<br />
+			C++:
+			<div class="example">blend_color(1.0, 1.0, 1.0);</div>
+			<br />
+			Python:
+			<div class="example">blend_color(1.0, 1.0, 1.0)</div><br />
+		</div>
+		
+		
+		
+		<a name="pushpopget"></a>
+		<div class="sections">
+			<a class="definition" href="#pushpopget">push/pop/get</a>
+			<span class="description">Each push function stores the current state; each pop function restores it; each get function returns it.</span><br />
+			<br />
+			C++:
+			<div class="example">push_color();
+push_fbo();
+push_image();
+push_font();
+push_image_crop();
+push_scissor();
+push_blend_mode();
+push_program();
+
+pop_color();
+pop_fbo();
+pop_image();
+pop_font();
+pop_image_crop();
+pop_scissor();
+pop_blend_mode();
+pop_program();
+
+get_color();
+get_fbo();
+get_image();
+get_font();
+get_image_crop();
+get_scissor();
+get_blend_mode();
+get_program();
+
+push_matrix();
+pop_matrix();</div>
+			<br />
+			Python:
+			<div class="example">push_color()
+push_fbo()
+push_image()
+push_font()
+push_image_crop()
+push_scissor()
+push_blend_mode()
+push_program()
+
+pop_color()
+pop_fbo()
+pop_image()
+pop_font()
+pop_image_crop()
+pop_scissor()
+pop_blend_mode()
+pop_program()
+
+get_color()
+get_fbo()
+get_image()
+get_font()
+get_image_crop()
+get_scissor()
+get_blend_mode()
+get_program()
+
+push_matrix()
+pop_matrix()</div>
+		</div>
+		
+		
+		
+		<a name="color"></a>
+		<div class="section">
+			<a class="definition" href="#color">color(rgba)<br />color(float, float, float, float = 1.0)</a>
+			<span class="description">Set the color to draw with.</span><br />
+			<br />
+			C++:
+			<div class="example">color(0.5, 0.5, 0.5);</div>
+			<br />
+			Python:
+			<div class="example">color(.5, .5, .5)</div><br />
+		</div>
+		
+		
+		
+		<a name="use_fbo"></a>
+		<div class="section">
+			<a class="definition" href="#use_fbo">use_fbo(fbo)</a>
+			<span class="description">Set the fbo to draw to, or none.</span><br />
+			<br />
+			C++:
+			<div class="example">use_fbo(); //draw to the screen</div>
+			<br />
+			Python:
+			<div class="example">use_fbo() #draw to the screen</div><br />
+		</div>
+		
+		
+		
+		<a name="use_image"></a>
+		<div class="section">
+			<a class="definition" href="#use_image">use_image(image)</a>
+			<span class="description">Set the image to draw with.</span><br />
+			<div class="note">Texturing must be enabled to draw with images. Calling <a href="#enable">enable("texture")</a> does a fine job here.</div>
+			<br />
+			C++:
+			<div class="example">image a("penny.png");
+use_image(&a);</div>
+			<br />
+			Python:
+			<div class="example">a = image('penny.png')
+use_image(a)</div><br />
+		</div>
+		
+		
+		
+		<a name="use_font"></a>
+		<div class="section">
+			<a class="definition" href="#use_font">use_font(font)</a>
+			<span class="description">Set the font to write with.</span><br />
+			<br />
+			C++:
+			<div class="example">font a("sans.ttf");
+use_font(&a);</div>
+			<br />
+			Python:
+			<div class="example">a = font('sans.ttf')
+use_font(a)</div><br />
+		</div>
+		
+		
+		
+		<a name="image_crop"></a>
+		<div class="section">
+			<a class="definition" href="#image_crop">image_crop(float x, float y, float w, float h)</a>
+			<span class="description">Crop drawing to a section of the image, or not.</span><br />
+			<br />
+			C++:
+			<div class="example">image_crop(); //use full image</div>
+			<br />
+			Python:
+			<div class="example">image_crop() #use full image</div>
+			<br />See also: <a href="#draw">draw</a>
+		</div>
+		
+		
+		
+		<a name="scissor"></a>
+		<div class="section">
+			<a class="definition" href="#scissor">scissor(int, int, int, int)</a>
+			<span class="description">Crop drawing to a portion of the window, or not.</span><br />
+			<br />
+			C++:
+			<div class="example">scissor(); //draw on all the window</div>
+			<br />
+			Python:
+			<div class="example">scissor() #draw on all the window</div>
+		</div>
+		
+		
+		
+		<a name="blend_mode"></a>
+		<div class="section">
+			<a class="definition" href="#blend_mode">blend_mode(string)</a>
+			<span class="description">Set how you want to blend the images onto the window.<br />
+			"none" - do not blend<br />
+			"mix" - normal alpha blending<br />
+			"multipy" - multiplicative blending<br />
+			"add" - additive blending<br />
+			"subtract" - subtractive blending</span><br />
+			<br />
+			C++:
+			<div class="example">blend_mode("mix");</div>
+			<br />
+			Python:
+			<div class="example">blend_mode('mix')</div>
+			<br />See also: <a href="#blend_color">blend_color</a>
+		</div>
+		
+		
+		
+		<a name="use_program"></a>
+		<div class="section">
+			<a class="definition" href="#use_program">use_program(program)</a>
+			<span class="description">Draw using a program, or not.</span><br />
+			<div class="notice">When using a program, color and texturing and some other factors do not apply as they are definable in the shader.</div>
+			<br />
+			C++:
+			<div class="example">use_program(); //use no program</div>
+			<br />
+			Python:
+			<div class="example">use_program() #use no program</div>
+		</div>
+		
+		
+		
+		<a name="transform"></a>
+		<div class="sections">
+			<a class="definition" href="#transform">transform</a>
+			<span class="description">These functions manipulate drawing.</span><br />
+			<br />
+			C++:
+			<div class="example">translate(12.0, 12.0);
+rotate(90.0);
+scale(2.0, 2.0);</div>
+			<br />
+			Python:
+			<div class="example">translate(12.0, 12.0)
+rotate(90.0)
+scale(2.0, 2.0)</div>
+		</div>
+		
+		
+		
+		<a name="beginend"></a>
+		<div class="sections">
+			<a class="definition" href="#beginend">begin/end</a>
+			<span class="description">Begin a sequence of drawing, and then end that.<br />
+			"point"<br />
+			"line"<br />
+			"line strip"<br />
+			"line loop"<br />
+			"triangle"<br />
+			"quad"<br />
+			"image"<br /></span><br />
+			<br />
+			C++:
+			<div class="example">begin("point");
+end();</div>
+			<br />
+			Python:
+			<div class="example">begin('point')
+end()</div>
+		<br />See also: <a href="#inlinedrawfunctions">inline draw functions</a>
+		</div>
+		
+		
+		
+		<a name="draw"></a>
+		<div class="section">
+			<a class="definition" href="#draw">draw(float x = 0.0, float y = 0.0, float sx = 0.0, float sy = 0.0, float r = 0.0, float ox = 0.0, float oy = 0.0)</a>
+			<span class="description">Draw an image.</span><br />
+			<br />
+			C++:
+			<div class="example">draw(); //draw current image at 0,0 with no scale, rotation, or offset</div>
+			<br />
+			Python:
+			<div class="example">draw() #draw current image at 0,0 with no scale, rotation, or offset</div><br />
+			See also: <a href="#use_image">use_image</a>
+		</div>
+		
+		
+		
+		<a name="write"></a>
+		<div class="section">
+			<a class="definition" href="#draw">write(string, float x = 0.0, float y = 0.0, bool flip = false)</a>
+			<span class="description">Write some text down.</span><br />
+			<br />
+			C++:
+			<div class="example">write("Hello World");</div>
+			<br />
+			Python:
+			<div class="example">write('Hello World')</div><br />
+			See also: <a href="#use_font">use_font</a>
+		</div>
+		
+		
+		
+		<a name="background_image"></a>
+		<div class="section">
+			<a class="definition" href="#background_image">background_image(float x = 0.0, float y = 0.0, float s = 1.0)</a>
+			<span class="description">Draw a background on the window.</span><br />
+			<br />
+			C++:
+			<div class="example">background_image();</div>
+			<br />
+			Python:
+			<div class="example">background_image()</div><br />
+			See also: <a href="#use_font">use_image</a>
+		</div>
+		
+		
+		
+		<a name="shapes"></a>
+		<div class="sections">
+			<a class="definition" href="#shapes">shapes</a>
+			<span class="description">Various draw functions.</span><br />
+			<br />
+			C++:
+			<div class="example">quad(0.0, 0.0, 12.0, 12.0); //faster than mquad
+mquad(0.0, 0.0, 320.0, 240.0); //can be used appropriately with textures
+line(0.0, 120.0, 320.0, 120.0);
+point(160.0, 120.0);</div>
+			<br />
+			Python:
+			<div class="example">quad(0.0, 0.0, 12.0, 12.0) #faster than mquad
+mquad(0.0, 0.0, 320.0, 240.0) #can be used appropriately with textures and programs
+line(0.0, 120.0, 320.0, 120.0)
+point(160.0, 120.0)</div><br />
+			See also: <a href="#inlinedrawfunctions">inlinedrawfunctions</a>
+		</div>
+		
+		
+		
+		<a name="inlinedrawfunctions"></a>
+		<div class="sections">
+			<a class="definition" href="#inlinedrawfunctions">inline draw functions</a>
+			<span class="description">Draw functions that are substanually faster when drawing many of the same type, place between calls to begin() and end():<br />
+			idraw<br />
+			iquad<br />
+			imquad<br />
+			iline<br />
+			ipoint</span><br />
+			<br />
+			C++:
+			<div class="example">begin("point");
+ipoint(160.0, 120.0);
+end();</div>
+			<br />
+			Python:
+			<div class="example">begin('point')
+ipoint(160.0, 120.0)
+end()</div><br />
+			See also: <a href="#beginend">begin/end</a>, <a href="#shapes">shapes</a>
+		</div>
+		
+		
+		
+		<a name="portion"></a>
+		<div class="section">
+			<a class="definition" href="#portion">portion(int x, int y, int x2, int y2)</a>
+			<span class="description">Draw a portion of an image, keeping it's place.</span><br />
+			<div class="notice">This function is a coverup waiting for better multitexture support in programs.</div>
+			<br />
+			C++:
+			<div class="example">portion(24.0, 24.0, 48.0, 48.0);</div>
+			<br />
+			Python:
+			<div class="example">portion(24.0, 24.0, 48.0, 48.0)</div><br />
+		</div>
+		
+		
+		
+		<a name="mouseandkeyboard"></a>
+		<h1>Mouse and Keyboard</h1>
+		<a name="mouse_position"></a>
+		<div class="section">
+			<a class="definition" href="#mouse_position">mouse_position()</a>
+			<span class="description">Returns an <a href="#offset">offset</a> with the mouse position.</span><br />
+			<br />
+			C++:
+			<div class="example">offset a();
+a = mouse_position();</div>
+			<br />
+			Python:
+			<div class="example">a = mouse_position()</div><br />
+			See also: <a href="#move_mouse">move_mouse</a>
+		</div>
+		
+		
+		
+		<a name="mouse"></a>
+		<div class="section">
+			<a class="definition" href="#mouse">mouse(bool = false)</a>
+			<span class="description">Show or hide the mouse.</span><br />
+			<br />
+			C++:
+			<div class="example">mouse(); //hide the pointer</div>
+			<br />
+			Python:
+			<div class="example">mouse() #hide the pointer</div>
+		</div>
+		
+		
+		
+		<a name="button"></a>
+		<div class="section">
+			<a class="definition" href="#button">button(string); button(short)</a>
+			<span class="description">Check if a mouse button is pressed.<br />
+			1-8<br />
+			"left"<br />
+			"middle"<br />
+			"right"<br /></span><br />
+			<br />
+			C++:
+			<div class="example">button("left");</div>
+			<br />
+			Python:
+			<div class="example">button('left')</div>
+		</div>
+		
+		
+		
+		<a name="wheel"></a>
+		<div class="section">
+			<a class="definition" href="#wheel">wheel()</a>
+			<span class="description">Get the wheel offset since the window was opened.</span><br />
+			<br />
+			C++:
+			<div class="example">int a = wheel();</div>
+			<br />
+			Python:
+			<div class="example">a = wheel()</div>
+		</div>
+		
+		
+		
+		<a name="move_mouse"></a>
+		<div class="section">
+			<a class="definition" href="#move_mouse">move_mouse(int x, int y)</a>
+			<span class="description">Move the mouse to some position.</span><br />
+			<br />
+			C++:
+			<div class="example">move_mouse(160, 120);</div>
+			<br />
+			Python:
+			<div class="example">move_mouse(160, 120)</div>
+		</div>
+		
+		
+		
+		<a name="key"></a>
+		<div class="section">
+			<a class="definition" href="#key">key(string)</a>
+			<span class="description">Check if a key is pressed.</span><br />
+			<br />
+			C++:
+			<div class="example">bool a = key("left shift");</div>
+			<br />
+			Python:
+			<div class="example">a = key('left shift')</div>
+		</div>
+		
+		
+		
+		<a name="audiofunctions"></a>
+		<h1>Audio Functions</h1>
+		<a name="audio"></a>
+		<div class="section">
+			<a class="definition" href="#audio">audio()</a>
+			<span class="description">Turn on audio dealings and returns true if it could.</span><br />
+			<br />
+			C++:
+			<div class="example">audio();</div>
+			<br />
+			Python:
+			<div class="example">audio()</div>
+		</div>
+		
+		
+		
+		<a name="audio_off"></a>
+		<div class="section">
+			<a class="definition" href="#audio_off">audio_off()</a>
+			<span class="description">Turn off audio dealings.</span><br />
+			<br />
+			C++:
+			<div class="example">audio_off();</div>
+			<br />
+			Python:
+			<div class="example">audio_off()</div>
+		</div>
+		
+		
+		
+		<a name="clear_audio"></a>
+		<div class="section">
+			<a class="definition" href="#clear_audio">clear_audio()</a>
+			<span class="description">Clear all queued sounds and streams.</span><br />
+			<br />
+			C++:
+			<div class="example">clear_audio();</div>
+			<br />
+			Python:
+			<div class="example">clear_audio()</div>
+		</div>
+		
+		
+		
+		<a name="update_audio"></a>
+		<div class="section">
+			<a class="definition" href="#update_audio">update_audio()</a>
+			<span class="description">Update all queued sounds and streams.</span><br />
+			<br />
+			C++:
+			<div class="example">update_audio();</div>
+			<br />
+			Python:
+			<div class="example">update_audio()</div>
+		</div>
+		
+		
+		
+		<a name="play"></a>
+		<div class="section">
+			<a class="definition" href="#play">play()</a>
+			<span class="description">Play a sound.</span><br />
+			<br />
+			C++:
+			<div class="example">sound a("sayhello.ogg");
+play(&a);</div>
+			<br />
+			Python:
+			<div class="example">a = sound('sayhello.ogg')
+play(a)</div>
+		<br />See also: <a href="#sound">sound</a>
+		</div>
+		
+		
+		
+		<a name="stop_sound"></a>
+		<div class="section">
+			<a class="definition" href="#stop_sound">stop_sound()</a>
+			<span class="description">Stop a sound.</span><br />
+			<br />
+			C++:
+			<div class="example">sound a("sayhi.ogg");
+play(&a);
+stop_sound(&a);</div>
+			<br />
+			Python:
+			<div class="example">a = sound('sayhi.ogg')
+play(a)
+stop_sound(a)</div>
+		<br />See also: <a href="#sound">sound</a>
+		</div>
+		
+		
+		
+		<a name="pause_sound"></a>
+		<div class="section">
+			<a class="definition" href="#pause_sound">pause_sound()</a>
+			<span class="description">Pause a streaming sound.</span><br />
+			<br />
+			C++:
+			<div class="example">sound a("titlemusic.ogg", true);
+play(&a);
+pause_sound(&a);</div>
+			<br />
+			Python:
+			<div class="example">a = sound('titlemusic.ogg', True)
+play(a)
+pause_sound(a)</div>
+		<br />See also: <a href="#sound">sound</a>
+		</div>
+		
+		
+		
+		<a name="network"></a>
+		<h1>Network</h1>
+		<div class="notice">Networking is not all that finished yet and it needs to be simplified.</div>
+		<a name="server"></a>
+		<div class="section">
+			<a class="definition" href="#server">server</a>
+			<span class="description">A server.</span><br />
+			<ul>
+				<li>service(int)<br /><span class="description">give service to the clients, optionally waiting some milliseconds</span>
+				<</li>
+			</ul>
+			C++:
+			<div class="example">server a();
+a.service();
+
+server b(2000, 32, 1, 128, 256); //server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit</div>
+			<br />
+			Python:
+			<div class="example">a = server()
+a.service()
+
+b = server(2000, 32, 1, 128, 256) #server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit</div><br />
+		</div>
+		
+		
+		
+		<a name="client"></a>
+		<div class="section">
+			<a class="definition" href="#client">client</a>
+			<span class="description">A client.</span><br />
+			<ul>
+				<li>connect(string = "localhost", int = 2000, int = 1)<br /><span class="description">connect to a server, on a port, with max channels of</span>
+				<li>disconnect()<br /><span class="description">disconnect from the server</span>
+				<li>send(string = "", int = 0)<br /><span class="description">queue a message on a channel</span>
+				<li>commune()<br /><span class="description">send all the queued messages</span>
+				<li>service(int = 2000)<br /><span class="description">listen for commands from the server, within a timeout</span>
+			</ul>
+			C++:
+			<div class="example">client a();
+
+client b(1, 1, 128, 256); //client with max 1 connections, 1 channel, 128 downstream limit, and 256 upstream limit</div>
+			<br />
+			Python:
+			<div class="example">a = client();
+
+b = client(1, 1, 128, 256); #client with max 1 connections, 1 channel, 128 downstream limit, and 256 upstream limit</div><br />
+		</div>
+		
+		
+		
+		<a name="other"></a>
+		<h1>Other</h1>
+		<a name="seed_rnd"></a>
+		<div class="section">
+			<a class="definition" href="#seed_rnd">seed_rnd(int)</a>
+			<span class="description">Set the random seed.</span><br />
+			<br />
+			C++:
+			<div class="example">seed_rnd(0);</div>
+			<br />
+			Python:
+			<div class="example">seed_rnd(0)</div><br />
+			See also: <a href="#rnd">rnd</a>
+		</div>
+		
+		
+		
+		<a name="rnd"></a>
+		<div class="section">
+			<a class="definition" href="#rnd">rnd()</a>
+			<span class="description">Get a random float.</span><br />
+			<br />
+			C++:
+			<div class="example">initiate();</div>
+			<br />
+			Python:
+			<div class="example">initiate()</div><br />
+			See also: <a href="#seed_rnd">seed_rnd</a>
+		</div>
+		
+		
+		<br />
+		<a name="conclusion"></a>
+		<h1>Conclusion & The Future</h1>
+		<div class="section">
+			As of now, the engine is capable of making pretty advanced 2D games and is ready to take on more testers to fine tune it's prcedures and abilites.<br />
+			Meanwhile, I will continue imporving it and it's documentation, as there are many more things I would like to add.<br />
+			<br />
+			Have fun!<br />
+		</div>
+	</body>
+</html>

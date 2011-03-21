@@ -1,11 +1,1 @@
-To make your game go in the folder called game and open game.cpp
-
-To compile:
-You need to have cmake installed
-Install these libraries: glfw GLEW SOIL freetype ftgl vorbisfile alure openal enet
-
-The in a terminal do:
-cd cmake
-cmake ..
-
-You'll find your compiled game in the bin folder.
+look at doc/index.html

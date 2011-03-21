@@ -4,20 +4,23 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <stack>
+#include <list>
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cstdarg>
+#include <ctype.h> // toupper()
 
 #include <GL/glew.h> // OpenGL extentions
 #include <GL/glfw.h> // Graphics
-#include <ctype.h> // toupper()
 
 #include <SOIL/SOIL.h>
 
 #include <FTGL/ftgl.h> // Font rendering
 #include <AL/alure.h> // Sound
+#include <aubio/aubio.h> // Pitch, etc
 
 #ifdef WITH_NETWORK
 #include <enet/enet.h> // Networking
@@ -27,22 +30,58 @@
 #include <eigen3/Eigen/Eigen> // Advanced math
 #endif
 
-// Init some beforehand.
-struct display;
-struct speaker;
-
-using namespace std;
-
-struct Size {
+struct box {
+	box(float = 0.0, float = 0.0);
+	
 	float w, h;
 };
 
-struct Crop {
+struct ibox {
+	ibox(int = 0, int = 0);
+	
+	int w, h;
+};
+
+struct offset {
+	offset(float = 0.0, float = 0.0);
+	
+	float x, y;
+};
+
+struct rect {
+	rect(float = 0.0, float = 0.0, float = 0.0, float = 0.0);
+	
+	float x, y, w, h;
+};
+
+struct irect {
+	irect(int = 0, int = 0, int = 0, int = 0);
+	
+	int x, y, w, h;
+};
+
+struct crop {
+	crop(bool = true, float = 0, float = 0, float = 0, float = 0);
+	
 	bool use;
 	float x, y, w, h;
 };
-// Types of resources.
+
+struct icrop {
+	icrop(bool = true, int = 0, int = 0, int = 0, int = 0);
+	
+	bool use;
+	int x, y, w, h;
+};
+
+struct rgba {
+	rgba(float = 0.0, float = 0.0, float = 0.0, float = 1.0);
+	
+	float r, g, b, a;
+};
+
 #define NUM_BUFS 3
+
 struct sound {
 	sound(const char*, bool = false);
 	~sound();
@@ -50,53 +89,58 @@ struct sound {
 	void gain(float);
 	void pitch(float);
 	void pan(float);
-	void repeat(bool);
+	void repeat(bool = true);
 	
-	// Stream.
 	void update();
 	
-	private:
 	ALuint buffer[NUM_BUFS], source;
 	alureStream* stream;
 	bool is_stream, is_playing, looping;
+};
+
+struct pixelcache {
+	pixelcache(int, int);
+	pixelcache(const pixelcache&);
+	~pixelcache();
 	
-	friend struct speaker;
+	int width, height;
+	GLubyte *data;
 };
 
 struct image {
 	image(const char*);
-	image(int, int);
-	// The width and height of the image.
-	float w, h;
+	image(int, int, bool = false);
+	~image();
+	
+	//void save(const char*);
+	
+	float width, height;
 	
 	void set(const char*);
 	
-	private:
-	// The OpenGL texture ID,
-	GLuint id;
+	void from_pixelcache(pixelcache* = NULL);
+	void refresh_pixel_cache();
+	rgba pixel(int, int);
 	
-	friend struct display;
-	friend struct program;
-	friend struct fbo;
+	GLuint id;
+	pixelcache* cache;
 };
-
-struct text {};
 
 struct font {
 	font(const char*, float = 12);
 	~font();
 	
-	// Set the font size.
 	void size(float);
+	void push_size();
+	void pop_size();
 	
 	float width(const char *);
 	float height(const char *);
 	
-	private:
-	// The font.
-	FTFont* f;
+	FTFont* data;
+	float size_default;
 	
-	friend struct display;
+	std::stack<float, std::list<float> > size_stack;
 };
 
 struct shader {
@@ -105,10 +149,7 @@ struct shader {
 	
 	void compile();
 	
-	private:
-	GLint s;
-	
-	friend struct program;
+	GLint id;
 };
 
 struct program {
@@ -118,202 +159,168 @@ struct program {
 	void attach(shader*);
 	void link();
 	
-	void uniform1i(const char*, int);
-	void uniform1f(const char*, float);
-	void uniform2f(const char*, float, float);
-	void uniform3f(const char*, float, float, float);
-	void uniform4f(const char*, float, float, float, float);
+	void uniform_int(const char*, int);
+	void uniform_float(const char*, float);
+	void uniform_float(const char*, float, float);
+	void uniform_float(const char*, float, float, float);
+	void uniform_float(const char*, float, float, float, float);
 	
-	void bind_image(const char*, int, image*);
+	void uniform_image(const char*, int, image*);
 	
-	//private:
-	GLhandleARB p;
-	
-	friend struct display;
+	GLhandleARB id;
 };
 
 struct fbo {
-	display* d;
-	image* i;
+	image* buffer;
 
-	fbo(display*);
+	fbo(int, int, bool = false);
 	~fbo();
-	
-	private:
 	GLuint id;
-	
-	friend struct display;
 };
 
-// Display
-struct display {
-	// Optional display initiation parameters.
-	display(const char* = "", int = 0, int = 0);
-	~display();
-	
-	// Set up the display.
-	bool on(const char* = NULL);
-	
-	// Close the display.
-	void off();
-	
-	// Set the window title.
-	void title(const char*);
-	
-	// Check if the display is open.
-	bool opened();
-	
-	// Time since display was opened.
-	float timer();
-	
-	// Get display dimentions.
-	Size dimensions();
-	
-	// Clear the display.
-	void clear();
-	
-	// Swap buffer of display.
-	void update();
-	
-	// Set the image to draw with.
-	void use_image(image*);
-	
-	// Set the font to write with.
-	void use_font(font*);
-	
-	// Use a portion of the image for drawing.
-	void set_image_crop(int = NULL, int = NULL, int = NULL, int = NULL);
-	
-	// Draw an image on the display.
-	void draw(float = 0, float = 0, float = 1, float = NULL, float = NULL, float = 0, float = NULL);
-	
-	// Write a font on the screen.
-	void write(string, float = 0, float = 0);
-	
-	// Set color to use.
-	void color(float, float, float, float = 1);
-	
-	// Sets the blending mode
-	void blend_mode(const char*);
-	
-	// Enable/disable various things.
-	void set(const char*, bool);
-	
-	// Set the point rendering size.
-	void point_size(float);
-	
-	// Begin drawing certain things.
-	void begin(const char*);
-	
-	// End drawing.
-	void end();
-	
-	// draw a rectangle.
-	void quad(float, float, float, float);
-	
-	// draw a mapped rectangle.
-	void mquad(float, float, float, float);
-	
-	// draw a textured rectangle.
-	void background_image(float = 0, float = 0, float = 0);
-	
-	// draw a point.
-	void point(float, float);
-	
-	// use a shader program.
-	void use_program(program*);
-	
-	// Apply a 2D filter.
-	void apply_filter(program*);
-	
-	// Remove 2D filter.
-	void apply_filter();
-	
-	// sleep for specified seconds.
-	void sleep(float);
-	
-	// Use no shader program.
-	void use_program();
-	
-	// Get time.
-	float time();
-	
-	// Resolution of the display.
-	int w, h;
-	
-	// Fullscreen.
-	bool fs;
-	
-	fbo* framebuffer;
-	program* filter;
-	image* current_image;
-	font* current_font;
-	Crop image_crop;
-};
+bool initiate();
+void done();
 
-struct timer {
-	timer();
-	
-	void update();
-	float delta();
-	int tick();
-	float total();
-	int fps();
-	
-	private:
-	float f;
-	int t;
-	float l;
-	float s;
-};
+bool window(int, int, bool = false);
+void close_window();
 
-// Speaker
+void window_title(const char*);
+bool window_opened();
+bool window_active();
+float window_timer();
+void rest(float);
 
-struct speaker {
-	~speaker();
-	
-	void on();
-	void off();
-	
-	// Play a sound.
-	void play(sound*);
-	void stop(sound*);
-	void pause(sound*);
-	
-	friend struct sound;
-};
+ibox display_dimensions();
+ibox window_dimensions();
+void position_window(int, int);
 
-// Mouse
-struct mouse {
-	mouse();
-	
-	// Hide the mouse.
-	void hide();
-	
-	// Show the mouse.
-	void show();
-	
-	int x, y;
-	
-	bool clicked(short);
-	bool clicked(const char *);
-	
-	int wheel();
-	int scroll();
-	
-	// Fill x and y.
-	void update();
-	
-	private:
-	int wheel_pos;
-};
+void vsync(bool = true);
+void swap();
+void poll();
+void screenshot(const char*);
 
-// Keyboard
-struct keyboard {
-	// Get key state.
-	bool key(const char*);
-};
+void orthographic(float, float, float, float, float = -1.0, float = 1.0);
+void perspective(float, float, float, float, float = 0.1, float = 1000.0);
 
+rgba pixel(int, int);
+
+void polygon_mode(const char*);
+void enable(const char*, bool = true);
+
+void clear_color(float, float, float, float = 1.0);
+void clear();
+void point_size(float);
+void line_width(float);
+void line_stipple(int, const char* = NULL);
+
+void blend_color(float, float, float, float = 1.0);
+
+void color(rgba);
+void color(float, float, float, float = 1.0);
+void push_color();
+void pop_color();
+rgba get_color();
+
+void use_fbo(fbo*);
+void use_fbo();
+void push_fbo();
+void pop_fbo();
+fbo* get_fbo();
+
+void use_image(image*);
+void push_image();
+void pop_image();
+image* get_image();
+
+void use_font(font*);
+void push_font();
+void pop_font();
+font* get_font();
+
+void image_crop(float, float, float, float);
+void image_crop();
+void push_image_crop();
+void pop_image_crop();
+crop get_image_crop();
+
+void scissor(int, int, int, int);
+void scissor();
+void push_scissor();
+void pop_scissor();
+icrop get_scissor();
+
+void blend_mode(const char*);
+void blend_mode();
+void push_blend_mode();
+void pop_blend_mode();
+const char* get_blend_mode();
+
+void use_program(program*);
+void use_program();
+void push_program();
+void pop_program();
+program* get_program();
+
+void push_matrix();
+void pop_matrix();
+void translate(float, float);
+void rotate(float);
+void scale(float, float);
+
+
+void begin(const char*);
+void end();
+
+void draw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
+void idraw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
+void write(const char*, float = 0.0, float = 0.0, bool = false);
+
+void background_image(float = 0.0, float = 0.0, float = 1.0);
+
+void quad(float, float, float, float);
+void quad();
+void mquad(float, float, float, float);
+void mquad();
+
+void iquad(float, float, float, float);
+void imquad(float, float, float, float);
+
+void point(float, float);
+void line(float, float, float, float);
+
+void ipoint(float, float);
+void iline(float, float, float, float);
+
+void portion(int, int, int, int);
+
+offset mouse_position();
+
+void mouse(bool = false);
+bool button(short);
+bool button(const char *);
+int wheel();
+void move_mouse(int, int);
+
+bool key(const char*);
+
+bool audio();
+void audio_off();
+
+void clear_audio();
+
+// Update queued sounds and streams
+void update_audio();
+
+// Play a sound
+void play(sound*, bool = false, bool = false);
+void stop(sound*);
+void pause(sound*);
+/*
+void microphone();
+void microphone_off();
+void microphone_update();
+sound* ms();
+*/
 #ifdef WITH_NETWORK
 
 // Server
@@ -326,35 +333,33 @@ struct connection {
 };
 
 struct server {
-	// Create a new server on port, with max connections of, with max numbr of channels, with limited downstream, with limited upstream.
+	// Create a new server on port, with max connections of, with max numbr of channels, with limited downstream, with limited upstream
 	server(int = 2000, int = 32, int = 1, int = 0, int = 0);
-	// Close the server.
+	// Close the server
 	~server();
 	
 	ENetEvent service(int = 2000);
 	
-	private:
 	ENetAddress address;
 	ENetHost* host;
 };
 
 struct client {
-	// Create a new client with max connections of, with max numbr of channels, with limited downstram, with limited upstream.
+	// Create a new client with max connections of, with max numbr of channels, with limited downstram, with limited upstream
 	client(int = 1, int = 1, int = 0, int = 0);
-	// Close the client.
+	// Close the client
 	~client();
 	
 	void send(const char* = "", int = 0);
 	void commune();
 	
-	// Connect to server, on port, with number of channels.
+	// Connect to server, on port, with number of channels
 	void connect(const char* = "localhost", int = 2000, int = 1);
 	void disconnect();
 	
-	// Service within timeout.
+	// Service within timeout
 	ENetEvent service(int = 2000);
 	
-	//private:
 	ENetHost* host;
 	ENetPeer* peer;
 };
@@ -363,8 +368,8 @@ struct client {
 
 // Other
 
-// Seed random.
+// Seed random
 void seed_rnd(int);
 
-// Random 0-1.
+// Random 0-1
 float rnd();

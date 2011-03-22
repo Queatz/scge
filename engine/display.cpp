@@ -481,23 +481,45 @@ void pop_matrix() {
 }
 
 void translate(float a, float b) {
-	glTranslatef(a, b, 0);
+	glTranslatef(a, b, 0.0);
+}
+
+void translate(float a, float b, float c) {
+	glTranslatef(a, b, c);
 }
 
 void rotate(float a) {
-	glRotatef(a, 0, 0, 1);
+	glRotatef(a, 0.0, 0.0, 1.0);
+}
+
+void rotate(float a, float b, float c, float d) {
+	glRotatef(a, b, c, d);
+}
+
+void scale(float a) {
+	glScalef(a, a, 1.0);
 }
 
 void scale(float a, float b) {
-	glScalef(a, b, 1);
+	glScalef(a, b, 1.0);
+}
+
+void scale(float a, float b, float c) {
+	glScalef(a, b, c);
 }
 
 
 void begin(const char* a) {
 	if (!strcmp(a, "image") || !strcmp(a, "quad"))
 		glBegin(GL_QUADS);
+	else if (!strcmp(a, "quad strip"))
+		glBegin(GL_QUAD_STRIP);
 	else if (!strcmp(a, "triangle"))
 		glBegin(GL_TRIANGLES);
+	else if (!strcmp(a, "triangle strip"))
+		glBegin(GL_TRIANGLE_STRIP);
+	else if (!strcmp(a, "triangle fan"))
+		glBegin(GL_TRIANGLE_FAN);
 	else if (!strcmp(a, "line"))
 		glBegin(GL_LINES);
 	else if (!strcmp(a, "line strip"))

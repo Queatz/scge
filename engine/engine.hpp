@@ -127,20 +127,56 @@ struct image {
 };
 
 struct font {
-	font(const char*, float = 12);
+	font(const char*, float = 12, const char* = "texture");
 	~font();
+	
+	void depth(float);
+	void outset(float);
+	void outset(float, float);
 	
 	void size(float);
 	void push_size();
 	void pop_size();
+	float get_size();
 	
-	float width(const char *);
-	float height(const char *);
+	float line_height();
+	float ascent();
+	float descent();
+	float advance(const char*);
+	
+	float width_of(const char*);
+	float height_of(const char*);
 	
 	FTFont* data;
 	float size_default;
 	
 	std::stack<float, std::list<float> > size_stack;
+};
+
+struct paper {
+	paper();
+	paper(float, const char* = "left");
+	~paper();
+	
+	void align(const char*);
+	const char* get_align();
+	
+	void pen(font*);
+	font* get_pen();
+	
+	void line_spacing(float);
+	float get_line_spacing();
+	
+	void width(float);
+	float get_width();
+	
+	float width_of(const char*);
+	float height_of(const char*);
+	
+	void write(const char*, float = 0.0, float = 0.0, bool = false);
+	
+	FTSimpleLayout* data;
+	font* data_font;
 };
 
 struct shader {
@@ -264,9 +300,14 @@ program* get_program();
 
 void push_matrix();
 void pop_matrix();
+
 void translate(float, float);
+void translate(float, float, float);
 void rotate(float);
+void rotate(float, float, float, float = 1.0);
+void scale(float);
 void scale(float, float);
+void scale(float, float, float);
 
 
 void begin(const char*);

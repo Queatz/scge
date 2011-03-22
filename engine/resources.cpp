@@ -227,8 +227,27 @@ rgba image::pixel(int x, int y) {
 }
 
 
-font::font(const char* a, float b) {
-	data = new FTTextureFont(a);
+font::font(const char* a, float b, const char* c) {
+	if(!b)
+		b = 12;
+	if(!strcmp("bitmap", c))
+		data = new FTBitmapFont(a);
+	else if(!strcmp("pixmap", c))
+		data = new FTPixmapFont(a);
+	else if(!strcmp("outline", c))
+		data = new FTOutlineFont(a);
+	else if(!strcmp("polygon", c))
+		data = new FTPolygonFont(a);
+	else if(!strcmp("buffer", c))
+		data = new FTBufferFont(a);
+	else if(!strcmp("extrude", c))
+		data = new FTExtrudeFont(a);
+	else if(!strcmp("texture", c))
+		data = new FTTextureFont(a);
+	else {
+		err("font", "invalid type");
+		return;
+	}
 	data->FaceSize(b);
 	
 	size_default = b;
@@ -237,13 +256,25 @@ font::font(const char* a, float b) {
 		err("font", "could not load font");
 }
 
-font::~font() {
-	delete data;
-}
-
 void font::size(float a) {
 	size_stack.top() = a;
 	data->FaceSize(a);
+}
+
+void font::depth(float a) {
+	data->Depth(a);
+}
+
+void font::outset(float a) {
+	data->Outset(a);
+}
+
+void font::outset(float a, float b) {
+	data->Outset(a, b);
+}
+
+font::~font() {
+	delete data;
 }
 
 void font::push_size() {
@@ -265,14 +296,124 @@ void font::pop_size() {
 		data->FaceSize(size_stack.top());
 }
 
-float font::width(const char * a) {
+float font::get_size() {
+	return data->FaceSize();
+}
+
+float font::line_height() {
+	return data->LineHeight();
+}
+
+float font::ascent() {
+	return data->Ascender();
+}
+
+float font::descent() {
+	return data->Descender();
+}
+
+float font::advance(const char* a) {
+	return data->Advance(a);
+}
+
+float font::width_of(const char* a) {
 	FTBBox b = data->BBox(a);
 	return b.Upper().Xf() - b.Lower().Xf();
 }
 
-float font::height(const char * a) {
+float font::height_of(const char* a) {
 	FTBBox b = data->BBox(a);
 	return b.Upper().Yf() - b.Lower().Yf();
+}
+
+paper::paper() {
+	data = new FTSimpleLayout();
+}
+
+FTGL::TextAlignment paper_align_from_string(const char* a) {
+	if(!strcmp("left", a))
+		return FTGL::ALIGN_LEFT;
+	if(!strcmp("center", a))
+		return FTGL::ALIGN_CENTER;
+	if(!strcmp("right", a))
+		return FTGL::ALIGN_RIGHT;
+	if(!strcmp("justify", a))
+		return FTGL::ALIGN_JUSTIFY;
+	
+	err("paper", "align", "unknown method");
+	return FTGL::ALIGN_LEFT;
+}
+
+paper::paper(float a, const char* b) {
+	data = new FTSimpleLayout();
+	data->SetLineLength(a);
+	data->SetAlignment(paper_align_from_string(b));
+	
+}
+
+paper::~paper() {
+	delete data;
+}
+
+void paper::align(const char* a) {
+	data->SetAlignment(paper_align_from_string(a));
+}
+
+const char* paper::get_align() {
+	if(data->GetAlignment() == FTGL::ALIGN_LEFT)
+		return "left";
+	if(data->GetAlignment() == FTGL::ALIGN_CENTER)
+		return "center";
+	if(data->GetAlignment() == FTGL::ALIGN_RIGHT)
+		return "right";
+	if(data->GetAlignment() == FTGL::ALIGN_JUSTIFY)
+		return "justify";
+}
+
+void paper::pen(font* a) {
+	data_font = a;
+	data->SetFont(data_font->data);
+}
+
+font* paper::get_pen() {
+	return data_font;
+}
+
+void paper::line_spacing(float a) {
+	data->SetLineSpacing(a);
+}
+
+float paper::get_line_spacing() {
+	return data->GetLineSpacing();
+}
+
+void paper::width(float a) {
+	data->SetLineLength(a);
+}
+
+float paper::get_width() {
+	return data->GetLineLength();
+}
+
+float paper::width_of(const char* a) {
+	FTBBox b = data->BBox(a);
+	return b.Upper().Xf() - b.Lower().Xf();
+}
+
+float paper::height_of(const char* a) {
+	FTBBox b = data->BBox(a);
+	return b.Upper().Yf() - b.Lower().Yf();
+}
+
+void paper::write(const char* b, float x, float y, bool invert_y) {
+	glPushMatrix();
+	glTranslatef(x, y, 0.0);
+	if(invert_y) {
+		glScalef(1.0, -1.0, 1.0);
+	}
+	data->Render(b);
+	
+	glPopMatrix();
 }
 
 shader::shader(const char* a, const char* b) {

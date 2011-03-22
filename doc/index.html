@@ -108,6 +108,8 @@
 			cmake ..<br />
 			make<br />
 			<br />
+			This makes your game, too, which is placed at bin/game.<br />
+			<br />
 			<b>Python</b><br />
 			You need SWIG 2.0.3 or later, or you can uncomment line 7 in python_engine/compile.<br />
 			Run python_engine/compile to genereate the Python bindings.<br />
@@ -120,7 +122,7 @@
 		<div class="section">
 			<div class="description">Say hi to the world, little app.</div>
 			<div class="note">This will get smaller soon...</div>
-			<br />C++:
+			<br />C++ (in game/game.cpp):
 			<div class="example">#include "../engine/engine.hpp"
 
 int main(int argc, char** argv) {
@@ -143,7 +145,7 @@ int main(int argc, char** argv) {
 	//finish up
 	<a href="#done">done</a>();
 }</div>
-			<br />Python:
+			<br />Python (in any subfolder):
 			<div class="example">#look in the python engine folder for the module
 import sys
 sys.path.append('../python_engine')
@@ -524,11 +526,19 @@ c = image(64, 64, False); #creates a blank image sized 64 by 64, and not high qu
 			<a class="definition" href="#font">font</a>
 			<span class="description">A font.</span><br />
 			<ul>
-				<li>width(<span class="type">string</span>)<br /><span class="description">returns a <span class="type">float</span> representing the width of the computed string</span></li>
-				<li>height(<span class="type">string</span>)<br /><span class="description">returns the caclulated height of the string as a <span class="type">float</span></span></li>
-				<li>size(<span class="type">float</span>)<br /><span class="description">set the font size</span></li>
+				<li>width_of(<span class="type">string</span>)<br /><span class="description">returns a <span class="type">float</span> representing the width of the computed string</span></li>
+				<li>height_of(<span class="type">string</span>)<br /><span class="description">returns the caclulated height of the string as a <span class="type">float</span></span></li>
+				<li>size(<span class="type">float</span>)<br /><span class="description">set the font size</span>
+				<div class="notice">It is better to create two fonts of different sizes rather than changing the font size each frame because the font has to be regenerated.</div></li>
 				<li>push_size()<br /><span class="description">store the current font size into a stack</span></li>
 				<li>pop_size()<br /><span class="description">reset the font size to the last stored value</span></li>
+				<li>get_size()<br /><span class="description">get the size of the font</span></li>
+				<li>outset(<span class="type">float</span>[, <span class="type">float</span>])<br /><span class="description">set the outset of the font, for use in extrude fonts</span></li>
+				<li>depth(<span class="type">float</span>)<br /><span class="description">set the depth of the font, for use in extrude fonts</span></li>
+				<li>line_height()<br /><span class="description">set the line height</span></li>
+				<li>ascent()<br /><span class="description">get the ascent of the font</span></li>
+				<li>descent()<br /><span class="description">get the decent of the font</span></li>
+				<li>advance(<span class="type">string</span>)<br /><span class="description">get the advance of the string, where the next character should be placed</span></li>
 			</ul>
 			C++:
 			<div class="example">font a("sans.ttf");
@@ -536,7 +546,9 @@ c = image(64, 64, False); #creates a blank image sized 64 by 64, and not high qu
 font b("serif.ttf", 16.0); //default to size 16 instead of 12, the default
 b.push_size();
 b.size(12.0);
-b.pop_size();</div>
+b.pop_size();
+
+font c("sans.ttf", 12, "outline"); //create an outline font</div>
 			<br />
 			Python:
 			<div class="example">a = font('sans.ttf')
@@ -544,8 +556,42 @@ b.pop_size();</div>
 b = font('serif.ttf', 16.0) #default to size 16 instead of 12, the default
 b.push_size()
 b.size(12.0)
-b.pop_size()</div><br />
+b.pop_size()
+
+c = font('sans.ttf', 12, 'outline') #create an outline font</div><br />
 			See also: <a href="#use_font">use_font</a>, <a href="#write">write</a>
+		</div>
+		
+		
+
+		
+		<a name="paper"></a>
+		<div class="section">
+			<a class="definition" href="#paper">paper</a>
+			<span class="description">A paper.</span><br />
+			<ul>
+				<li>align(<span class="type">string</span>)<br /><span class="description">set the alignment of writing: left, center, right, justify</span></li>
+				<li>get_align()<br /><span class="description">returns the aligmnent method currently used</li>
+				<li>pen(<span class="type">font</span>)<br /><span class="description">set the font used on this paper</li>
+				<li>get_pen()<br /><span class="description">get the font used on this paper</li>
+				<li>line_spacing(<span class="type">float</span>)<br /><span class="description">set the line spacing</li>
+				<li>get_line_spacing()<br /><span class="description">get the line spacing</li>
+				<li>width(<span class="type">float</span>)<br /><span class="description">set the width of the paper</li>
+				<li>get_width()<br /><span class="description">get the width of the paper</li>
+				<li>width_of(<span class="type">string</span>)<br /><span class="description">returns a <span class="type">float</span> representing the width of the computed string</span></li>
+				<li>height_of(<span class="type">string</span>)<br /><span class="description">returns the caclulated height of the string as a <span class="type">float</span></span></li>
+				<li>write(<span class="type">string</span>[, <span class="type">float</span>, <span class="type">float</span>, <span class="type">bool</span>])<br /><span class="description">write some text using this paper, at x, y position, optionally flipped.</li>
+			</ul>
+			C++:
+			<div class="example">paper a();
+
+paper b(120.0, "center");</div>
+			<br />
+			Python:
+			<div class="example">a = paper()
+
+b = paper(120.0, 'center')</div><br />
+			See also: <a href="#font">font</a>
 		</div>
 		
 		
@@ -1250,11 +1296,13 @@ use_font(a)</div><br />
 			C++:
 			<div class="example">translate(12.0, 12.0);
 rotate(90.0);
+rotate(90.0, 0.0, 1.0, 0.0); //around Y
 scale(2.0, 2.0);</div>
 			<br />
 			Python:
 			<div class="example">translate(12.0, 12.0)
 rotate(90.0)
+rotate(90.0, 0.0, 1.0, 0.0) #around Y
 scale(2.0, 2.0)</div>
 		</div>
 		
@@ -1269,7 +1317,10 @@ scale(2.0, 2.0)</div>
 			"line strip"<br />
 			"line loop"<br />
 			"triangle"<br />
+			"triangle strip"<br />
+			"triangle fan"<br />
 			"quad"<br />
+			"quad strip"<br />
 			"image"<br /></span><br />
 			<br />
 			C++:
@@ -1309,7 +1360,7 @@ end()</div>
 			<br />
 			Python:
 			<div class="example">write('Hello World')</div><br />
-			See also: <a href="#use_font">use_font</a>
+			See also: <a href="#use_font">use_font</a>, <a href="#paper">paper.write</a>
 		</div>
 		
 		

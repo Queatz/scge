@@ -124,17 +124,11 @@
 			<div class="example">#include "../engine/engine.hpp"
 
 int main(int argc, char** argv) {
-	//call initiate first
-	<a href="#initiate">initiate</a>();
-
 	//open a window
 	<a href="#window">window</a>(320, 240);
 	
 	//set the window title
 	<a href="#window_title">window_title</a>("Hello World");
-
-	//set up a 2D display, mapped with 0,0 in the bottom-left
-	<a href="#orthographic">orthographic</a>(0.0, 320.0, 0.0, 240.0);
 
 	//here is our main loop
 	while(!<a href="#key">key</a>("esc") && <a href="#window_opened">window_opened</a>()) {
@@ -150,22 +144,18 @@ int main(int argc, char** argv) {
 	<a href="#done">done</a>();
 }</div>
 			<br />Python:
-			<div class="example">import sys
+			<div class="example">#look in the python engine folder for the module
+import sys
 sys.path.append('../python_engine')
 
+#import the module's contents
 from scge import *
 		
-#call initiate first
-<a href="#initiate">initiate</a>()
-
 #open a window
 <a href="#window">window</a>(320, 240)
 
 #set the window title
 <a href="#window_title">window_title</a>('Hello World')
-
-#set up a 2D display, mapped with 0,0 in the bottom-left
-<a href="#orthographic">orthographic</a>(0.0, 320.0, 0.0, 240.0)
 
 #here is our main loop
 while not <a href="#key">key</a>('esc') and <a href="#window_opened">window_opened</a>():
@@ -629,7 +619,7 @@ b = fbo(320, 240, true) #high quality</div><br />
 		<div class="section">
 			<a class="definition" href="#initiate">initiate()</a>
 			<span class="description">Initiate the context.  Returns true if it could happen, otherwise false.</span><br />
-			<div class="note">Keyboard, mouse, and window functions will not work without calling this first.</div>
+			<div class="note"><a href="#window">window</a> calls this function if you have not.  It is mainly used when you need preperations before opening the window.</div>
 			<br />
 			C++:
 			<div class="example">initiate();</div>
@@ -660,7 +650,6 @@ b = fbo(320, 240, true) #high quality</div><br />
 		<div class="section">
 			<a class="definition" href="#window">window(int w, int h, bool fullscreen = false)</a>
 			<span class="description">Open a window, optionally fullscreen.  Returns true if the window was able to be opened, else false.</span><br />
-			<div class="note">Before opening a window, you need badly to call <a href="#initiate">initiate()</a> first.</div>
 			<div class="note">In order to be able to draw into the window you need to set up the display matrix.  For regular 2D this is done with a call to <a href="#orthographic">orthographic()</a>.  Afterwards, you will call <a href="#swap">swap()</a> in your main loop.</div>
 			<br />
 			C++:
@@ -687,7 +676,7 @@ window(320, 240, True) //fullscreen</div><br />
 			<br />
 			Python:
 			<div class="example">close_window()</div><br />
-			See also: <a href="#initiate">window</a>
+			See also: <a href="#window">window</a>
 		</div>
 		
 		
@@ -730,6 +719,20 @@ window(320, 240, True) //fullscreen</div><br />
 			<br />
 			Python:
 			<div class="example">a = window_active()</div>
+		</div>
+		
+		
+		
+		<a name="window_timer"></a>
+		<div class="section">
+			<a class="definition" href="#window_timer">window_timer()</a>
+			<span class="description">Returns a float of the time since the window was opened.</span><br />
+			<br />
+			C++:
+			<div class="example">float a = window_timer();</div>
+			<br />
+			Python:
+			<div class="example">a = window_timer()</div>
 		</div>
 		
 		
@@ -846,6 +849,21 @@ vsync(True); #framerate 60</div>
 			<br />
 			Python:
 			<div class="example">screenshot('outcome.tga')</div>
+		</div>
+		
+		
+		
+		<a name="reset_matrix"></a>
+		<div class="section">
+			<a class="definition" href="#reset_matrix">reset_matrix()</a>
+			<span class="description">Resets the matrix to it's identity.</span><br />
+			<div class="note">Usually used if you want to use a different projection besides the one set up by <a href="#window">window</a>.</div>
+			<br />
+			C++:
+			<div class="example">reset_matrix();</div>
+			<br />
+			Python:
+			<div class="example">reset_matrix()</div>
 		</div>
 		
 		

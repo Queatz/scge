@@ -7,13 +7,14 @@ std::stack<crop, std::list<crop> > image_crop_stack;
 std::stack<icrop, std::list<icrop> > scissor_stack;
 std::stack<std::string, std::list<std::string> > blend_mode_stack;
 	
-int width, height;
+int width = 0, height = 0, glfw_state = 0;
 
 bool initiate() {
 	if(glfwInit() != GL_TRUE) {
 		err("initiate", "could not");
 		return false;
 	}
+	glfw_state = 1;
 	return true;
 }
 
@@ -22,6 +23,9 @@ void done() {
 }
 
 bool window(int x, int y, bool fullscreen) {
+	if(glfw_state == 0)
+		initiate();
+	
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
 	
 	if(glfwOpenWindow(x, y, 0, 0, 0, 0, 0, 0, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
@@ -45,7 +49,8 @@ bool window(int x, int y, bool fullscreen) {
 	glViewport(0, 0, x, y);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	
+	glOrtho(0, width, 0, height, -1.0, 1.0);
+		
 	fbo_stack.push(NULL);
 	image_stack.push(NULL);
 	font_stack.push(NULL);
@@ -119,6 +124,10 @@ void poll() {
 void screenshot(const char* a) {
 	if(!SOIL_save_screenshot(a, SOIL_SAVE_TYPE_TGA, 0, 0, width, height))
 		err("screenshot", "could not save");
+}
+
+void reset_matrix() {
+	glLoadIdentity();
 }
 
 void orthographic(float a, float b, float c, float d, float e, float f) {

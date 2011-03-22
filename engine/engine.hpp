@@ -199,6 +199,7 @@ void swap();
 void poll();
 void screenshot(const char*);
 
+void reset_matrix();
 void orthographic(float, float, float, float, float = -1.0, float = 1.0);
 void perspective(float, float, float, float, float = 0.1, float = 1000.0);
 

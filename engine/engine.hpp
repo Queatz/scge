@@ -45,6 +45,9 @@ struct ibox {
 struct offset {
 	offset(float = 0.0, float = 0.0);
 	
+	offset operator+(const offset&) const;
+	offset operator-(const offset&) const;
+		
 	float x, y;
 };
 
@@ -85,17 +88,17 @@ struct rgba {
 struct sound {
 	sound(const char*, bool = false);
 	~sound();
+	void unload();
 	
 	void gain(float);
 	void pitch(float);
 	void pan(float);
 	void repeat(bool = true);
 	
-	void update();
-	
 	ALuint buffer[NUM_BUFS], source;
 	alureStream* stream;
-	bool is_stream, is_playing, looping;
+	bool is_stream, looping;
+	unsigned int pending;
 };
 
 struct pixelcache {
@@ -155,7 +158,7 @@ struct font {
 
 struct paper {
 	paper();
-	paper(float, const char* = "left");
+	paper(font*, float = 100.0, const char* = "left");
 	~paper();
 	
 	void align(const char*);
@@ -210,17 +213,24 @@ struct fbo {
 	image* buffer;
 
 	fbo(int, int, bool = false);
+	fbo(image*);
 	~fbo();
+	
 	GLuint id;
+	bool buffer_is_mine;
 };
 
-bool initiate();
-void done();
+bool graphics();
+void graphics_off();
 
-bool window(int, int, bool = false);
+const char* keyboard_string();
+const char* keyboard_presses();
+
+bool window(int, int, bool = false, bool = false);
 void close_window();
 
 void window_title(const char*);
+bool window_resized();
 bool window_opened();
 bool window_active();
 float window_timer();
@@ -248,7 +258,7 @@ void clear_color(float, float, float, float = 1.0);
 void clear();
 void point_size(float);
 void line_width(float);
-void line_stipple(int, const char* = NULL);
+void line_stipple(int = 1, const char* = NULL);
 
 void blend_color(float, float, float, float = 1.0);
 
@@ -317,7 +327,7 @@ void draw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float
 void idraw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
 void write(const char*, float = 0.0, float = 0.0, bool = false);
 
-void background_image(float = 0.0, float = 0.0, float = 1.0);
+void background_image(float, float, float, float, float = 1.0, float = NULL, float = NULL, float = 0.0, float = 0.0);
 
 void quad(float, float, float, float);
 void quad();
@@ -348,15 +358,12 @@ bool key(const char*);
 bool audio();
 void audio_off();
 
-void clear_audio();
-
-// Update queued sounds and streams
-void update_audio();
-
 // Play a sound
-void play(sound*, bool = false, bool = false);
+void play(sound*, unsigned int = 0, bool = false, bool = false);
+void multiplay(sound*);
 void stop(sound*);
 void pause(sound*);
+void resume(sound*);
 /*
 void microphone();
 void microphone_off();
@@ -367,12 +374,8 @@ sound* ms();
 
 // Server
 
-struct connection {
-	~connection();
-	
-	void on();
-	void off();
-};
+void connection();
+void connection_off();
 
 struct server {
 	// Create a new server on port, with max connections of, with max numbr of channels, with limited downstream, with limited upstream

@@ -1,0 +1,78 @@
+@font-face {
+	font-family: WhiteRabbit;
+	src: url('WhiteRabbit.ttf');
+} 
+
+body {
+	background: #ca8;
+	font-family: DejaVu Sans, sans;
+}
+
+a {
+	text-decoration: none;
+}
+
+.section, .sections {
+	background: #fffffe;
+	padding: 1em;
+	margin: 1em;
+}
+
+.sections {
+	background: #f0f8ff !important;
+}
+
+.definition {
+	display: block;
+	font-size: 150%;
+	font-weight: bold;
+}
+
+.description {
+	font-size: 80%;
+	color: #444;
+}
+
+.code {
+	background: #ddd;
+	padding: 1em;
+	margin: 0.25em;
+	white-space: pre;
+	font-family: White Rabbit, WhiteRabbit, monospace;
+}
+
+.type {
+	font-size: 80%;
+	color: darkred;
+}
+
+.notice {
+	font-size: 80%;
+	background: #fde;
+	padding: 0.25em;
+	margin: 0.5em;
+	color: darkred;
+}
+
+.note {
+	font-size: 80%;
+	background: #fed;
+	padding: 0.25em;
+	margin: 0.5em;
+	color: darkred;
+}
+
+.wip {
+	font-size: 120%;
+	background: #ff8;
+	padding: 0.5em;
+	margin: 0.5em;
+	color: #202;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	box-shadow: 1px 1px 8px black;
+}
+
+.command {
+	color: black;
+}

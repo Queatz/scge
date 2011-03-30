@@ -1,0 +1,51 @@
+[description]Say hi to the world, little app.
+[note]This will get smaller soon...
+
+[c++] (in game/game.cpp)
+#include "../engine/engine.hpp"
+
+int main(int argc, char** argv) {
+	//open a window
+	window(320, 240);
+	
+	//set the window title
+	window_title("Hello World");
+
+	//here is our main loop
+	while(!key("esc") && window_opened()) {
+	
+		//draw a point in the center of the screen
+		point(160.0, 120.0);
+	
+		//make the drawing of the point visible on the screen
+		swap();
+	}
+
+}
+[~c++]
+
+[python] (in any subfolder)
+#look in the python engine folder for the module
+import sys
+sys.path.append('../python_engine')
+
+#import the module's contents
+from scge import *
+		
+#open a window
+window(320, 240)
+
+#set the window title
+window_title('Hello World')
+
+#here is our main loop
+while not key('esc') and window_opened():
+	
+	#draw a point in the center of the screen
+	point(160.0, 120.0)
+	
+}
+
+#finish up
+done()</div>
+[~python]

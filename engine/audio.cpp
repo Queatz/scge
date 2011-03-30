@@ -1,23 +1,78 @@
-std::vector<sound*> active_streams;
-std::vector<sound*> queued_sounds;
+std::vector<sound*> loaded_sounds;
+int alure_state = 0;
 
+/* * Audio Functions
+audio()
+Turn on audio dealings and returns true if it could.
+
+C++
+audio();
+
+Python
+audio()
+* */
 bool audio() {
 	if(!alureInitDevice(NULL, NULL)) {
 		err("audio", "could not initiate");
 		return false;
 	}
-	alDistanceModel(AL_NONE);
-	active_streams.reserve(1);
-	queued_sounds.reserve(1);
 	
+	alureUpdateInterval(0.05);
+	
+	atexit(audio_off);
+	//alDistanceModel(AL_NONE);
+	
+	alure_state = 1;
 	return true;
 }
 
+/* *
+audio_off()
+Turn off audio dealings.
+
+C++
+audio_off();
+
+Python
+audio_off()
+* */
 void audio_off() {
+	if(!alureUpdateInterval(0.0))
+		err("audio_off", "could not stop");
+	
+	for(std::vector<sound*>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end(); i++)
+		if(*i)
+			(*i)->unload();
+	
 	alureShutdownDevice();
 }
 
-void play(sound* a, bool b, bool c) {
+void play_ended(void* userdata, ALuint source) {
+	sound* a = (sound*)userdata;
+	if(a->pending > 0) {
+		a->pending--;
+		alurePlaySource(a->source, play_ended, a);
+	}
+}
+
+/* *
+play(sound, unsigned int repeats = 0, bool wait = false, bool dont = false)
+Play a sound.  Optionally wait until it's finished, or just don't play it if it's already playing.
+
+C++
+sound a("tux.ogg");
+play(&a);
+play(&a, 2, false, true); //play 2 times if it's currently not being played
+
+Python
+a = sound('tux.ogg')
+play(a)
+play(a, 2, False, True); #play 2 times if it's currently not being played
+
+
+see:sound
+* */
+void play(sound* a, unsigned int repeats, bool b, bool c) {
 	if(b) {
 		if(a->looping)
 			return;
@@ -26,66 +81,112 @@ void play(sound* a, bool b, bool c) {
 		alGetSourcei(a->source, AL_SOURCE_STATE, &d);
 		if(d == AL_PLAYING) {
 			if(!c)
-				queued_sounds.push_back(a);
+				a->pending += repeats;
 			return;
 		}
 	}
 	
 	if(a->is_stream) {
-		if(a->is_playing)
-			return;
-		a->is_playing = true;
-		a->update();
-		active_streams.push_back(a);
-	}
-	
-	alSourcePlay(a->source);
-}
-
-void stop(sound* a) {
-	if(a->is_stream) {
-		a->is_playing = false;
 		alureRewindStream(a->stream);
-	}
-	alSourceStop(a->source);
+		alurePlaySourceStream(a->source, a->stream, NUM_BUFS, (a->looping ? -1 : repeats), NULL, NULL);
+	} else {
+		alurePlaySource(a->source, play_ended, a);
+		a->pending = repeats;
+	}	
 }
 
-void pause(sound* a) {
+void delete_multiplay(void* userdata, ALuint source) {
+	alDeleteSources(1, &source);
+}
+
+/* *
+multiplay(sound)
+Play multiple sources of one sound.
+
+C++
+sound a("hello.ogg");
+multiplay(&a);
+
+Python
+a = sound('hello.ogg')
+multiplay(a)
+* */
+void multiplay(sound* a) {
 	if(a->is_stream)
-		a->is_playing = false;
-}
+		return;
+	ALuint b;
+	alGenSources(1, &b);
+	alSourcei(b, AL_BUFFER, a->buffer[0]);
 
-void clear_audio() {
-	active_streams.clear();
-	queued_sounds.clear();
-}
+	ALfloat f[3];
 
-void update_audio() {
-	if(!active_streams.empty()) {
-		for(std::vector<sound*>::iterator i = active_streams.begin(); i != active_streams.end();) {
-			if(*i == NULL || !(*i)->is_playing) {
-				i = active_streams.erase(i);
-			} else {
-				(*i)->update();
-				i++;
-			}
-		}
-	}
+	alGetSourcefv(a->source, AL_POSITION, f);
+	alSourcefv(b, AL_POSITION, f);
 	
-	if(!queued_sounds.empty()) {
-		int state;
-		for(std::vector<sound*>::iterator i = queued_sounds.begin(); i != queued_sounds.end();) {
-			if(*i == NULL)
-				i = queued_sounds.erase(i);
-			else if(state != AL_PLAYING) {
-				alGetSourcei((*i)->source, AL_SOURCE_STATE, &state);
-				alSourcePlay((*i)->source);
-				i = queued_sounds.erase(i);
-			}
-			else
-				i++;
-		}
-	}
+	alGetSourcef(a->source, AL_PITCH, &f[0]);
+	alSourcef(b, AL_PITCH, f[0]);
+	
+	alGetSourcef(a->source, AL_GAIN, &f[0]);
+	alSourcef(b, AL_GAIN, f[0]);
+	
+	alurePlaySource(b, delete_multiplay, NULL);
+}
+
+/* *
+stop(sound)
+Stop a sound.
+
+C++
+sound a("sayhi.ogg");
+play(&a);
+stop(&a);
+
+Python
+a = sound('sayhi.ogg')
+play(a)
+stop(a)
+* */
+void stop(sound* a) {
+	alureStopSource(a->source, AL_FALSE);
+	a->pending = 0;
+}
+
+/* *
+pause(sound)
+Pause a sound.
+
+C++
+sound a("titlemusic.ogg", true);
+play(&a);
+pause(&a);
+
+Python
+a = sound('titlemusic.ogg', True)
+play(a)
+pause(a)
+* */
+void pause(sound* a) {
+	alurePauseSource(a->source);
+}
+
+/* *
+resume(sound)
+Resume a paused sound.
+
+C++
+sound a("titlemusic.ogg", true);
+play(&a);
+pause(&a);
+resume(&a);
+
+Python
+a = sound('titlemusic.ogg', True)
+play(a)
+pause(a)
+resume(a)
+* */
+void resume(sound* a) {
+	alureResumeSource(a->source);
 }
 
 /* Microphone */

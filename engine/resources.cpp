@@ -1,7 +1,39 @@
+/* * Resources
+sound
+A sound.
+
+	gain(float)
+		set the gain of the sound
+	pitch(float)
+		set the pitch of the sound
+	pan(float)
+		set the pan of the sound
+	repeat(bool)
+		turn on and off repeating of the sound
+
+C++
+sound a("click.ogg");
+a.pan(-1.0); //pan fully to the left
+
+sound b("music.ogg", true);
+b.repeat(true); //set the music to repeat itself
+
+Python
+a = sound('click.ogg')
+a.pan(-1.0) #pan fully to the left
+
+b = sound('music.ogg', True)
+b.repeat(True) #set the music to repeat itself
+
+see:play
+* */
 sound::sound(const char* a, bool b) {
+	if(alure_state == 0)
+		audio();
+	
 	is_stream = b;
-	is_playing = false;
 	looping = false;
+	pending = 0;
 	
 	source = NULL;
 	int i;
@@ -21,20 +53,30 @@ sound::sound(const char* a, bool b) {
 	if(!is_stream)
 		alSourcei(source, AL_BUFFER, buffer[0]);
 	
-	//alSourcef(source, AL_GAIN, 1.0);
-	//alSource3f(source, AL_POSITION, 0.0, 0.0, 0.0);
-	//alSourcef(source, AL_ROLLOFF_FACTOR, 0.0);
+	loaded_sounds.push_back(this);
 }
 
 sound::~sound() {
-	ALint queued;
-	alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
-	alSourceUnqueueBuffers(source, queued, buffer);
+	unload();
+	
+	for(std::vector<sound*>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end();)
+		if(*i == this) {
+			i = loaded_sounds.erase(i);
+			break;
+		}
+		else
+			i++;
+}
+
+void sound::unload() {
+	alureStopSource(source, AL_FALSE);
+	
+	if(is_stream)
+		alureDestroyStream(stream, NUM_BUFS, buffer);
+	
 	alSourcei(source, AL_BUFFER, NULL);
 	alDeleteSources(1, &source);
 	alDeleteBuffers(NUM_BUFS, buffer);
-	is_playing = false;
-	looping = false;
 }
 
 void sound::gain(float a) {
@@ -55,43 +97,29 @@ void sound::repeat(bool a) {
 		alSourcei(source, AL_LOOPING, (a ? AL_TRUE : AL_FALSE));
 }
 
-void sound::update() {
-	if(!is_stream)
-		return;
-	
-	ALint state = AL_PLAYING;
-	ALint processed = 0;
+/* *
+pixelcache
+A cache of pixels.
 
-	alGetSourcei(source, AL_BUFFERS_QUEUED, &processed);
-	
-	// Just started
-	if(processed <= 0)
-		alSourceQueueBuffers(source, NUM_BUFS, buffer);
-	
-	alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
-	alGetSourcei(source, AL_SOURCE_STATE, &state);
-	
-	if(processed > 0) {
-		alSourceUnqueueBuffers(source, processed, buffer);
-		
-		ALint added = alureBufferDataFromStream(stream, processed, buffer);
-		if(added <= 0) {
-			if(looping) {
-				alureRewindStream(stream);
-				alureBufferDataFromStream(stream, processed, buffer);
-			} else
-				is_playing = false;
-		}
+	width int
+		the width of the cache
+	height int
+		the height of the cache
+	data GLubyte
+		the cache data
 
-		alSourceQueueBuffers(source, processed, buffer);
-	}
-	
-	if(is_playing and state != AL_PLAYING)
-		alSourcePlay(source);
-	
-	return;
-}
+C++
+pixelcache a(24, 24);
 
+pixelcache b(a); //copy a
+
+Python
+a = pixelcache(24, 24)
+
+b = pixelcache(a) #copy a
+
+see:image.cache
+* */
 pixelcache::pixelcache(const pixelcache& a) {
 	width = a.width;
 	height = a.height;
@@ -113,18 +141,75 @@ pixelcache::~pixelcache() {
 		delete data;
 }
 
+/* *
+image
+An image.
+
+	width float
+		the width of the image
+	height float
+		the height of the image
+	cache pixelcache
+		the image's cache
+	set(string)
+		set options on the image:
+		"linear" - draw the image smoothly
+		"nearest" - draw the image pixelated
+		"mirrored repeat" - repeat the image coordinates, mirrored
+		"repeat" - repeat the image coordinates
+		"clamp" - clamp te image coordinates
+	from_pixelcache()
+		restore the image to it's cached state
+	from_pixelcache(pixelcache)
+		overwrites pixels with data from a pixelcache
+	refresh_pixel_cache()
+		caches the images current state
+	pixel(int x, int y)
+		returns an rgba containing the pixel color of x and y
+
+C++
+image a("tux.png");
+a.set("linear");
+rgba b();
+b = a.pixel(0, 0);
+
+image c(64, 64, false); //creates a blank image sized 64 by 64, and not high quality
+
+Python
+a = image('tux.png')
+a.set('linear')
+b = a.pixel(0, 0)
+
+c = image(64, 64, False); #creates a blank image sized 64 by 64, and not high quality
+
+see:use_image
+* */
 image::image(const char* a) {
+	if(glfw_state == 0)
+		graphics();
+	
 	id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y); //NULL
+	
+	cache = NULL;
+	
+	if(id == 0) {
+		err("image", "could not load");
+		return;
+	}
+	
 	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
 	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
-	cache = NULL;
 }
 
 image::image(int a, int b, bool quality) {
+	if(glfw_state == 0)
+		graphics();
+	
+	cache = NULL;
+	
 	width = a;
 	height = b;
 	glGenTextures(1, &id);
@@ -133,8 +218,6 @@ image::image(int a, int b, bool quality) {
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
-	cache = NULL;
 }
 
 /*void image::save(const char* a) {
@@ -226,8 +309,63 @@ rgba image::pixel(int x, int y) {
 	return rgba(cache->data[h + 0], cache->data[h + 1], cache->data[h + 2], cache->data[h + 3]);
 }
 
+/* *
+font
+A font.
 
+	width_of(string)
+		returns a float representing the width of the computed string
+	height_of(string)
+		returns the caclulated height of the string as a float
+	size(float)
+		set the font size
+		!It is better to create two fonts of different sizes rather than changing the font size each frame because the font has to be regenerated.
+	push_size()
+		store the current font size into a stack
+	pop_size()
+		reset the font size to the last stored value
+	get_size()
+		get the size of the font
+	outset(float[, float])
+		set the outset of the font, for use in extrude fonts
+	depth(float)
+		set the depth of the font, for use in extrude fonts
+	line_height()
+		set the line height
+	ascent()
+		get the ascent of the font
+	descent()
+		get the decent of the font
+	advance(string)
+		get the advance of the string, where the next character should be placed
+
+C++
+font a("sans.ttf");
+
+font b("serif.ttf", 16.0); //default to size 16 instead of 12, the default
+b.push_size();
+b.size(12.0);
+b.pop_size();
+
+font c("sans.ttf", 12, "outline"); //create an outline font
+
+Python
+a = font('sans.ttf')
+
+b = font('serif.ttf', 16.0) #default to size 16 instead of 12, the default
+b.push_size()
+b.size(12.0)
+b.pop_size()
+
+c = font('sans.ttf', 12, 'outline') #create an outline font
+
+see: use_font, write
+
+* */
 font::font(const char* a, float b, const char* c) {
+	if(glfw_state == 0)
+		graphics();
+	
 	if(!b)
 		b = 12;
 	if(!strcmp("bitmap", c))
@@ -248,12 +386,16 @@ font::font(const char* a, float b, const char* c) {
 		err("font", "invalid type");
 		return;
 	}
+	
+	if(data->Error()) {
+		err("font", "could not load");
+		delete data;
+		data = NULL;
+		return;
+	}
 	data->FaceSize(b);
 	
 	size_default = b;
-	
-	if(data->Error())
-		err("font", "could not load font");
 }
 
 void font::size(float a) {
@@ -326,6 +468,45 @@ float font::height_of(const char* a) {
 	return b.Upper().Yf() - b.Lower().Yf();
 }
 
+/* *
+paper
+A paper.
+
+	align(string)
+		set the alignment of writing: left, center, right, justify
+	get_align()
+		returns the aligmnent method currently used
+	pen(font)
+		set the font used on this paper
+	get_pen()
+		get the font used on this paper
+	line_spacing(float)
+		set the line spacing
+	get_line_spacing()
+		get the line spacing
+	width(float)
+		set the width of the paper
+	get_width()
+		get the width of the paper
+	width_of(string)
+		returns a float representing the width of the computed string
+	height_of(string)
+		returns the caclulated height of the string as a float
+	write(string[, float, float, bool])
+		write some text using this paper, at x, y position, optionally flipped.
+
+C++
+paper a();
+
+paper b(120.0, "center");
+
+Python
+a = paper()
+
+b = paper(120.0, 'center')
+
+see: font
+* */
 paper::paper() {
 	data = new FTSimpleLayout();
 }
@@ -344,11 +525,12 @@ FTGL::TextAlignment paper_align_from_string(const char* a) {
 	return FTGL::ALIGN_LEFT;
 }
 
-paper::paper(float a, const char* b) {
+paper::paper(font* f, float a, const char* b) {
 	data = new FTSimpleLayout();
 	data->SetLineLength(a);
 	data->SetAlignment(paper_align_from_string(b));
-	
+	data_font = f;
+	data->SetFont(data_font->data);
 }
 
 paper::~paper() {
@@ -411,12 +593,37 @@ void paper::write(const char* b, float x, float y, bool invert_y) {
 	if(invert_y) {
 		glScalef(1.0, -1.0, 1.0);
 	}
+	glPushAttrib(GL_TEXTURE_BIT);
 	data->Render(b);
-	
+	glPopAttrib();
 	glPopMatrix();
 }
 
+/* *
+shader
+A shader object.
+
+	compile()
+		compile the shader
+
+C++
+shader a("fragment", "burgundy.frag"); //create a fragment shader from a file
+a.compile();
+
+shader b("vertex", "jitter.vert");
+
+Python
+a = shader('fragment', 'burgundy.frag') #create a fragment shader from a file
+a.compile()
+
+b = shader('vertex', 'jitter.vert')
+
+!Vertex shaders are not very useful yet. Fragment shaders are the ones you would use for post-processed image effects.
+* */
 shader::shader(const char* a, const char* b) {
+	if(glfw_state == 0)
+		graphics();
+	
 	glGetError();
 	if(!strcmp(a, "vertex"))
 		id = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
@@ -450,7 +657,33 @@ void shader::compile() {
 	}
 }
 
+/* *
+program
+A program that processes draw operations.
+
+	attach(shader)
+		attaches a shader to this program
+	link()
+		links and completes the program, making it ready for use
+	uniform_int(string, int)
+		set a uniform integer on the program
+	uniform_float(string, float, ...)
+		set a uniform float on the program
+	uniform_image(string, int, image)
+		set a uniform sampler2D with a multitexture ID
+
+C++
+program a();
+
+Python
+a = program()
+
+see: use_program
+* */
 program::program() {
+	if(glfw_state == 0)
+		graphics();
+	
 	id = glCreateProgramObjectARB();
 }
 
@@ -499,7 +732,46 @@ void program::link() {
 	glLinkProgramARB(id);
 }
 
+/* *
+fbo
+A frame buffer object.
+
+C++
+fbo a(320, 240);
+
+fbo b(320, 240, true); //high quality
+
+Python
+a = fbo(320, 240)
+
+b = fbo(320, 240, true) #high quality
+
+see: use_fbo
+* */
+fbo::fbo(image* a) {
+	if(glfw_state == 0)
+		graphics();
+	
+	glGenFramebuffersEXT(1, &id);
+	
+	GLint last;
+	glGetIntegerv(GL_FRAMEBUFFER_EXT, &last);
+	
+	buffer = a;
+	buffer_is_mine = false;
+	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
+	
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, buffer->id, 0);
+	glGenerateMipmapEXT(GL_TEXTURE_2D);
+	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last);
+}
+
 fbo::fbo(int b, int c, bool quality) {
+	if(glfw_state == 0)
+		graphics();
+	
 	glGenFramebuffersEXT(1, &id);
 	
 	GLint last;
@@ -508,11 +780,16 @@ fbo::fbo(int b, int c, bool quality) {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
 	
 	buffer = new image(b, c, quality);
+	buffer_is_mine = true;
+	
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, buffer->id, 0);
 	glGenerateMipmapEXT(GL_TEXTURE_2D);
+	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last);
 }
 
 fbo::~fbo() {
 	glDeleteFramebuffersEXT(1, &id);
+	if(buffer_is_mine)
+		delete buffer;
 }

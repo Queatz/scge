@@ -13,7 +13,4 @@ int main(int argc, char** argv) {
 		//make the drawing of the point visible on the screen
 		swap();
 	}
-
-	//finish up
-	done();
 }

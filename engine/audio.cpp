@@ -49,6 +49,7 @@ void audio_off() {
 
 void play_ended(void* userdata, ALuint source) {
 	sound* a = (sound*)userdata;
+	
 	if(a->pending > 0) {
 		a->pending--;
 		alurePlaySource(a->source, play_ended, a);
@@ -73,12 +74,13 @@ play(a, 2, False, True); #play 2 times if it's currently not being played
 see:sound
 * */
 void play(sound* a, unsigned int repeats, bool b, bool c) {
+	ALint d;
+	alGetSourcei(a->source, AL_SOURCE_STATE, &d);
+	
 	if(b) {
 		if(a->looping)
 			return;
 		
-		ALint d;
-		alGetSourcei(a->source, AL_SOURCE_STATE, &d);
 		if(d == AL_PLAYING) {
 			if(!c)
 				a->pending += repeats;
@@ -90,8 +92,10 @@ void play(sound* a, unsigned int repeats, bool b, bool c) {
 		alureRewindStream(a->stream);
 		alurePlaySourceStream(a->source, a->stream, NUM_BUFS, (a->looping ? -1 : repeats), NULL, NULL);
 	} else {
-		alurePlaySource(a->source, play_ended, a);
 		a->pending = repeats;
+		if(d == AL_PLAYING)
+			alureStopSource(a->source, AL_FALSE);
+		alurePlaySource(a->source, play_ended, a);
 	}	
 }
 

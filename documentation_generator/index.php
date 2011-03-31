@@ -2,6 +2,13 @@
 define('NEWLINE', '
 ');
 
+function finish($buffer) {
+	file_put_contents('../documentation/index.html', $buffer);
+	return $buffer;
+}
+
+ob_start('finish');
+
 require('functions.php');
 require('parse_code.php');
 
@@ -150,4 +157,6 @@ function parse_txt($str) {
 function parse_txt_file($name) {
 	return parse_txt(file_get_contents($name));
 }
+
+ob_end_flush();
 ?>

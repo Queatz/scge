@@ -1,5 +1,3 @@
-[description]Say hi to the world, little app.
-
 [c++]
 #include &lt;scge/scge.hpp&gt;
 

@@ -1,0 +1,16 @@
+#! /usr/bin/env sh
+swig -python -py3 -c++ scge.i
+gcc -c -x c++ -fPIC scge_wrap.cxx -I/usr/include/python3.1
+gcc -shared scge_wrap.o -lscge -o _scge.so
+
+rm scge_wrap.cxx
+rm scge_wrap.o
+
+if [ ! -d ./scge ]; then
+	mkdir ./scge
+fi
+
+mv scge.py ./scge/__init__.py
+
+sudo python3.1 setup.py install
+

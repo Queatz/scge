@@ -1,0 +1,9 @@
+*
+!.gitignore
+!compile
+!CMakeLists.txt
+!python_engine
+!engine
+!documentation
+!documentation_generator
+!README

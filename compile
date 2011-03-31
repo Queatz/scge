@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ ! -e ./cmake ]; then
+	mkdir ./cmake
+fi
+cd cmake
+cmake ..
+make
+sudo make install

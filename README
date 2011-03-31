@@ -1,2 +1,5 @@
-To compile, open terminal from this directory and run:
+To compile and install, open terminal from this directory and run:
+./compile
+
+To install the Python bindings, open terminal in python_engine and run:
 ./compile

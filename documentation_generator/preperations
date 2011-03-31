@@ -1,23 +1,32 @@
-[notice]This section is not too flexible at the moment.
 [notice]The engine has only been tested on Linux 64-bit with nVidia graphics.
 [note]This section will become more easy and clear later on.
 [description]
-First, you need to have some libraries installed to compile: glfw GLEW SOIL freetype ftgl vorbisfile alure openal enet eigen
-On Debian based systems, search for the -dev packages and install them all.
+To compile, you first need to have some libraries installed:
 
-You also need CMake 2.8 or greater installed.
+<a href="http://glfw.org">OpenGL Framework</a> (glfw)
+<a href="http://glew.sourceforge.net/">OpenGL Extention Wrangler</a> (GLEW)
+<a href="http://www.lonesock.net/soil.html">Simple OpenGL Image Library</a> (SOIL)
+<a href="http://www.freetype.org/">FreeType</a> (freetype)
+<a href="http://homepages.paradise.net.nz/henryj/code/#FTGL">FTGL</a> (ftgl)
+<a href="http://www.xiph.org/vorbis/doc/vorbisfile/">Vorbisfile</a> (vorbisfile)
+<a href="http://kcat.strangesoft.net/alure.html">AL Utilities REtooled</a> (alure)
+<a href="http://openal.org">OpenAL</a> (openal)
+<a href="http://enet.bespin.org/">ENet</a> (enet)
+<a href="http://eigen.tuxfamily.org">Eigen</a> (eigen)
 
-<b>C++</b>
-Make your game in game/game.cpp
+On <a href="http://debian.org">Debian</a>-based systems this can be done with a single command:
 
-Then, from inside the cmake/ folder, do:
-<span class="command">cmake .. && make</span>
+<span class="command">sudo apt-get install libglfw-dev libglew1.5-dev libsoil-dev libfreetype6-dev libftgl-dev libvorbisfile3 libalure-dev libopenal-dev libenet-dev libeigen3-dev</span>
+[notice]Eigen needs to be version 3.  You will probably have to build it from source.
+[notice]alure needs to be version >= 1.1.  Currently you may have to build it from source if it's not in the repository.
 
-This makes your game, too, which is placed at bin/game.
+You also need <a href="http://cmake.org">CMake</a> 2.8 or greater installed.
 
-<b>Python</b>
-You need SWIG 2.0.3 or later, or you can uncomment line 7 in python_engine/compile.
-Run <span class="command">python_engine/compile</span> to genereate the Python bindings.
+Now run:
+<span class="command">./compile</span>
 
-Make your game anywhere and be happy about not having to recompile.
+For Python support, you need Python version 3.1 and <a href="http://www.swig.org">SWIG</a> 2.0.3 or later.  Go into <span class="command">python_engine</span> and run:
+<span class="command">./compile</span>
+[notice]SWIG 2.0.3 may not be released yet, so you'll have to build and install it from source if it isn't.
+
 [~description]

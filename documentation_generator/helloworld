@@ -1,8 +1,7 @@
 [description]Say hi to the world, little app.
-[note]This will get smaller soon...
 
-[c++] (in game/game.cpp)
-#include "../engine/engine.hpp"
+[c++]
+#include &lt;scge/scge.hpp&gt;
 
 int main(int argc, char** argv) {
 	//open a window
@@ -23,12 +22,9 @@ int main(int argc, char** argv) {
 
 }
 [~c++]
+[note]See the game/ folder for a template.
 
-[python] (in any subfolder)
-#look in the python engine folder for the module
-import sys
-sys.path.append('../python_engine')
-
+[python]
 #import the module's contents
 from scge import *
 		
@@ -44,8 +40,6 @@ while not key('esc') and window_opened():
 	#draw a point in the center of the screen
 	point(160.0, 120.0)
 	
-}
-
-#finish up
-done()</div>
+	#make the drawing of the point visible
+	swap()
 [~python]

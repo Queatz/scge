@@ -1,7 +1,0 @@
-#! /usr/bin/env sh
-swig -python -py3 -c++ scge.i
-gcc -c -x c++ -fPIC ../engine/engine.cpp scge_wrap.cxx -I/usr/include/python3.1
-gcc -shared engine.o scge_wrap.o -lglfw -lGLEW -lSOIL -lfreetype -lftgl -lvorbisfile -lalure -lopenal -lenet -o _scge.so
-
-#Thanks for fixing!
-#python3.1 ./FIX.py

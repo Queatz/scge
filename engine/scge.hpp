@@ -105,6 +105,8 @@ struct pixelcache {
 	pixelcache(int, int);
 	pixelcache(const pixelcache&);
 	~pixelcache();
+	void set_pixel(int, int, rgba);
+	rgba pixel(int, int);
 	
 	int width, height;
 	GLubyte *data;
@@ -121,7 +123,10 @@ struct image {
 	
 	void set(const char*);
 	
-	void from_pixelcache(pixelcache* = NULL);
+	void from_pixelcache(pixelcache*);
+	void from_pixelcache(pixelcache*, int, int, int, int);
+	void from_pixelcache();
+	void from_pixelcache(int, int, int, int);
 	void refresh_pixel_cache();
 	rgba pixel(int, int);
 	
@@ -246,6 +251,7 @@ void poll();
 void screenshot(const char*);
 
 void reset_matrix();
+void viewport(float, float, float, float);
 void orthographic(float, float, float, float, float = -1.0, float = 1.0);
 void perspective(float, float, float, float, float = 0.1, float = 1000.0);
 

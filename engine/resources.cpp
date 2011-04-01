@@ -105,6 +105,10 @@ A cache of pixels.
 		the width of the cache
 	height int
 		the height of the cache
+	pixel(int x, int y)
+		get a pixel as an rgba
+	set_pixel(int, int, rgba)
+		set a pixel in the cache
 	data GLubyte
 		the cache data
 
@@ -141,6 +145,31 @@ pixelcache::~pixelcache() {
 		delete data;
 }
 
+rgba pixelcache::pixel(int x, int y) {
+	int h;
+	
+	if(x < 0 || x >= width || y < 0 || y >= height) {
+		err("pixelcache", "pixel", "out of bounds");
+		return rgba(0.0, 0.0, 0.0);
+	}
+	
+	h = y * width * 3 + x * 3;
+	return rgba(static_cast<float>(data[h + 0]) / 255.0, static_cast<float>(data[h + 1]) / 255.0, static_cast<float>(data[h + 2]) / 255.0);
+}
+
+void pixelcache::set_pixel(int x, int y, rgba c) {
+	int h;
+	if(x < 0 || x >= width || y < 0 || y >= height) {
+		err("pixelcache", "set_pixel", "out of bounds");
+		return;
+	}
+	
+	h = y * width * 3 + x * 3;
+	data[h + 0] = static_cast<GLubyte>(c.r * 255.0);
+	data[h + 1] = static_cast<GLubyte>(c.g * 255.0);
+	data[h + 2] = static_cast<GLubyte>(c.b * 255.0);
+}
+
 /* *
 image
 An image.
@@ -162,6 +191,10 @@ An image.
 		restore the image to it's cached state
 	from_pixelcache(pixelcache)
 		overwrites pixels with data from a pixelcache
+	from_pixelcache(int x, int y, int w, int h)
+		restore a portion of the image to it's cached state
+	from_pixelcache(pixelcache, int x, int y, int w, int h)
+		overwrites a portion of pixels with data from a pixelcache
 	refresh_pixel_cache()
 		caches the images current state
 	pixel(int x, int y)
@@ -266,12 +299,46 @@ void image::from_pixelcache(pixelcache* a) {
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
-	if(a)
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, a->data);
-	else if(cache)
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
-	else
-		err("image", "from_pixelcache", "nothing to copy");
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, a->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::from_pixelcache(pixelcache* a, int x, int y, int w, int h) {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, a->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::from_pixelcache() {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::from_pixelcache(int x, int y, int w, int h) {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
 	
 	// Reset to the origional texture
 	if(bind != id)
@@ -498,12 +565,14 @@ A paper.
 C++
 paper a();
 
-paper b(120.0, "center");
+font b("sans.ttf");
+paper b(b, 120.0, "center");
 
 Python
 a = paper()
 
-b = paper(120.0, 'center')
+b = font('sans.ttf')
+b = paper(f, 120.0, 'center')
 
 see: font
 * */

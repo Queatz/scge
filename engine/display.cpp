@@ -282,7 +282,7 @@ bool window(int x, int y, bool fullscreen, bool resizeable) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glOrtho(0, width, 0, height, -1.0, 1.0);
 	
@@ -524,6 +524,20 @@ reset_matrix()
 * */
 void reset_matrix() {
 	glLoadIdentity();
+}
+
+/* *
+viewport(float x, float y, float w, float h)
+Set the screen viewport size.
+
+C++
+viewport(0.0, 0.0, 320.0, 240.0);
+
+Python
+viewport(0.0, 0.0, 320.0, 240.0)
+* */
+void viewport(float x, float y, float w, float h) {
+	glViewport(x, y, w, h);
 }
 
 /* *

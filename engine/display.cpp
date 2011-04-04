@@ -1370,7 +1370,7 @@ void write(const char* b, float x, float y, bool invert_y) {
 }
 
 /* *
-background_image(float x = 0.0, float y = 0.0, float s = 1.0)
+background_image(float x, float y, float x2, float y2, float sx, float sy, float r, float xo, float yo)
 Draw a background on the window.
 
 C++:

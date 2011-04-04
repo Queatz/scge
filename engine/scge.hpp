@@ -94,6 +94,10 @@ struct sound {
 	void pitch(float);
 	void pan(float);
 	void repeat(bool = true);
+	void seek(float = NULL, const char* = "second");
+	bool playing();
+	int get(const char*);
+	float get_offset(const char* = "second");
 	
 	ALuint buffer[NUM_BUFS], source;
 	alureStream* stream;

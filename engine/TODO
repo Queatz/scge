@@ -3,6 +3,7 @@ MAIN
 	window close callback ... need to save canvas before destroyed
 	glfwSetWindowCloseCallback ;;;; report if user wants to close window
 	glfwEnable( GLFW_KEY_REPEAT );
+	background_image rotation
 
 
 DISPLAY
@@ -32,6 +33,7 @@ IMAGE
 SOUND
 	Make functions to read and write to the buffer
 	MIDI support...
+	seek streams
 
 OTHER
 	Implement box2d / Bullet Physics

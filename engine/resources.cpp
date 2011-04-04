@@ -10,6 +10,23 @@ A sound.
 		set the pan of the sound
 	repeat(bool)
 		turn on and off repeating of the sound
+	seek(float = NULL, string specifier = "")
+		set the offset at which to play the sound. The specifier can be:
+		"second" (default)
+		"byte"
+		"sample"
+	playing()
+		returns true if the sound is currently being played
+	get(string)
+		returns an int relating to:
+		"frequency"
+		"channels"
+		"bytes"
+	get_offset(string) as:
+		returns a float of:
+		"second"
+		"byte"
+		"sample"
 
 C++
 sound a("click.ogg");
@@ -49,6 +66,8 @@ sound::sound(const char* a, bool b) {
 	}
 	
 	alGenSources(1, &source);
+	
+	alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
 	
 	if(!is_stream)
 		alSourcei(source, AL_BUFFER, buffer[0]);
@@ -95,6 +114,59 @@ void sound::repeat(bool a) {
 	looping = a;
 	if(!is_stream)
 		alSourcei(source, AL_LOOPING, (a ? AL_TRUE : AL_FALSE));
+}
+
+void sound::seek(float a, const char* b) {
+	if(a) {
+		if(strcmp(b, "second"))
+			alSourcef(source, AL_SEC_OFFSET, a);
+		else if(strcmp(b, "sample"))
+			alSourcef(source, AL_SAMPLE_OFFSET, a);
+		else if(strcmp(b, "byte"))
+			alSourcef(source, AL_BYTE_OFFSET, a);
+		else
+			err("sound", "seek", "invalid specifier");
+	}
+	else
+		alSourceRewind(source);
+}
+
+bool sound::playing() {
+	ALint a;
+	alGetSourcei(source, AL_SOURCE_STATE, &a);
+	return a == AL_PLAYING;
+}
+
+int sound::get(const char* b) {
+	ALint a;
+	if(strcmp(b, "bits"))
+		alGetSourcei(buffer[0], AL_BITS, &a);
+	else if(strcmp(b, "channels"))
+		alGetSourcei(buffer[0], AL_CHANNELS, &a);
+	else if(strcmp(b, "frequency"))
+		alGetSourcei(buffer[0], AL_FREQUENCY, &a);
+	else if(strcmp(b, "bytes"))
+		alGetSourcei(buffer[0], AL_SIZE, &a);
+	else {
+		err("sound", "get", "invalid request");
+		return 0;
+	}
+	return a;
+}
+
+float sound::get_offset(const char* b) {
+	ALfloat a;
+	if(strcmp(b, "second"))
+		alGetSourcef(source, AL_SEC_OFFSET, &a);
+	else if(strcmp(b, "sample"))
+		alGetSourcef(source, AL_SAMPLE_OFFSET, &a);
+	else if(strcmp(b, "byte"))
+		alGetSourcef(source, AL_BYTE_OFFSET, &a);
+	else {
+		err("sound", "get", "invalid request");
+		return 0.0;
+	}
+	return a;
 }
 
 /* *

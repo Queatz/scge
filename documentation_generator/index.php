@@ -35,7 +35,7 @@ $_chapters = array();
 			
 			$jump = new_chapter('Jump!');
 			
-			parse_code(glob('/media/Field/lb/engine/*.cpp'));
+			parse_code(glob('../engine/*.cpp'));
 			
 			#XXX HACK
 			if(isset($_categories['Network']))

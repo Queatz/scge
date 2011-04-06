@@ -20,6 +20,8 @@ const char* read_file(const char* a) {
 	char *buf;
 	
 	fp = fopen(a, "rb");
+	if(!fp)
+		return NULL;
 	fseek(fp, 0, SEEK_END); // go to end
 	len = ftell(fp); // get position at end (length)
 	fseek(fp, 0, SEEK_SET); // go to beg.

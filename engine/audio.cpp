@@ -1,4 +1,5 @@
 std::vector<sound*> loaded_sounds;
+std::vector<ALuint> multiplay_sounds;
 int alure_state = 0;
 
 /* * Audio Functions
@@ -40,11 +41,13 @@ void audio_off() {
 	if(!alureUpdateInterval(0.0))
 		err("audio_off", "could not stop");
 	
+	for(std::vector<ALuint>::iterator i = multiplay_sounds.begin(); i != multiplay_sounds.end(); i++)
+		if(*i)
+			alureStopSource(*i, AL_TRUE);
+	
 	for(std::vector<sound*>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end(); i++)
 		if(*i)
 			(*i)->unload();
-	
-	alureShutdownDevice();
 }
 
 void play_ended(void* userdata, ALuint source) {
@@ -101,6 +104,11 @@ void play(sound* a, unsigned int repeats, bool b, bool c) {
 
 void delete_multiplay(void* userdata, ALuint source) {
 	alDeleteSources(1, &source);
+	for(std::vector<ALuint>::iterator i = multiplay_sounds.begin(); i != multiplay_sounds.end();)
+		if(*i == source)
+			i = multiplay_sounds.erase(i);
+		else
+			i++;
 }
 
 /* *
@@ -134,6 +142,8 @@ void multiplay(sound* a) {
 	alSourcef(b, AL_GAIN, f[0]);
 	
 	alurePlaySource(b, delete_multiplay, NULL);
+	
+	multiplay_sounds.push_back(b);
 }
 
 /* *

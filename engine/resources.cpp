@@ -220,10 +220,8 @@ pixelcache::~pixelcache() {
 rgba pixelcache::pixel(int x, int y) {
 	int h;
 	
-	if(x < 0 || x >= width || y < 0 || y >= height) {
-		err("pixelcache", "pixel", "out of bounds");
+	if(x < 0 || x >= width || y < 0 || y >= height)
 		return rgba(0.0, 0.0, 0.0);
-	}
 	
 	h = y * width * 3 + x * 3;
 	return rgba(static_cast<float>(data[h + 0]) / 255.0, static_cast<float>(data[h + 1]) / 255.0, static_cast<float>(data[h + 2]) / 255.0);
@@ -436,10 +434,8 @@ void image::refresh_pixel_cache() {
 rgba image::pixel(int x, int y) {
 	int h = height, w = width;
 	
-	if(x < 0 || x >= w || y < 0 || y >= h) {
-		err("image", "pixel", "out of bounds");
+	if(x < 0 || x >= w || y < 0 || y >= h)
 		return rgba(0.0, 0.0, 0.0);
-	}
 	
 	if(!cache)
 		refresh_pixel_cache();
@@ -734,9 +730,15 @@ void paper::write(const char* b, float x, float y, bool invert_y) {
 	if(invert_y) {
 		glScalef(1.0, -1.0, 1.0);
 	}
-	glPushAttrib(GL_TEXTURE_BIT);
+	
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
 	data->Render(b);
-	glPopAttrib();
+	
+	// Reset to the origional texture
+	glBindTexture(GL_TEXTURE_2D, bind);
+	
 	glPopMatrix();
 }
 
@@ -762,8 +764,11 @@ b = shader('vertex', 'jitter.vert')
 !Vertex shaders are not very useful yet. Fragment shaders are the ones you would use for post-processed image effects.
 * */
 shader::shader(const char* a, const char* b) {
-	if(glfw_state == 0)
-		graphics();
+	if(glfw_state < 2) {
+		id = 0;
+		err("shader", "window needs to be open");
+		return;
+	}
 	
 	glGetError();
 	if(!strcmp(a, "vertex"))
@@ -775,15 +780,19 @@ shader::shader(const char* a, const char* b) {
 		return;
 	}
 	const char* c = read_file(b);
-	glShaderSourceARB(id, 1, &c, NULL);
-	
+	if(c)
+		glShaderSourceARB(id, 1, &c, NULL);
 }
 
 shader::~shader() {
-	glDeleteObjectARB(id);
+	if(id)
+		glDeleteObjectARB(id);
 }
 
 void shader::compile() {
+	if(!id)
+		return;
+	
 	glCompileShaderARB(id);
 	
 	GLchar infoLog[2056]; int length;
@@ -822,8 +831,11 @@ a = program()
 see: use_program
 * */
 program::program() {
-	if(glfw_state == 0)
-		graphics();
+	if(glfw_state < 2) {
+		id = 0;
+		err("program", "window needs to be open");
+		return;
+	}
 	
 	id = glCreateProgramObjectARB();
 }
@@ -853,24 +865,27 @@ void program::uniform_float(const char* a, float b, float c, float d, float e) {
 }
 
 void program::uniform_image(const char* a, int b, image* c) {
-	GLint act;
+	GLint act, bind;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &act);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(act != GL_TEXTURE0 + b) glActiveTexture(GL_TEXTURE0 + b);
+	if(bind != c->id) glBindTexture(GL_TEXTURE_2D, c->id);
 	
-	glActiveTexture(GL_TEXTURE0 + b);
-	glBindTexture(GL_TEXTURE_2D, c->id);
 	uniform_int(a, b);
 	
 	// Reset to the origional texture
-	if(act != GL_TEXTURE0 + b)
-		glActiveTexture(act);
+	if(act != GL_TEXTURE0 + b) glActiveTexture(act);
+	if(bind != GL_TEXTURE0 + b) glBindTexture(GL_TEXTURE_2D, bind);
 }
 
 void program::attach(shader* a) {
-	glAttachObjectARB(id, a->id);
+	if(id)
+		glAttachObjectARB(id, a->id);
 }
 
 void program::link() {
-	glLinkProgramARB(id);
+	if(id)
+		glLinkProgramARB(id);
 }
 
 /* *

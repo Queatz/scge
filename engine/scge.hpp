@@ -20,7 +20,7 @@
 
 #include <FTGL/ftgl.h> // Font rendering
 #include <AL/alure.h> // Sound
-#include <aubio/aubio.h> // Pitch, etc
+/*#include <aubio/aubio.h> // Pitch, etc*/
 
 #ifdef WITH_NETWORK
 #include <enet/enet.h> // Networking
@@ -269,6 +269,7 @@ void clear();
 void point_size(float);
 void line_width(float);
 void line_stipple(int = 1, const char* = NULL);
+void polygon_stipple(const char* = NULL);
 
 void blend_color(float, float, float, float = 1.0);
 
@@ -321,6 +322,9 @@ program* get_program();
 void push_matrix();
 void pop_matrix();
 
+void texture_environment();
+void texture_environment(const char*);
+
 void translate(float, float);
 void translate(float, float, float);
 void rotate(float);
@@ -351,9 +355,12 @@ void point(float, float);
 void line(float, float, float, float);
 
 void ipoint(float, float);
+void impoint(float, float);
 void iline(float, float, float, float);
 
 void portion(int, int, int, int);
+
+void texture_coordinates(float, float, unsigned int = 0);
 
 offset mouse_position();
 

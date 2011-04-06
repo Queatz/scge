@@ -231,7 +231,7 @@ window(320, 240, True) //fullscreen
 see:swap, poll
 * */
 bool window(int x, int y, bool fullscreen, bool resizeable) {
-	if(glfw_state == 1 && glfwGetWindowParam(GLFW_OPENED)) {
+	if(glfw_state >= 1 && glfwGetWindowParam(GLFW_OPENED)) {
 		if(!fullscreen && !fullscreened) {
 			glfwSetWindowSize(x, y);
 			glViewport(0, 0, x, y);
@@ -261,6 +261,8 @@ bool window(int x, int y, bool fullscreen, bool resizeable) {
 			return false;
 		}
 	}
+	
+	glfw_state = 2;
 	
 	GLenum err = glewInit();
 	if(err != GLEW_OK)
@@ -304,6 +306,7 @@ see:window
 * */
 void close_window() {
 	glfwCloseWindow();
+	glfw_state = 1;
 }
 
 /* *
@@ -638,6 +641,10 @@ void enable(const char* a, bool b) {
 		c = GL_BLEND;
 	else if (!strcmp(a, "depth"))
 		c = GL_DEPTH_TEST;
+	else if (!strcmp(a, "polygon stipple"))
+		c = GL_POLYGON_STIPPLE;
+	else if (!strcmp(a, "line stipple"))
+		c = GL_LINE_STIPPLE;
 	
 	if(c > -1) {
 		if(b) glEnable(c);
@@ -726,27 +733,54 @@ Python
 line_stipple(1, 'dashed')
 * */
 void line_stipple(int a, const char* b) {
-	if(b != NULL) {
-		if(!strcmp(b, "dotted"))
-			glLineStipple(a, 0x0101);
-		else if(!strcmp(b, "dashed"))
-			glLineStipple(a, 0x00FF);
-	}
+	if(!strcmp(b, "dotted"))
+		glLineStipple(a, 0x0101);
+	else if(!strcmp(b, "dashed"))
+		glLineStipple(a, 0x00FF);
 	else
-		glLineStipple(a, 0x1111);
+		err("line_stipple", "invalid pattern");
 }
 
+GLubyte stipple_halftone[] = {
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55,
+0xAA, 0xAA, 0xAA, 0xAA, 0x55, 0x55, 0x55, 0x55};
+
+/* *
+polygon_stipple(string)
+* */
+void polygon_stipple(const char* a) {
+	if(!strcmp(a, "halftone"))
+		glPolygonStipple(stipple_halftone);
+	else
+		err("polygon_stipple", "invalid pattern name");
+}
 
 /* *
 blend_color(float, float, float, float = 1.0)
 Set the blending color.
-!There is no way to make use of this function.
+!The only use for this is with "alpha" blending.
 
 C++
 blend_color(1.0, 1.0, 1.0);
 
 Python
 blend_color(1.0, 1.0, 1.0)
+
+see:blend_mode
 * */
 void blend_color(float r, float g, float b, float a) {
 	glBlendColor(r, g, b, a);
@@ -1083,7 +1117,7 @@ void display_set_blend_mode_from_string(const char* a) {
 		else if(!strcmp(a, "none"))
 			glBlendFunc(GL_SRC_COLOR, GL_ZERO);
 		else
-			;//err("blend_mode", "invalid value");
+			err("blend_mode", "invalid value");
 	}
 }
 
@@ -1183,6 +1217,31 @@ void pop_matrix() {
 	glPopMatrix();
 }
 
+/* *
+texture_environment(string)
+Set up how to draw textures.  An omitted string resets it.
+"alpha"
+* */
+void texture_environment() {
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+}
+
+void texture_environment(const char* a) {
+	if(!strcmp(a, "alpha")) {
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+	}
+	else
+		err("texture_environment", "invalid parameter");
+}
 
 /* *
 *
@@ -1362,9 +1421,17 @@ void write(const char* b, float x, float y, bool invert_y) {
 		glPushMatrix();
 		glScalef(1, -1, 1);
 	}
-	glPushAttrib(GL_TEXTURE_BIT);
+	
+	GLint bind, act;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &act);
+	
 	font_stack.top()->data->Render(b, -1, FTPoint(x, invert_y ? -y : y));
-	glPopAttrib();
+	
+	// Reset to the origional texture
+	glBindTexture(GL_TEXTURE_2D, bind);
+	glActiveTexture(act);
+	
 	if(invert_y)
 		glPopMatrix();
 }
@@ -1481,6 +1548,7 @@ iquad
 imquad
 iline
 ipoint
+impoint
 
 C++
 begin("point");
@@ -1496,6 +1564,9 @@ See also: begin/end, shapes
 * */
 void ipoint(float x, float y) {
 	glVertex2i(x, y);
+}
+void impoint(float x, float y) {
+	glTexCoord2f(x/image_stack.top()->width, y/image_stack.top()->height); glVertex2i(x, y);
 }
 
 void iline(float a, float b, float c, float d) {
@@ -1526,6 +1597,20 @@ void portion(int x, int y, int x2, int y2) {
 }
 
 /* *
+texture_coordinates(float x, float y, int texture = 0)
+Change the texture cooridinates of the folliwing vertices to be drawn, optionally specifying the multitexture slot.
+
+C++
+texture_coordinates(0.0, 0.0)
+
+Python
+texture_coordinates(0., 0.)
+* */
+void texture_coordinates(float x, float y, unsigned int i) {
+	glMultiTexCoord2fARB(GL_TEXTURE0+i, x, y);
+}
+
+/* *
 pixel(int x, int y)
 Returns and rgba containing the pixel color on the screen.
 
@@ -1537,6 +1622,9 @@ Python
 a = pixel(0, 0)
 * */
 rgba pixel(int x, int y) {
+	if(x < 0 || x >= width || y < 0 || y >= height)
+		return rgba(0.0, 0.0, 0.0);
+	
 	GLfloat c[3];
 	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, c);
 	return rgba(c[0], c[1], c[2]);

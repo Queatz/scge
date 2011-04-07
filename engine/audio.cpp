@@ -53,6 +53,7 @@ void audio_off() {
 void play_ended(void* userdata, ALuint source) {
 	sound* a = (sound*)userdata;
 	
+	std::cout << a->source << "	" << a->pending << std::endl;
 	if(a->pending > 0) {
 		a->pending--;
 		alurePlaySource(a->source, play_ended, a);
@@ -84,9 +85,9 @@ void play(sound* a, unsigned int repeats, bool b, bool c) {
 		if(a->looping)
 			return;
 		
-		if(d == AL_PLAYING) {
+		if(d == AL_PLAYING || a->pending > 0) {
 			if(!c)
-				a->pending += repeats;
+				a->pending += repeats + 1;
 			return;
 		}
 	}

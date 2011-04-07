@@ -1221,6 +1221,12 @@ void pop_matrix() {
 texture_environment(string)
 Set up how to draw textures.  An omitted string resets it.
 "alpha"
+
+C++
+texture_environment();
+
+Python
+texture_environment()
 * */
 void texture_environment() {
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -1440,11 +1446,11 @@ void write(const char* b, float x, float y, bool invert_y) {
 background_image(float x, float y, float x2, float y2, float sx, float sy, float r, float xo, float yo)
 Draw a background on the window.
 
-C++:
-background_image();
+C++
+background_image(0.0, 0.0, 320.0, 240.0);
 
-Python:
-background_image()
+Python
+background_image(0, 0, 320, 240)
 
 see:use_image
 * */
@@ -1604,7 +1610,7 @@ C++
 texture_coordinates(0.0, 0.0)
 
 Python
-texture_coordinates(0., 0.)
+texture_coordinates(0, 0)
 * */
 void texture_coordinates(float x, float y, unsigned int i) {
 	glMultiTexCoord2fARB(GL_TEXTURE0+i, x, y);
@@ -1634,11 +1640,11 @@ rgba pixel(int x, int y) {
 mouse_position()
 Returns an offset with the mouse position.
 
-C++:
+C++
 offset a();
 a = mouse_position();
 
-Python:
+Python
 a = mouse_position()
 
 see:move_mouse

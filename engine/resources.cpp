@@ -256,7 +256,8 @@ An image.
 		"nearest" - draw the image pixelated
 		"mirrored repeat" - repeat the image coordinates, mirrored
 		"repeat" - repeat the image coordinates
-		"clamp" - clamp te image coordinates
+		"clamp" - clamp to image coordinates
+		"clamp to edge" - clamp min/max texel
 	from_pixelcache()
 		restore the image to it's cached state
 	from_pixelcache(pixelcache)
@@ -356,6 +357,9 @@ void image::set(const char* a) {
 	} else if (!strcmp(a, "clamp")) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	} else if (!strcmp(a, "clamp to edge")) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 	
 	// Reset to the origional texture

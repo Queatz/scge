@@ -42,18 +42,47 @@ void audio_off() {
 		err("audio_off", "could not stop");
 	
 	for(std::vector<ALuint>::iterator i = multiplay_sounds.begin(); i != multiplay_sounds.end(); i++)
-		if(*i)
-			alureStopSource(*i, AL_TRUE);
+		if(*i) {
+			alureStopSource(*i, AL_FALSE);
+			alDeleteSources(1, &*i);
+		}
 	
 	for(std::vector<sound*>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end(); i++)
 		if(*i)
 			(*i)->unload();
 }
 
+/* *
+audio_gain(float)
+Set the overall volume of sound.
+
+C++
+audio_gain(1.0);
+
+Python
+audio_gain(0)
+* */
+void audio_gain(float a) {
+	alListenerf(AL_GAIN, a);
+}
+
+/* *
+audio_pan(float)
+Set the overall pan of sound.
+
+C++
+audio_pan();
+
+Python
+audio_pan()
+* */
+void audio_pan(float a) {
+	alListener3f(AL_POSITION, a, 0.0, 0.0);
+}
+
 void play_ended(void* userdata, ALuint source) {
 	sound* a = (sound*)userdata;
 	
-	std::cout << a->source << "	" << a->pending << std::endl;
 	if(a->pending > 0) {
 		a->pending--;
 		alurePlaySource(a->source, play_ended, a);

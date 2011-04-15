@@ -374,6 +374,8 @@ bool key(const char*);
 
 bool audio();
 void audio_off();
+void audio_gain(float = 1.0);
+void audio_pan(float = 0.0);
 
 // Play a sound
 void play(sound*, unsigned int = 0, bool = false, bool = false);

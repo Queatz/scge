@@ -627,7 +627,7 @@ enable('texture')
 enable('texture', False)
 * */
 void enable(const char* a, bool b) {
-	int c = -1;
+	GLint c = -1;
 	
 	if (!strcmp(a, "texture"))
 		c = GL_TEXTURE_2D;
@@ -1115,7 +1115,9 @@ void display_set_blend_mode_from_string(const char* a) {
 		else if(!strcmp(a, "mix"))
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		else if(!strcmp(a, "none"))
-			glBlendFunc(GL_SRC_COLOR, GL_ZERO);
+			glBlendFunc(GL_ONE, GL_ZERO);
+		else if(!strcmp(a, "saturate"))
+			glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA_SATURATE);
 		else
 			err("blend_mode", "invalid value");
 	}
@@ -1129,6 +1131,7 @@ Set how you want to blend the images onto the window.
 "multipy" - multiplicative blending
 "add" - additive blending
 "subtract" - subtractive blending
+"saturate"
 
 C++
 blend_mode("mix");

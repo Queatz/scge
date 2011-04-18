@@ -869,17 +869,15 @@ void program::uniform_float(const char* a, float b, float c, float d, float e) {
 }
 
 void program::uniform_image(const char* a, int b, image* c) {
-	GLint act, bind;
+	GLint act;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &act);
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
-	if(act != GL_TEXTURE0 + b) glActiveTexture(GL_TEXTURE0 + b);
-	if(bind != c->id) glBindTexture(GL_TEXTURE_2D, c->id);
+	glActiveTexture(GL_TEXTURE0 + b);
+	glBindTexture(GL_TEXTURE_2D, c->id);
 	
 	uniform_int(a, b);
 	
-	// Reset to the origional texture
+	// Reset to the original texture
 	if(act != GL_TEXTURE0 + b) glActiveTexture(act);
-	if(bind != GL_TEXTURE0 + b) glBindTexture(GL_TEXTURE_2D, bind);
 }
 
 void program::attach(shader* a) {

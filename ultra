@@ -1,0 +1,3 @@
+#! /usr/bin/env sh
+
+sudo ./compile && cd python_engine && sudo ./compile && cd ..

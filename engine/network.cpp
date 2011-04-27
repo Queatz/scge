@@ -1,7 +1,7 @@
 bool connected = false;
 /* * Network
 connection()
-Establish a connection.
+Establish a connection.  Returns true if it succeeded in doing so.
 
 C++
 connection();
@@ -9,7 +9,7 @@ connection();
 Python
 connection()
 * */
-void connection() {
+bool connection() {
 	if(enet_initialize() >= 0) {
 		atexit(connection_off);
 		connected = true;
@@ -32,6 +32,68 @@ void connection_off() {
 	if(connected) {
 		enet_deinitialize();
 		connected = false;
+	}
+}
+
+/* * Network Types
+event
+A network event.
+	channel int
+	channel()
+		get the channel
+	type()
+		get the type of the event
+	data()
+		get the data, if any
+	who()
+		who made this event as a peer
+
+C++
+event a;
+
+Python
+a = event()
+* */
+int peercount = 0;
+
+int event::channel() {
+	return (int)evt.channelID;
+}
+
+const char* event::type() {
+	if(evt.type == ENET_EVENT_TYPE_RECEIVE)
+		return "receive";
+	else if(evt.type == ENET_EVENT_TYPE_CONNECT)
+		return "connect";
+	else if(evt.type == ENET_EVENT_TYPE_DISCONNECT)
+		return "disconnect";
+	else if(evt.type == ENET_EVENT_TYPE_NONE)
+		return "none";
+	
+	err("event", "type", "fault");
+	return "";
+}
+
+const char* event::data() {
+	if(evt.type == ENET_EVENT_TYPE_RECEIVE)
+		return (const char*)evt.packet->data;
+	return NULL;
+}
+
+
+peer* event::who() {
+	return (peer*)evt.peer->data;
+}
+
+event::~event() {
+	switch(evt.type){
+	case ENET_EVENT_TYPE_RECEIVE:
+		enet_packet_destroy(evt.packet);
+		break;
+	case ENET_EVENT_TYPE_DISCONNECT:
+		delete (peer*)evt.peer->data;
+		evt.peer->data = NULL;
+		break;
 	}
 }
 
@@ -67,11 +129,28 @@ server::~server() {
 	enet_host_destroy(host);
 }
 
-ENetEvent server::service(int a) {
-	ENetEvent b;
+event server::service(int a) {
+	event e;
+	int h;
+	peer* p;
 	
-	if(enet_host_service(host, &b, a) > 0)
-		return b;
+	h = enet_host_service(host, &e.evt, a);
+	
+	if(h > 0) {
+		switch(e.evt.type){
+		case ENET_EVENT_TYPE_CONNECT:
+			peercount++;
+			p = new peer;
+			p->who = e.evt.peer;
+			e.evt.peer->data = p;
+			break;
+		}
+	}
+	
+	if(h < 0)
+		err("server", "service", "could not");
+	
+	return e;
 }
 
 /* * Network Types
@@ -109,11 +188,15 @@ client::~client() {
 	enet_host_destroy(host);
 }
 
-ENetEvent client::service(int a) {
-	ENetEvent b;
+event client::service(int a) {
+	event e;
+	int h;
+	h = enet_host_service(host, &e.evt, a);
 	
-	if(enet_host_service(host, &b, a) > 0)
-		return b;
+	if(h < 0)
+		err("client", "service", "could not");
+	
+	return e;
 }
 
 void client::send(const char* b, int c) {
@@ -132,7 +215,7 @@ void client::connect(const char* a, int b, int c) {
 	enet_address_set_host(&d, a);
 	d.port = b;
 
-	peer = enet_host_connect(host, &d, c, 0);    
+	peer = enet_host_connect(host, &d, c, 0);
 }
 
 void client::disconnect() {

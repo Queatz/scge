@@ -1,4 +1,4 @@
-//#define WITH_NETWORK
+#define WITH_NETWORK
 //#define WITH_3D
 
 #include <cstdlib>
@@ -393,8 +393,24 @@ sound* ms();
 
 // Server
 
-void connection();
+bool connection();
 void connection_off();
+
+struct peer {
+	ENetPeer* who;
+	
+	int id;
+};
+
+struct event {
+	int channel();
+	const char* type();
+	const char* data();
+	peer* who();
+	~event();
+	
+	ENetEvent evt;
+};
 
 struct server {
 	// Create a new server on port, with max connections of, with max numbr of channels, with limited downstream, with limited upstream
@@ -402,7 +418,7 @@ struct server {
 	// Close the server
 	~server();
 	
-	ENetEvent service(int = 2000);
+	event service(int = 0);
 	
 	ENetAddress address;
 	ENetHost* host;
@@ -422,7 +438,7 @@ struct client {
 	void disconnect();
 	
 	// Service within timeout
-	ENetEvent service(int = 2000);
+	event service(int = 0);
 	
 	ENetHost* host;
 	ENetPeer* peer;

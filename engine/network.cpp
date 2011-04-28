@@ -36,9 +36,15 @@ void connection_off() {
 }
 
 /* * Network Types
+peer
+A connected peer.
+	id int
+		an integer assigned to this peer
+* */
+
+/* * Network Types
 event
 A network event.
-	channel int
 	channel()
 		get the channel
 	type()
@@ -47,6 +53,9 @@ A network event.
 		get the data, if any
 	who()
 		who made this event as a peer
+	resolve()
+		optionally call this after done inspecting the event
+		it will delete the peer and clear any packet
 
 C++
 event a;
@@ -69,12 +78,11 @@ const char* event::type() {
 		return "disconnect";
 	else if(evt.type == ENET_EVENT_TYPE_NONE)
 		return "none";
-	
-	return "error";
+	return "none";
 }
 
 const char* event::data() {
-	if(evt.type == ENET_EVENT_TYPE_RECEIVE)
+	if(evt.packet && evt.type == ENET_EVENT_TYPE_RECEIVE)
 		return (const char*)evt.packet->data;
 	return NULL;
 }
@@ -85,59 +93,79 @@ peer* event::who() {
 		return (peer*)evt.peer->data;
 }
 
-event::~event() {
+void event::resolve() {
 	switch(evt.type){
 	case ENET_EVENT_TYPE_RECEIVE:
-		enet_packet_destroy(evt.packet);
+		if(evt.packet)
+			enet_packet_destroy(evt.packet);
 		break;
 	case ENET_EVENT_TYPE_DISCONNECT:
-		delete (peer*)evt.peer->data;
-		evt.peer->data = NULL;
+		if(evt.peer) {
+			delete (peer*)evt.peer->data;
+			evt.peer->data = NULL;
+		}
 		break;
 	}
 }
 
 /* * Network Types
-server
-A server.
+host
+A networkable host.
 	service(int)
-		give service to the clients, optionally waiting some milliseconds
+		give service to connected peers, optionally waiting some milliseconds
+	commune()
+		send all the queued messages
+		#no need to call this if you service() regularly
+	connect(string = "localhost", int = 2000, int = 1)
+		connect to a server, on a port, with max channels of and return a new peer
+	disconnect(peer, unsigned int = 0)
+		disconnect from a peer, optionally with some unusable data
+	send(peer, string = "", int = 0)
+		queue a message on a channel
+	broadcast(string = "", int = 0)
+		queue a message on a channel
+	service(int = 2000)
+		listen for commands from the server, within a timeout
 
 C++
-server a();
-a.service();
+host client();
+client.service();
 
-server b(2000, 32, 1, 128, 256); //server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit
+host server(2000, 32, 1, 128, 256); //server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit
 
 Python
-a = server()
-a.service()
+client = host()
+client.connect()
 
-b = server(2000, 32, 1, 128, 256) #server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit
+server = host(2000, 32, 1, 128, 256) #server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit
 * */
-server::server(int a, int b, int c, int d, int e) {
+host::host(int a, int b, int c, int d, int e) {
 	if(!connected)
 		connection();
 	
-	address.host = ENET_HOST_ANY;
-	address.port = a;
+	if(a) {
+		address.host = ENET_HOST_ANY;
+		address.port = a;
+		
+		me = enet_host_create(&address, b, c, d, e);
+	}
+	else
+		me = enet_host_create(NULL, b, c, d, e);
 	
-	host = enet_host_create(&address, b, c, d, e);
-	
-	if(!host)
-		err("server", "could not create");
+	if(!me)
+		err("host", "could not initiate");
 }
 
-server::~server() {
-	enet_host_destroy(host);
+host::~host() {
+	enet_host_destroy(me);
 }
 
-event server::service(int a) {
+event host::service(int a) {
 	event e;
 	int h;
 	peer* p;
 	
-	h = enet_host_service(host, &e.evt, a);
+	h = enet_host_service(me, &e.evt, a);
 	
 	if(h > 0) {
 		if(e.evt.peer) {
@@ -149,92 +177,59 @@ event server::service(int a) {
 					p->who = e.evt.peer;
 					e.evt.peer->data = p;
 				break;
-			case ENET_EVENT_TYPE_DISCONNECT:
-				delete (peer*)e.evt.peer->data;
-				e.evt.peer->data = NULL;
-				break;
 			}
 		}
 	}
 	
 	if(h < 0) {
-		e.type = ENET_EVENT_TYPE_NONE;
+		e.evt.type = ENET_EVENT_TYPE_NONE;
 		if(e.evt.peer)
 			e.evt.peer->data = NULL;
-		err("server", "service", "could not");
+		e.evt.peer = NULL;
 	}
 	
 	return e;
 }
 
-/* * Network Types
-client
-A client.
-	connect(string = "localhost", int = 2000, int = 1)
-		connect to a server, on a port, with max channels of
-	disconnect()
-		disconnect from the server
-	send(string = "", int = 0)
-		queue a message on a channel
-	commune()
-		send all the queued messages
-	service(int = 2000)
-		listen for commands from the server, within a timeout
+void host::send(peer* p, const char* b, int c, bool r, bool s) {
+	ENetPacket* d = enet_packet_create(b, strlen(b) + 1, (r ? ENET_PACKET_FLAG_RELIABLE : 0) | (s ? ENET_PACKET_FLAG_UNSEQUENCED : 0));
 
-C++
-client a();
-
-client b(1, 1, 128, 256); //client with max 1 connections, 1 channel, 128 downstream limit, and 256 upstream limit
-
-Python
-a = client();
-
-b = client(1, 1, 128, 256); #client with max 1 connections, 1 channel, 128 downstream limit, and 256 upstream limit
-* */
-client::client(int a, int b, int c, int d) {
-	if(!connected)
-		connection();
-	
-	host = enet_host_create(NULL, a, b, c, d);
-	
-	if(!host)
-		err("client", "could not create");
+	enet_peer_send(p->who, c, d);
 }
 
-client::~client() {
-	enet_host_destroy(host);
+void host::broadcast(const char* b, int c, bool r, bool s) {
+	ENetPacket* d = enet_packet_create(b, strlen(b) + 1, (r ? ENET_PACKET_FLAG_RELIABLE : 0) | (s ? ENET_PACKET_FLAG_UNSEQUENCED : 0));
+
+	enet_host_broadcast(me, c, d);
 }
 
-event client::service(int a) {
-	event e;
-	int h;
-	h = enet_host_service(host, &e.evt, a);
-	
-	if(h < 0)
-		err("client", "service", "could not");
-	
-	return e;
+void host::commune() {
+	enet_host_flush(me);
 }
 
-void client::send(const char* b, int c) {
-	ENetPacket* d = enet_packet_create(b, strlen(b) + 1, ENET_PACKET_FLAG_RELIABLE);
-
-	enet_peer_send(peer, c, d);
-}
-
-void client::commune() {
-	enet_host_flush(host);
-}
-
-void client::connect(const char* a, int b, int c) {
+peer* host::connect(const char* a, int b, int c) {
 	ENetAddress d;
-
+	ENetPeer* p;
+	peer* n;
+	
 	enet_address_set_host(&d, a);
 	d.port = b;
 
-	peer = enet_host_connect(host, &d, c, 0);
+	p = enet_host_connect(me, &d, c, 0);
+	
+	if(!p) {
+		err("host", "connect", "couldn not");
+		return NULL;
+	}
+	
+	peercount++;
+	n = new peer;
+	n->who = p;
+	n->id = peercount;
+	
+	return n;
 }
 
-void client::disconnect() {
-	enet_peer_disconnect(peer, 0);
+void host::disconnect(peer* p, unsigned int d) {
+	enet_peer_disconnect(p->who, d);
 }

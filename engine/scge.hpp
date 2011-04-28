@@ -407,41 +407,28 @@ struct event {
 	const char* type();
 	const char* data();
 	peer* who();
-	~event();
+	void resolve();
 	
 	ENetEvent evt;
 };
 
-struct server {
-	// Create a new server on port, with max connections of, with max numbr of channels, with limited downstream, with limited upstream
-	server(int = 2000, int = 32, int = 1, int = 0, int = 0);
+struct host {
+	// Create a new host on [port], with max connections of, with max numbr of channels, with limited downstream, with limited upstream
+	host(int = NULL, int = 32, int = 1, int = 0, int = 0);
 	// Close the server
-	~server();
+	~host();
 	
 	event service(int = 0);
-	
-	ENetAddress address;
-	ENetHost* host;
-};
-
-struct client {
-	// Create a new client with max connections of, with max numbr of channels, with limited downstram, with limited upstream
-	client(int = 1, int = 1, int = 0, int = 0);
-	// Close the client
-	~client();
-	
-	void send(const char* = "", int = 0);
 	void commune();
 	
-	// Connect to server, on port, with number of channels
-	void connect(const char* = "localhost", int = 2000, int = 1);
-	void disconnect();
+	void send(peer*, const char* = "", int = 0, bool = true, bool = true);
+	void broadcast(const char* = "", int = 0, bool = true, bool = true);
 	
-	// Service within timeout
-	event service(int = 0);
+	peer* connect(const char* = "localhost", int = 2000, int = 1);
+	void disconnect(peer*, unsigned int = 0);
 	
-	ENetHost* host;
-	ENetPeer* peer;
+	ENetAddress address;
+	ENetHost* me;
 };
 
 #endif

@@ -81,7 +81,8 @@ const char* event::data() {
 
 
 peer* event::who() {
-	return (peer*)evt.peer->data;
+	if(evt.peer)
+		return (peer*)evt.peer->data;
 }
 
 event::~event() {
@@ -157,6 +158,7 @@ event server::service(int a) {
 	}
 	
 	if(h < 0) {
+		e.type = ENET_EVENT_TYPE_NONE;
 		if(e.evt.peer)
 			e.evt.peer->data = NULL;
 		err("server", "service", "could not");

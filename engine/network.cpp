@@ -70,8 +70,7 @@ const char* event::type() {
 	else if(evt.type == ENET_EVENT_TYPE_NONE)
 		return "none";
 	
-	err("event", "type", "fault");
-	return "";
+	return "error";
 }
 
 const char* event::data() {
@@ -123,6 +122,9 @@ server::server(int a, int b, int c, int d, int e) {
 	address.port = a;
 	
 	host = enet_host_create(&address, b, c, d, e);
+	
+	if(!host)
+		err("server", "could not create");
 }
 
 server::~server() {
@@ -137,18 +139,28 @@ event server::service(int a) {
 	h = enet_host_service(host, &e.evt, a);
 	
 	if(h > 0) {
-		switch(e.evt.type){
-		case ENET_EVENT_TYPE_CONNECT:
-			peercount++;
-			p = new peer;
-			p->who = e.evt.peer;
-			e.evt.peer->data = p;
-			break;
+		if(e.evt.peer) {
+			switch(e.evt.type){
+			case ENET_EVENT_TYPE_CONNECT:
+					peercount++;
+					p = new peer;
+					p->id = peercount;
+					p->who = e.evt.peer;
+					e.evt.peer->data = p;
+				break;
+			case ENET_EVENT_TYPE_DISCONNECT:
+				delete (peer*)e.evt.peer->data;
+				e.evt.peer->data = NULL;
+				break;
+			}
 		}
 	}
 	
-	if(h < 0)
+	if(h < 0) {
+		if(e.evt.peer)
+			e.evt.peer->data = NULL;
 		err("server", "service", "could not");
+	}
 	
 	return e;
 }
@@ -182,6 +194,9 @@ client::client(int a, int b, int c, int d) {
 		connection();
 	
 	host = enet_host_create(NULL, a, b, c, d);
+	
+	if(!host)
+		err("client", "could not create");
 }
 
 client::~client() {

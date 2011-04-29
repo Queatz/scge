@@ -207,7 +207,7 @@ void host::commune() {
 	enet_host_flush(me);
 }
 
-peer* host::connect(const char* a, int b, int c) {
+peer* host::connect(const char* a, int b, int c, unsigned int z) {
 	ENetAddress d;
 	ENetPeer* p;
 	peer* n;
@@ -215,7 +215,7 @@ peer* host::connect(const char* a, int b, int c) {
 	enet_address_set_host(&d, a);
 	d.port = b;
 
-	p = enet_host_connect(me, &d, c, 0);
+	p = enet_host_connect(me, &d, c, z);
 	
 	if(!p) {
 		err("host", "connect", "couldn not");

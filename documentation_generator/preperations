@@ -16,7 +16,7 @@ To compile, you first need to have some libraries installed:
 
 On <a href="http://debian.org">Debian</a>-based systems this can be done with a single command:
 
-<span class="command">sudo apt-get install libglfw-dev libglew1.5-dev libsoil-dev libfreetype6-dev libftgl-dev libvorbisfile3 libalure-dev libopenal-dev libenet-dev libeigen3-dev</span>
+<span class="command">sudo apt-get install python3.1 libglfw-dev libglew1.5-dev libsoil-dev libfreetype6-dev libftgl-dev libvorbisfile3 libalure-dev libopenal-dev libenet-dev libeigen3-dev</span>
 [notice]Eigen needs to be version 3.  You will probably have to install the dev package manually.
 [notice]alure needs to be version >= 1.1.  Currently you may have to build it from source if it's not in the repository.
 [notice]enet needs to be version >= 1.3.1.  Currently you may have to build it from source if it's not in the repository.
@@ -28,6 +28,5 @@ Now run:
 
 For Python support, you need Python version 3.1 and <a href="http://www.swig.org">SWIG</a> 2.0.3 or later.  Go into <span class="command">python_engine</span> and run:
 <span class="command">./compile</span>
-[notice]SWIG 2.0.3 may not be released yet, so you'll have to build and install it from source if it isn't.
 
 [~description]

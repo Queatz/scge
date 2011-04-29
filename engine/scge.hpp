@@ -424,7 +424,7 @@ struct host {
 	void send(peer*, const char* = "", int = 0, bool = true, bool = true);
 	void broadcast(const char* = "", int = 0, bool = true, bool = true);
 	
-	peer* connect(const char* = "localhost", int = 2000, int = 1);
+	peer* connect(const char* = "localhost", int = 2000, int = 1, unsigned int = 0);
 	void disconnect(peer*, unsigned int = 0);
 	
 	ENetAddress address;

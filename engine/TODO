@@ -15,6 +15,9 @@ DISPLAY
 	mouse pos and button callbacks
 	joystick support
 
+NETWORK
+	host.disconnect() disconencts from all connected peers, (otherhost) still does from one
+
 FBO
 	Not just high quality or not
 	need to be able to chage the viewport...

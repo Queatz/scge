@@ -8,6 +8,7 @@ To compile, you first need to have some libraries installed:
 <a href="http://www.lonesock.net/soil.html">Simple OpenGL Image Library</a> (SOIL)
 <a href="http://www.freetype.org/">FreeType</a> (freetype)
 <a href="http://homepages.paradise.net.nz/henryj/code/#FTGL">FTGL</a> (ftgl)
+<a href="http://fluidsynth.sourceforge.net/">FluidSynth</a> (fluidsynth)
 <a href="http://www.xiph.org/vorbis/doc/vorbisfile/">Vorbisfile</a> (vorbisfile)
 <a href="http://kcat.strangesoft.net/alure.html">AL Utilities REtooled</a> (alure)
 <a href="http://openal.org">OpenAL</a> (openal)

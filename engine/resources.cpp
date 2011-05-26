@@ -1,7 +1,58 @@
 /* * Resources
+buffer
+A sound buffer.
+
+C++
+buffer a("powerup.ogg");
+
+Python
+a = buffer('powerup.ogg')
+
+see:sound
+* */
+
+buffer::buffer() {
+	buf = 0;
+}
+
+buffer::buffer(const char* a) {
+	if(alure_state == 0)
+		audio();
+	
+	buf = alureCreateBufferFromFile(a);
+	if(buf == AL_NONE) {
+		buf = 0;
+		err("sound", "could not load");
+	}
+	else
+		buffer_loaded(buf);
+}
+
+buffer::~buffer() {
+	clear();
+}
+
+void buffer::clear() {
+	if(buf) {
+		alDeleteBuffers(1, &buf);
+		buffer_unloaded(buf);
+	}
+	buf = 0;
+}
+
+
+/* *
 sound
 A sound.
 
+	play(sound, unsigned int repeats = 0, bool wait = false, bool dont = false)
+		play the sound, ptionally waiting until it's finished, or just don't play it if it's already playing
+	stop()
+		stop it
+	pause()
+		pause the sound
+	resume()
+		resume the sound
 	gain(float)
 		set the gain of the sound
 	pitch(float)
@@ -27,6 +78,8 @@ A sound.
 		"second"
 		"byte"
 		"sample"
+	font(string)
+		set the soundfont used for this sound
 
 C++
 sound a("click.ogg");
@@ -42,60 +95,138 @@ a.pan(-1.0) #pan fully to the left
 b = sound('music.ogg', True)
 b.repeat(True) #set the music to repeat itself
 
-see:play
+see:buffer
 * */
+
+void reset_sound(sound* a) {
+	a->is_stream = false;
+	a->looping = false;
+	a->pending = 0;
+	a->data = NULL;
+	a->source = 0;
+	
+	int i;
+	for(i = 0; i < NUM_BUFS; i++)
+		a->bufs[i] = NULL;
+}
+
+sound::sound() {
+	if(alure_state == 0)
+		audio();
+	
+	reset_sound(this);
+	
+	alGenSources(1, &source);
+	sound_loaded(source);
+}
+
+sound::sound(buffer* a) {
+	if(alure_state == 0)
+		audio();
+	
+	reset_sound(this);
+	
+	alGenSources(1, &source);
+	sound_loaded(source);
+	
+	data = a;
+	alSourcei(source, AL_BUFFER, data->buf);
+}
+
 sound::sound(const char* a, bool b) {
 	if(alure_state == 0)
 		audio();
 	
+	reset_sound(this);
+	
 	is_stream = b;
-	looping = false;
-	pending = 0;
-	
-	source = NULL;
-	int i;
-	for(i = 0; i < NUM_BUFS; i++)
-		buffer[i] = NULL;
-	
-	if(is_stream)
-		stream = alureCreateStreamFromFile(a, 19200, NUM_BUFS, buffer);
-	else {
-		buffer[0] = alureCreateBufferFromFile(a);
-		if(buffer[0] == AL_NONE)
+
+	if(is_stream) {
+		stream = alureCreateStreamFromFile(a, 19200, NUM_BUFS, bufs);
+		if(!stream)
+			err("sound", "could not load");
+	} else {
+		bufs[0] = alureCreateBufferFromFile(a);
+		if(bufs[0] == AL_NONE)
 			err("sound", "could not load");
 	}
 	
 	alGenSources(1, &source);
+	sound_loaded(source);
 	
-	alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
+	//alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
 	
 	if(!is_stream)
-		alSourcei(source, AL_BUFFER, buffer[0]);
-	
-	loaded_sounds.push_back(this);
+		alSourcei(source, AL_BUFFER, bufs[0]);
 }
 
 sound::~sound() {
-	unload();
-	
-	for(std::vector<sound*>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end();)
-		if(*i == this) {
-			i = loaded_sounds.erase(i);
-			break;
-		}
-		else
-			i++;
+	clear();
 }
 
-void sound::unload() {
+void sound::clear() {
 	alureStopSource(source, AL_FALSE);
 	
 	if(is_stream)
-		alureDestroyStream(stream, NUM_BUFS, buffer);
+		alureDestroyStream(stream, NUM_BUFS, bufs);
 	
-	alSourcei(source, AL_BUFFER, NULL);
-	alDeleteSources(1, &source);
-	alDeleteBuffers(NUM_BUFS, buffer);
+	if(source) {
+		alSourcei(source, AL_BUFFER, NULL);
+		alDeleteSources(1, &source);
+		sound_unloaded(source);
+	}
+	
+	reset_sound(this);
+	
+	alDeleteBuffers(NUM_BUFS, bufs);
+}
+
+void play_ended(void* userdata, ALuint source) {
+	sound* a = (sound*)userdata;
+	
+	if(a->pending > 0) {
+		a->pending--;
+		alurePlaySource(a->source, play_ended, a);
+	}
+}
+
+void sound::play(unsigned int repeats, bool b, bool c) {
+	ALint d;
+	alGetSourcei(source, AL_SOURCE_STATE, &d);
+	
+	if(b) {
+		if(looping)
+			return;
+		
+		if(d == AL_PLAYING || pending > 0) {
+			if(!c)
+				pending += repeats + 1;
+			return;
+		}
+	}
+	
+	if(is_stream) {
+		alureRewindStream(stream);
+		alurePlaySourceStream(source, stream, NUM_BUFS, (looping ? -1 : repeats), NULL, NULL);
+	} else {
+		pending = repeats;
+		if(d == AL_PLAYING)
+			alureStopSource(source, AL_FALSE);
+		alurePlaySource(source, play_ended, this);
+	}	
+}
+
+void sound::stop() {
+	alureStopSource(source, AL_FALSE);
+	pending = 0;
+}
+
+void sound::pause() {
+	alurePauseSource(source);
+}
+
+void sound::resume() {
+	alureResumeSource(source);
 }
 
 void sound::gain(float a) {
@@ -140,13 +271,13 @@ bool sound::playing() {
 int sound::get(const char* b) {
 	ALint a;
 	if(strcmp(b, "bits"))
-		alGetSourcei(buffer[0], AL_BITS, &a);
+		alGetSourcei(bufs[0], AL_BITS, &a);
 	else if(strcmp(b, "channels"))
-		alGetSourcei(buffer[0], AL_CHANNELS, &a);
+		alGetSourcei(bufs[0], AL_CHANNELS, &a);
 	else if(strcmp(b, "frequency"))
-		alGetSourcei(buffer[0], AL_FREQUENCY, &a);
+		alGetSourcei(bufs[0], AL_FREQUENCY, &a);
 	else if(strcmp(b, "bytes"))
-		alGetSourcei(buffer[0], AL_SIZE, &a);
+		alGetSourcei(bufs[0], AL_SIZE, &a);
 	else {
 		err("sound", "get", "invalid request");
 		return 0;
@@ -167,6 +298,11 @@ float sound::get_offset(const char* b) {
 		return 0.0;
 	}
 	return a;
+}
+
+void sound::font(const char* a) {
+	if(stream)
+		alureSetStreamPatchset(stream, a);
 }
 
 /* *

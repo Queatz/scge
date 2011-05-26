@@ -4,7 +4,6 @@
 #include "types.cpp"
 #include "display.cpp"
 #include "audio.cpp"
+#include "midi.cpp"
 #include "resources.cpp"
-#ifdef WITH_NETWORK
 #include "network.cpp"
-#endif

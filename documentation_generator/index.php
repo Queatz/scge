@@ -37,10 +37,6 @@ $_chapters = array();
 			
 			parse_code(glob('../engine/*.cpp'));
 			
-			#XXX HACK
-			if(isset($_categories['Network']))
-				array_unshift($_categories['Network']->sections, '<div class="notice">Networking is not all that finished yet and it needs to be simplified.</div>');
-			
 			add_code_chapters();
 			
 			$conclusion = new_chapter('Conclusion & The Future');

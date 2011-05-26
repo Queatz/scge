@@ -99,12 +99,12 @@ void event::resolve() {
 		if(evt.packet)
 			enet_packet_destroy(evt.packet);
 		break;
-	case ENET_EVENT_TYPE_DISCONNECT:
+/*	case ENET_EVENT_TYPE_DISCONNECT:
 		if(evt.peer) {
 			delete (peer*)evt.peer->data;
 			evt.peer->data = NULL;
 		}
-		break;
+		break;*/
 	}
 }
 
@@ -121,15 +121,15 @@ A networkable host.
 	disconnect(peer, unsigned int = 0)
 		disconnect from a peer, optionally with some unusable data
 	send(peer, string = "", int = 0)
-		queue a message on a channel
+		queue a message for a peer on a channel
 	broadcast(string = "", int = 0)
-		queue a message on a channel
+		queue a message to all connected peers on a channel
 	service(int = 2000)
 		listen for commands from the server, within a timeout
 
 C++
 host client();
-client.service();
+client.connect();
 
 host server(2000, 32, 1, 128, 256); //server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit
 
@@ -218,7 +218,7 @@ peer* host::connect(const char* a, int b, int c, unsigned int z) {
 	p = enet_host_connect(me, &d, c, z);
 	
 	if(!p) {
-		err("host", "connect", "couldn not");
+		err("host", "connect", "could not");
 		return NULL;
 	}
 	

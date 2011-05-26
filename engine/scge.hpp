@@ -1,6 +1,3 @@
-#define WITH_NETWORK
-//#define WITH_3D
-
 #include <cstdlib>
 #include <cstring>
 #include <vector>
@@ -20,15 +17,13 @@
 
 #include <FTGL/ftgl.h> // Font rendering
 #include <AL/alure.h> // Sound
+#include <fluidsynth.h>
+
 /*#include <aubio/aubio.h> // Pitch, etc*/
 
-#ifdef WITH_NETWORK
 #include <enet/enet.h> // Networking
-#endif
 
-#ifdef WITH_3D
 #include <eigen3/Eigen/Eigen> // Advanced math
-#endif
 
 struct box {
 	box(float = 0.0, float = 0.0);
@@ -64,7 +59,7 @@ struct irect {
 };
 
 struct crop {
-	crop(bool = true, float = 0, float = 0, float = 0, float = 0);
+	crop(bool = true, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
 	
 	bool use;
 	float x, y, w, h;
@@ -85,10 +80,28 @@ struct rgba {
 
 #define NUM_BUFS 3
 
+struct buffer {
+	buffer(const char*);
+	buffer();
+	~buffer();
+	
+	void clear();
+	
+	ALuint buf;
+};
+
 struct sound {
+	sound(buffer*);
 	sound(const char*, bool = false);
+	sound();
 	~sound();
-	void unload();
+	
+	void clear();
+	
+	void play(unsigned int = 0, bool = false, bool = false);
+	void stop();
+	void pause();
+	void resume();
 	
 	void gain(float);
 	void pitch(float);
@@ -98,9 +111,12 @@ struct sound {
 	bool playing();
 	int get(const char*);
 	float get_offset(const char* = "second");
+	void font(const char*);
 	
-	ALuint buffer[NUM_BUFS], source;
-	alureStream* stream;
+	buffer* data;
+	ALuint bufs[NUM_BUFS];
+	ALuint source;
+	alureStream* stream;//x
 	bool is_stream, looping;
 	unsigned int pending;
 };
@@ -113,7 +129,7 @@ struct pixelcache {
 	rgba pixel(int, int);
 	
 	int width, height;
-	GLubyte *data;
+	GLubyte *data;//x
 };
 
 struct image {
@@ -159,10 +175,10 @@ struct font {
 	float width_of(const char*);
 	float height_of(const char*);
 	
-	FTFont* data;
+	FTFont* data;//x
 	float size_default;
 	
-	std::stack<float, std::list<float> > size_stack;
+	std::stack<float, std::list<float> > size_stack;//x
 };
 
 struct paper {
@@ -187,7 +203,7 @@ struct paper {
 	
 	void write(const char*, float = 0.0, float = 0.0, bool = false);
 	
-	FTSimpleLayout* data;
+	FTSimpleLayout* data;//x
 	font* data_font;
 };
 
@@ -235,7 +251,9 @@ void graphics_off();
 const char* keyboard_string();
 const char* keyboard_presses();
 
-bool window(int, int, bool = false, bool = false);
+void key_repeat(bool = true);
+
+bool window(int, int, bool = false, bool = false, int = 0);
 void close_window();
 
 void window_title(const char*);
@@ -254,22 +272,34 @@ void swap();
 void poll();
 void screenshot(const char*);
 
+void matrix(const char* = NULL);
 void reset_matrix();
 void viewport(float, float, float, float);
 void orthographic(float, float, float, float, float = -1.0, float = 1.0);
-void perspective(float, float, float, float, float = 0.1, float = 1000.0);
+void perspective(float = 60.0, float = NULL, float = 0.1, float = 1000.0);
+void frustum(float, float, float, float, float = 0.1, float = 1000.0);
 
-rgba pixel(int, int);
+rgba pixel(int, int, const char* = NULL);
+rgba pixel_coordinates(float, float, float = 0);
 
 void polygon_mode(const char*);
 void enable(const char*, bool = true);
 
+void light_ambient(float = 0.0, float = 0.0, float = 0.0, float = 0.0);
+void light_two_side(bool = true);
+void light_set(int, const char*, float = 0.0, float = 0.0, float = 0.0, float = 1.0);
+void light_enable(int = 0, bool = true);
+
+void material(const char* = "both", const char* = NULL, float = 0.0, float = 0.0, float = 0.0, float = 1.0);
+
 void clear_color(float, float, float, float = 1.0);
 void clear();
+void depth_clear();
+void depth_test(const char*);
 void point_size(float);
 void line_width(float);
-void line_stipple(int = 1, const char* = NULL);
-void polygon_stipple(const char* = NULL);
+void line_stipple(const char* = NULL, int = 1);
+void polygon_stipple(const char* = NULL, bool = false, const char* = NULL, int = 0, int = 0);
 
 void blend_color(float, float, float, float = 1.0);
 
@@ -355,12 +385,18 @@ void point(float, float);
 void line(float, float, float, float);
 
 void ipoint(float, float);
+void ipoint(float, float, float);
 void impoint(float, float);
 void iline(float, float, float, float);
 
 void portion(int, int, int, int);
 
 void texture_coordinates(float, float, unsigned int = 0);
+void normal(float = 0.0, float = 0.0, float = 1.0);
+
+void stencil_clear(int = 0);
+void stencil_test(const char* = "always", int = 0);
+void stencil_op(const char* = "keep");
 
 offset mouse_position();
 
@@ -376,20 +412,30 @@ bool audio();
 void audio_off();
 void audio_gain(float = 1.0);
 void audio_pan(float = 0.0);
+void audio_soundfont(const char*);
 
-// Play a sound
-void play(sound*, unsigned int = 0, bool = false, bool = false);
-void multiplay(sound*);
-void stop(sound*);
-void pause(sound*);
-void resume(sound*);
+void midi_on();
+void midi_off();
+
+struct soundfont {
+	soundfont(const char* = NULL);
+	
+	int id;
+};
+
+void midi_preset(soundfont*, int = 0, unsigned int = 0, unsigned int = 0);
+void midi_soundfont(soundfont*, int = 0);
+void midi_bank(int = 0, unsigned int = 0);
+void midi_play(int = 0, int = 60, int = 100);
+void midi_stop(int = 0, int = 60);
+void midi_pan(int = 0, int = 63);
+
 /*
 void microphone();
 void microphone_off();
 void microphone_update();
 sound* ms();
 */
-#ifdef WITH_NETWORK
 
 // Server
 
@@ -409,7 +455,7 @@ struct event {
 	peer* who();
 	void resolve();
 	
-	ENetEvent evt;
+	ENetEvent evt;//x
 };
 
 struct host {
@@ -427,11 +473,9 @@ struct host {
 	peer* connect(const char* = "localhost", int = 2000, int = 1, unsigned int = 0);
 	void disconnect(peer*, unsigned int = 0);
 	
-	ENetAddress address;
-	ENetHost* me;
+	ENetAddress address;//x
+	ENetHost* me;//x
 };
-
-#endif
 
 // Other
 

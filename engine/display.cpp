@@ -10,6 +10,9 @@ std::stack<std::string, std::list<std::string> > blend_mode_stack;
 int width = 0, height = 0, glfw_state = 0;
 bool fullscreened;
 
+std::string key_pressed_list = "";
+std::string char_string = "";
+
 /* * General Functions
 graphics()
 Initiate the context.  Returns true if it could happen, otherwise false.
@@ -60,108 +63,115 @@ void GLFWCALL window_resize_callback(int w, int h) {
 	glViewport(0, 0, w, h);
 }
 
-std::string key_pressed_list = "";
-std::string char_string = "";
-
 const char* int_to_key_name(int a) {
-	if(a == 'A') return "a";
-	if(a == 'B') return "b";
-	if(a == 'C') return "c";
-	if(a == 'D') return "d";
-	if(a == 'E') return "e";
-	if(a == 'F') return "f";
-	if(a == 'G') return "g";
-	if(a == 'H') return "h";
-	if(a == 'I') return "i";
-	if(a == 'J') return "j";
-	if(a == 'K') return "k";
-	if(a == 'L') return "l";
-	if(a == 'M') return "m";
-	if(a == 'N') return "n";
-	if(a == 'O') return "o";
-	if(a == 'P') return "p";
-	if(a == 'Q') return "q";
-	if(a == 'R') return "r";
-	if(a == 'S') return "s";
-	if(a == 'T') return "t";
-	if(a == 'U') return "u";
-	if(a == 'V') return "v";
-	if(a == 'W') return "w";
-	if(a == 'X') return "x";
-	if(a == 'Y') return "y";
-	if(a == 'Z') return "z";
-	if(a == '1') return "1";
-	if(a == '2') return "2";
-	if(a == '3') return "3";
-	if(a == '4') return "4";
-	if(a == '5') return "5";
-	if(a == '6') return "6";
-	if(a == '7') return "7";
-	if(a == '8') return "8";
-	if(a == '9') return "9";
-	if(a == '0') return "0";
-	if(a == '-') return "-";
-	if(a == '=') return "=";
-	if(a == '[') return "[";
-	if(a == ']') return "]";
-	if(a == '\\') return "\\";
-	if(a == ';') return ";";
-	if(a == '\'') return "'";
-	if(a == ',') return ",";
-	if(a == '.') return ".";
-	if(a == '/') return "/";
-	if(a == '`') return "`";
+	switch(a) {
+	case 'A': return "a";
+	case 'B': return "b";
+	case 'C': return "c";
+	case 'D': return "d";
+	case 'E': return "e";
+	case 'F': return "f";
+	case 'G': return "g";
+	case 'H': return "h";
+	case 'I': return "i";
+	case 'J': return "j";
+	case 'K': return "k";
+	case 'L': return "l";
+	case 'M': return "m";
+	case 'N': return "n";
+	case 'O': return "o";
+	case 'P': return "p";
+	case 'Q': return "q";
+	case 'R': return "r";
+	case 'S': return "s";
+	case 'T': return "t";
+	case 'U': return "u";
+	case 'V': return "v";
+	case 'W': return "w";
+	case 'X': return "x";
+	case 'Y': return "y";
+	case 'Z': return "z";
+	case '1': return "1";
+	case '2': return "2";
+	case '3': return "3";
+	case '4': return "4";
+	case '5': return "5";
+	case '6': return "6";
+	case '7': return "7";
+	case '8': return "8";
+	case '9': return "9";
+	case '0': return "0";
+	case '-': return "-";
+	case '=': return "=";
+	case '[': return "[";
+	case ']': return "]";
+	case '\\': return "\\";
+	case ';': return ";";
+	case '\'': return "'";
+	case ',': return ",";
+	case '.': return ".";
+	case '/': return "/";
+	case '`': return "`";
 	
-	if(a == GLFW_KEY_SPACE) return "space";
-	if(a == GLFW_KEY_ESC) return "esc";
-	if(a == GLFW_KEY_F1) return "f1";
-	if(a == GLFW_KEY_F2) return "f2";
-	if(a == GLFW_KEY_F3) return "f3";
-	if(a == GLFW_KEY_F4) return "f4";
-	if(a == GLFW_KEY_F5) return "f5";
-	if(a == GLFW_KEY_F6) return "f6";
-	if(a == GLFW_KEY_F7) return "f7";
-	if(a == GLFW_KEY_F8) return "f8";
-	if(a == GLFW_KEY_F9) return "f9";
-	if(a == GLFW_KEY_F10) return "f10";
-	if(a == GLFW_KEY_F11) return "f11";
-	if(a == GLFW_KEY_F12) return "f12";
-	if(a == GLFW_KEY_UP) return "up";
-	if(a == GLFW_KEY_DOWN) return "down";
-	if(a == GLFW_KEY_LEFT) return "left";
-	if(a == GLFW_KEY_RIGHT) return "right";
-	if(a == GLFW_KEY_LSHIFT) return "left shift";
-	if(a == GLFW_KEY_RSHIFT) return "right shift";
-	if(a == GLFW_KEY_LCTRL) return "left ctrl";
-	if(a == GLFW_KEY_RCTRL) return "right ctrl";
-	if(a == GLFW_KEY_LALT) return "left alt";
-	if(a == GLFW_KEY_RALT) return "right alt";
-	if(a == GLFW_KEY_TAB) return "tab";
-	if(a == GLFW_KEY_ENTER) return "enter";
-	if(a == GLFW_KEY_BACKSPACE) return "backspace";
-	if(a == GLFW_KEY_INSERT) return "insert";
-	if(a == GLFW_KEY_DEL) return "delete";
-	if(a == GLFW_KEY_PAGEUP) return "page up";
-	if(a == GLFW_KEY_PAGEDOWN) return "page down";
-	if(a == GLFW_KEY_HOME) return "home";
-	if(a == GLFW_KEY_END) return "end";
-	if(a == GLFW_KEY_KP_1) return "kp 1";
-	if(a == GLFW_KEY_KP_2) return "kp 2";
-	if(a == GLFW_KEY_KP_3) return "kp 3";
-	if(a == GLFW_KEY_KP_4) return "kp 4";
-	if(a == GLFW_KEY_KP_5) return "kp 5";
-	if(a == GLFW_KEY_KP_6) return "kp 6";
-	if(a == GLFW_KEY_KP_7) return "kp 7";
-	if(a == GLFW_KEY_KP_8) return "kp 8";
-	if(a == GLFW_KEY_KP_9) return "kp 9";
-	if(a == GLFW_KEY_KP_0) return "kp 0";
-	if(a == GLFW_KEY_KP_DIVIDE) return "kp divide";
-	if(a == GLFW_KEY_KP_MULTIPLY) return "kp multiply";
-	if(a == GLFW_KEY_KP_SUBTRACT) return "kp subtract";
-	if(a == GLFW_KEY_KP_ADD) return "kp add";
-	if(a == GLFW_KEY_KP_DECIMAL) return "kp decimal";
-	if(a == GLFW_KEY_KP_EQUAL) return "kp equal";
-	if(a == GLFW_KEY_KP_ENTER) return "kp enter";
+	case GLFW_KEY_UNKNOWN: return "unknown";
+	case GLFW_KEY_SPACE: return "space";
+	case GLFW_KEY_ESC: return "esc";
+	case GLFW_KEY_F1: return "f1";
+	case GLFW_KEY_F2: return "f2";
+	case GLFW_KEY_F3: return "f3";
+	case GLFW_KEY_F4: return "f4";
+	case GLFW_KEY_F5: return "f5";
+	case GLFW_KEY_F6: return "f6";
+	case GLFW_KEY_F7: return "f7";
+	case GLFW_KEY_F8: return "f8";
+	case GLFW_KEY_F9: return "f9";
+	case GLFW_KEY_F10: return "f10";
+	case GLFW_KEY_F11: return "f11";
+	case GLFW_KEY_F12: return "f12";
+	case GLFW_KEY_UP: return "up";
+	case GLFW_KEY_DOWN: return "down";
+	case GLFW_KEY_LEFT: return "left";
+	case GLFW_KEY_RIGHT: return "right";
+	case GLFW_KEY_LSHIFT: return "left shift";
+	case GLFW_KEY_RSHIFT: return "right shift";
+	case GLFW_KEY_LCTRL: return "left ctrl";
+	case GLFW_KEY_RCTRL: return "right ctrl";
+	case GLFW_KEY_LALT: return "left alt";
+	case GLFW_KEY_RALT: return "right alt";
+	case GLFW_KEY_TAB: return "tab";
+	case GLFW_KEY_ENTER: return "enter";
+	case GLFW_KEY_BACKSPACE: return "backspace";
+	case GLFW_KEY_INSERT: return "insert";
+	case GLFW_KEY_DEL: return "delete";
+	case GLFW_KEY_PAGEUP: return "page up";
+	case GLFW_KEY_PAGEDOWN: return "page down";
+	case GLFW_KEY_HOME: return "home";
+	case GLFW_KEY_END: return "end";
+	case GLFW_KEY_KP_1: return "kp 1";
+	case GLFW_KEY_KP_2: return "kp 2";
+	case GLFW_KEY_KP_3: return "kp 3";
+	case GLFW_KEY_KP_4: return "kp 4";
+	case GLFW_KEY_KP_5: return "kp 5";
+	case GLFW_KEY_KP_6: return "kp 6";
+	case GLFW_KEY_KP_7: return "kp 7";
+	case GLFW_KEY_KP_8: return "kp 8";
+	case GLFW_KEY_KP_9: return "kp 9";
+	case GLFW_KEY_KP_0: return "kp 0";
+	case GLFW_KEY_KP_DIVIDE: return "kp divide";
+	case GLFW_KEY_KP_MULTIPLY: return "kp multiply";
+	case GLFW_KEY_KP_SUBTRACT: return "kp subtract";
+	case GLFW_KEY_KP_ADD: return "kp add";
+	case GLFW_KEY_KP_DECIMAL: return "kp decimal";
+	case GLFW_KEY_KP_EQUAL: return "kp equal";
+	case GLFW_KEY_KP_ENTER: return "kp enter";
+	case GLFW_KEY_KP_NUM_LOCK: return "num lock";
+	case GLFW_KEY_CAPS_LOCK: return "caps lock";
+	case GLFW_KEY_SCROLL_LOCK: return "scroll lock";
+	case GLFW_KEY_PAUSE: return "pause";
+	case GLFW_KEY_LSUPER: return "right super";
+	case GLFW_KEY_RSUPER: return "left super";
+	case GLFW_KEY_MENU: return "menu";
+	}
 	return "";
 }
 
@@ -183,6 +193,28 @@ void GLFWCALL window_char_callback(int key, int action) {
 }
 
 /* *
+keyboard_enable(string, bool = true)
+Enable keyboard features.
+"string" - see keyboard_string
+"presses" - see keyboard_presses
+
+C++
+keyboard_enable("string");
+
+Python
+keyboard_enable('string')
+* */
+void keyboard_enable(const char* a, bool b) {
+	if(!strcmp(a, "string"))
+		glfwSetCharCallback(b ? window_char_callback : NULL);
+	else if(!strcmp(a, "presses"))
+		glfwSetKeyCallback(b ? window_key_callback : NULL);
+	else
+		err("keyboard_enable", "invalid value");
+		
+}
+
+/* *
 keyboard_string()
 Returns typed characters since last called.
 
@@ -191,6 +223,8 @@ const char* a = keyboard_string();
 
 Python
 a = keyboard_string()
+
+see:keyboard_enable
 * */
 const char* keyboard_string() {
 	std::string a = char_string;
@@ -208,6 +242,8 @@ const char* a = keyboard_presses();
 
 Python
 a = keyboard_presses()
+
+see:keyboard_enable
 * */
 const char* keyboard_presses() {
 	std::string a = key_pressed_list;
@@ -263,7 +299,7 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 		if(!resizeable)
 			glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
 		
-		if(glfwOpenWindow(x, y, 0, 0, 0, 0, 16, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
+		if(glfwOpenWindow(x, y, 0, 0, 0, 0, 24, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
 			err("window", "could alter window");
 			return false;
 		}
@@ -278,7 +314,7 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 		if(!resizeable)
 			glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
 	
-		if(glfwOpenWindow(x, y, 0, 0, 0, 0, 16, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
+		if(glfwOpenWindow(x, y, 0, 0, 0, 0, 24, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
 			err("window", "could not initiate window");
 			return false;
 		}
@@ -291,10 +327,6 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 		note("window", "extentions unsupported");
 	
 	glfwSetWindowSizeCallback(window_resize_callback);
-	glfwSetKeyCallback(window_key_callback);
-	glfwSetCharCallback(window_char_callback);
-	
-	glfwEnable(GLFW_KEY_REPEAT);
 	
 	glfwSwapInterval(0);
 	
@@ -681,6 +713,7 @@ Enable or disable different things:
 "depth" - depth testing
 "cull" - cull back faces
 "stencil" - stencil testing
+"alpha" - alpha testing
 "polygon stipple" - stippling of the polygons
 "line stipple" - stipple on the lines
 "light" - shade with lights
@@ -712,6 +745,8 @@ void enable(const char* a, bool b) {
 		c = GL_DEPTH_TEST;
 	else if (!strcmp(a, "stencil"))
 		c = GL_STENCIL_TEST;
+	else if (!strcmp(a, "alpha"))
+		c = GL_ALPHA_TEST;
 	else if (!strcmp(a, "polygon stipple"))
 		c = GL_POLYGON_STIPPLE;
 	else if (!strcmp(a, "line stipple"))
@@ -1854,6 +1889,8 @@ pop_matrix()
 color(rgba)
 color(float, float, float, float = 1.0)
 Set the color to draw with.
+If you supply 1 value, the color will be gray.
+If you supply 2 values the color will be gray with alpha.
 
 C++
 color(0.5, 0.5, 0.5);
@@ -1863,6 +1900,10 @@ color(.5, .5, .5)
 * */
 void color(float r, float g, float b, float a) {
 	glColor4f(r, g, b, a);
+}
+
+void color(float v, float a) {
+	glColor4f(v, v, v, a);
 }
 
 void color(rgba a) {
@@ -2748,6 +2789,29 @@ void stencil_op(const char* a) {
 }
 
 /* *
+alpha_test(string = "always", float = 0.0)
+How to test if the alpha test passes or fails in relation to the reference value.
+"=="
+"!="
+"<"
+">"
+"<="
+">="
+"always"
+"never"
+
+C++
+alpha_test();
+
+Python
+alpha_test()
+* */
+
+void alpha_test(const char* a, float b) {
+	glAlphaFunc(comparison_string_to_gl(a), b);
+}
+
+/* *
 mouse_position()
 Returns an offset with the mouse position.
 
@@ -2948,6 +3012,13 @@ int keyboard_key_string_to_int(const char* a) {
 	else if(!strcmp(a, "kp decimal")) return GLFW_KEY_KP_DECIMAL;
 	else if(!strcmp(a, "kp equal")) return GLFW_KEY_KP_EQUAL;
 	else if(!strcmp(a, "kp enter")) return GLFW_KEY_KP_ENTER;
+	else if(!strcmp(a, "num lock")) return GLFW_KEY_KP_NUM_LOCK;
+	else if(!strcmp(a, "caps lock")) return GLFW_KEY_CAPS_LOCK;
+	else if(!strcmp(a, "scroll lock")) return GLFW_KEY_SCROLL_LOCK;
+	else if(!strcmp(a, "pause")) return GLFW_KEY_PAUSE;
+	else if(!strcmp(a, "left super")) return GLFW_KEY_LSUPER;
+	else if(!strcmp(a, "right super")) return GLFW_KEY_RSUPER;
+	else if(!strcmp(a, "menu")) return GLFW_KEY_MENU;
 	return -1;
 }
 
@@ -2977,8 +3048,29 @@ bool key(const char* a) {
 			return true;
 		return false;
 	}
+	if(!strcmp(a, "super")) {
+		if(glfwGetKey(keyboard_key_string_to_int("left super")) || glfwGetKey(keyboard_key_string_to_int("right super")))
+			return true;
+		return false;
+	}
 	
 	if(glfwGetKey(keyboard_key_string_to_int(a)))
+		return true;
+	return false;
+}
+
+/* *
+key_state(string)
+Check if a key is locked.
+
+C++
+bool a = key_state("caps lock");
+
+Python
+a = key_state('caps lock')
+* */
+bool key_state(const char* a) {
+	if(glfwGetKeyState(keyboard_key_string_to_int(a)))
 		return true;
 	return false;
 }

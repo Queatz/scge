@@ -1053,6 +1053,7 @@ fbo::fbo(image* a) {
 	
 	buffer = a;
 	buffer_is_mine = false;
+	depth_stencil = false;
 	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
 	
@@ -1062,13 +1063,13 @@ fbo::fbo(image* a) {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last);
 }
 
-fbo::fbo(int b, int c, bool quality) {
+fbo::fbo(int b, int c, bool quality, bool ds) {
 	if(glfw_state == 0)
 		graphics();
 	
 	glGenFramebuffersEXT(1, &id);
 	
-	GLint last;
+	GLint last, lastr;
 	glGetIntegerv(GL_FRAMEBUFFER_EXT, &last);
 	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
@@ -1079,11 +1080,30 @@ fbo::fbo(int b, int c, bool quality) {
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, buffer->id, 0);
 	glGenerateMipmapEXT(GL_TEXTURE_2D);
 	
+	if(ds) {
+		depth_stencil = true;
+		glGenRenderbuffersEXT(1, &depth_stencil_id);
+		
+		glGetIntegerv(GL_RENDERBUFFER_EXT, &lastr);
+		
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_id);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, b, c);
+		
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth_stencil_id);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth_stencil_id);
+		
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, lastr);
+	}
+	else
+		depth_stencil = false;
+	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last);
 }
 
 fbo::~fbo() {
-	glDeleteFramebuffersEXT(1, &id);
 	if(buffer_is_mine)
 		delete buffer;
+	if(depth_stencil_id)
+		glDeleteRenderbuffersEXT(1, &depth_stencil_id);
+	glDeleteFramebuffersEXT(1, &id);
 }

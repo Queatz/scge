@@ -3,7 +3,8 @@ define('NEWLINE', '
 ');
 
 function finish($buffer) {
-	file_put_contents('../documentation/index.html', $buffer);
+	file_put_contents('../documentation/index.html', str_replace('</div>', '</div>
+', $buffer));
 	return $buffer;
 }
 

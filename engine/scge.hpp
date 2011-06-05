@@ -236,24 +236,26 @@ struct program {
 
 struct fbo {
 	image* buffer;
+	GLuint depth_stencil_id;
 
-	fbo(int, int, bool = false);
+	fbo(int, int, bool = false, bool = false);
 	fbo(image*);
 	~fbo();
 	
 	GLuint id;
-	bool buffer_is_mine;
+	bool buffer_is_mine, depth_stencil;
 };
 
 bool graphics();
 void graphics_off();
 
+void keyboard_enable(const char*, bool = true);
 const char* keyboard_string();
 const char* keyboard_presses();
 
 void key_repeat(bool = true);
 
-bool window(int, int, bool = false, bool = false, int = 0);
+bool window(int = 320, int = 240, bool = false, bool = false, int = 0);
 void close_window();
 
 void window_title(const char*);
@@ -305,6 +307,7 @@ void blend_color(float, float, float, float = 1.0);
 
 void color(rgba);
 void color(float, float, float, float = 1.0);
+void color(float = 0.0, float = 1.0);
 void push_color();
 void pop_color();
 rgba get_color();
@@ -398,6 +401,8 @@ void stencil_clear(int = 0);
 void stencil_test(const char* = "always", int = 0);
 void stencil_op(const char* = "keep");
 
+void alpha_test(const char* = "always", float = 0.0);
+
 offset mouse_position();
 
 void mouse(bool = false);
@@ -407,6 +412,7 @@ int wheel();
 void move_mouse(int, int);
 
 bool key(const char*);
+bool key_state(const char*);
 
 bool audio();
 void audio_off();

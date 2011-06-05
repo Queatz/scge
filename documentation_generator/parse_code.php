@@ -182,7 +182,7 @@ function parse_code($files) {
 								}
 								
 								if($indent == 2 && $nindent == 1)
-									$sstr .= '</span">';
+									$sstr .= '</span>';
 								
 								$indent = $nindent;
 							}

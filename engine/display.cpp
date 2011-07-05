@@ -269,7 +269,7 @@ void key_repeat(bool a) {
 }
 
 /* *
-window(int w, int h, bool fullscreen = false, int fsaa = 0)
+window(int w, int h, bool fullscreen = false, bool resizable = False, int fsaa = 0)
 Open a window, optionally fullscreen. Returns true if the window was able to be opened, else false.
 #window sets up a default matrix with 0, 0 in the bottom-left.  If you want a different one you can call reset_matrix first.
 

@@ -46,7 +46,7 @@ sound
 A sound.
 
 	play(sound, unsigned int repeats = 0, bool wait = false, bool dont = false)
-		play the sound, ptionally waiting until it's finished, or just don't play it if it's already playing
+		play the sound, optionally waiting until it's finished, or just don't play it if it's already playing
 	stop()
 		stop it
 	pause()

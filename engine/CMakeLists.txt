@@ -3,7 +3,7 @@
 project(scge)
 add_library(scge SHARED engine.cpp)
 
-set(LIBRARY_LIST glfw GLEW SOIL freetype ftgl fluidsynth vorbisfile alure openal enet)# aubio
+set(LIBRARY_LIST glfw GLEW SOIL freeimage freetype ftgl fluidsynth vorbisfile alure openal enet)# aubio
 
 target_link_libraries(scge ${LIBRARY_LIST})
 

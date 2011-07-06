@@ -406,6 +406,12 @@ An image.
 		caches the images current state
 	pixel(int x, int y)
 		returns an rgba containing the pixel color of x and y
+	save(string name, string format)
+		save the images pixelcache to disk.  If format is omitted it is guessed from the filename.
+		#Alpha is not currently saved.
+		"png"
+		"jpg"
+		"bmp"
 
 C++
 image a("tux.png");
@@ -582,6 +588,39 @@ rgba image::pixel(int x, int y) {
 	
 	h = y * w * 3 + x * 3;
 	return rgba(static_cast<float>(cache->data[h + 0]) / 255.0, static_cast<float>(cache->data[h + 1]) / 255.0, static_cast<float>(cache->data[h + 2]) / 255.0);
+}
+
+FREE_IMAGE_FORMAT fif_from_string(const char* a) {
+	if(strcmp(a, "png"))
+		return FIF_PNG;
+	else if(strcmp(a, "jpg"))
+		return FIF_JPEG;
+	else if(strcmp(a, "bmp"))
+		return FIF_BMP;
+	else if(strcmp(a, "png"))
+		return FIF_UNKNOWN;
+}
+
+bool image::save(const char* a, const char* b) {
+	if(!cache)
+		refresh_pixel_cache();
+	
+	FIBITMAP* c = FreeImage_Allocate((int) width, (int) height, 24);
+	RGBQUAD color;
+	
+	for(unsigned int x = 0; x < width; x++)
+		for(unsigned int y = 0; y < height; y++) {
+			int h = y * width * 3 + x * 3;
+			color.rgbRed = cache->data[h + 0];
+			color.rgbGreen = cache->data[h + 1];
+			color.rgbBlue = cache->data[h + 2];
+			FreeImage_SetPixelColor(c, x, y, &color);
+		}
+	
+	if (FreeImage_Save(b ? fif_from_string(b) : FreeImage_GetFIFFromFilename(a), c, a, 0))
+		return true;
+	return false;
+
 }
 
 /* *

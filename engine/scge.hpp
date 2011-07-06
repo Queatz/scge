@@ -14,6 +14,7 @@
 #include <GL/glfw.h> // Graphics
 
 #include <SOIL/SOIL.h>
+#include "FreeImage.h"
 
 #include <FTGL/ftgl.h> // Font rendering
 #include <AL/alure.h> // Sound
@@ -149,6 +150,7 @@ struct image {
 	void from_pixelcache(int, int, int, int);
 	void refresh_pixel_cache();
 	rgba pixel(int, int);
+	bool save(const char*, const char* = NULL);
 	
 	GLuint id;
 	pixelcache* cache;

@@ -10,6 +10,9 @@
 #include <cstdarg>
 #include <ctype.h> // toupper()
 
+#include "conf.h"
+
+#ifdef WITH_GRAPHICS
 #include <GL/glew.h> // OpenGL extentions
 #include <GL/glfw.h> // Graphics
 
@@ -17,14 +20,25 @@
 #include "FreeImage.h"
 
 #include <FTGL/ftgl.h> // Font rendering
+#endif
+
+#ifdef WITH_SOUND
 #include <AL/alure.h> // Sound
 #include <fluidsynth.h>
+#endif
 
 /*#include <aubio/aubio.h> // Pitch, etc*/
 
+#ifdef WITH_NETWORK
 #include <enet/enet.h> // Networking
+#endif
 
-#include <eigen3/Eigen/Eigen> // Advanced math
+#ifdef WITH_MATH
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#endif
 
 struct box {
 	box(float = 0.0, float = 0.0);
@@ -79,6 +93,8 @@ struct rgba {
 	float r, g, b, a;
 };
 
+#ifdef WITH_SOUND
+
 #define NUM_BUFS 3
 
 struct buffer {
@@ -87,6 +103,7 @@ struct buffer {
 	~buffer();
 	
 	void clear();
+	void data(const void*, const char*, unsigned int, unsigned int);
 	
 	ALuint buf;
 };
@@ -105,6 +122,8 @@ struct sound {
 	void resume();
 	
 	void gain(float);
+	void maximum_gain(float);
+	void minimum_gain(float);
 	void pitch(float);
 	void pan(float);
 	void repeat(bool = true);
@@ -122,6 +141,10 @@ struct sound {
 	unsigned int pending;
 };
 
+#endif
+
+#ifdef WITH_GRAPHICS
+
 struct pixelcache {
 	pixelcache(int, int);
 	pixelcache(const pixelcache&);
@@ -134,7 +157,7 @@ struct pixelcache {
 };
 
 struct image {
-	image(const char*);
+	image(const char*, bool = false);
 	image(int, int, bool = false);
 	~image();
 	
@@ -151,6 +174,8 @@ struct image {
 	void refresh_pixel_cache();
 	rgba pixel(int, int);
 	bool save(const char*, const char* = NULL);
+	
+	bool mipmaps;
 	
 	GLuint id;
 	pixelcache* cache;
@@ -176,6 +201,7 @@ struct font {
 	
 	float width_of(const char*);
 	float height_of(const char*);
+	rect bbox(const char*);
 	
 	FTFont* data;//x
 	float size_default;
@@ -289,6 +315,8 @@ rgba pixel_coordinates(float, float, float = 0);
 void polygon_mode(const char*);
 void enable(const char*, bool = true);
 
+void cull(const char* a);
+
 void light_ambient(float = 0.0, float = 0.0, float = 0.0, float = 0.0);
 void light_two_side(bool = true);
 void light_set(int, const char*, float = 0.0, float = 0.0, float = 0.0, float = 1.0);
@@ -300,12 +328,17 @@ void clear_color(float, float, float, float = 1.0);
 void clear();
 void depth_clear();
 void depth_test(const char*);
+void depth_op(bool);
 void point_size(float);
 void line_width(float);
 void line_stipple(const char* = NULL, int = 1);
 void polygon_stipple(const char* = NULL, bool = false, const char* = NULL, int = 0, int = 0);
+void polygon_depth_offset(float = 0.0, float = 0.0);
 
 void blend_color(float, float, float, float = 1.0);
+
+void color_mask(bool, bool, bool, bool = true);
+void color_mask(bool);
 
 void color(rgba);
 void color(float, float, float, float = 1.0);
@@ -385,6 +418,7 @@ void mquad();
 
 void iquad(float, float, float, float);
 void imquad(float, float, float, float);
+void imquad(float, float, float, float, float);
 
 void point(float, float);
 void line(float, float, float, float);
@@ -393,6 +427,9 @@ void ipoint(float, float);
 void ipoint(float, float, float);
 void impoint(float, float);
 void iline(float, float, float, float);
+
+void sprite(float, float, float = 0.0, float = 1.0, float = NULL, float = NULL);
+void save_matrix();
 
 void portion(int, int, int, int);
 
@@ -415,6 +452,10 @@ void move_mouse(int, int);
 
 bool key(const char*);
 bool key_state(const char*);
+
+#endif
+
+#ifdef WITH_SOUND
 
 bool audio();
 void audio_off();
@@ -444,6 +485,10 @@ void microphone_off();
 void microphone_update();
 sound* ms();
 */
+
+#endif
+
+#ifdef WITH_NETWORK
 
 // Server
 
@@ -484,6 +529,8 @@ struct host {
 	ENetAddress address;//x
 	ENetHost* me;//x
 };
+
+#endif
 
 // Other
 

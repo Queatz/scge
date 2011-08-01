@@ -10,6 +10,15 @@ std::stack<std::string, std::list<std::string> > blend_mode_stack;
 int width = 0, height = 0, glfw_state = 0;
 bool fullscreened;
 
+float clipNear, clipFar, FOV, aspect;
+float saved_clipNear, saved_clipFar, saved_FOV, saved_aspect;
+
+glm::mat4 saved_projection_matrix, saved_modelview_matrix;
+glm::vec3 saved_up, saved_right, saved_z;
+
+GLfloat mv[16];
+GLfloat pr[16];
+
 std::string key_pressed_list = "";
 std::string char_string = "";
 
@@ -286,38 +295,18 @@ window(320, 240, True) //fullscreen
 see:swap, poll
 * */
 bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
-	if(glfw_state >= 1 && glfwGetWindowParam(GLFW_OPENED)) {
-		if(!fullscreen && !fullscreened) {
-			glfwSetWindowSize(x, y);
-			glViewport(0, 0, x, y);
-			glfwGetWindowSize(&width, &height);
-			return true;
-		}
-		
-		glfwCloseWindow();
-		
-		if(!resizeable)
-			glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
-		
-		if(glfwOpenWindow(x, y, 0, 0, 0, 0, 24, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
-			err("window", "could alter window");
-			return false;
-		}
-	}
-	else {
-		if(glfw_state == 0)
-			graphics();
-		
-		if(fsaa)
-			glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
-		
-		if(!resizeable)
-			glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
+	if(glfw_state == 0)
+		graphics();
 	
-		if(glfwOpenWindow(x, y, 0, 0, 0, 0, 24, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
-			err("window", "could not initiate window");
-			return false;
-		}
+	if(fsaa)
+		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
+	
+	if(!resizeable)
+		glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
+
+	if(glfwOpenWindow(x, y, 0, 0, 0, 0, 24, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
+		err("window", "could not initiate window");
+		return false;
 	}
 	
 	glfw_state = 2;
@@ -330,7 +319,9 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	
 	glfwSwapInterval(0);
 	
-	glfwGetWindowSize(&width, &height);
+	//glfwGetWindowSize(&width, &height);
+	width = x;
+	height = y;
 	
 	// ...should these be here...
 	glDisable(GL_DEPTH_TEST);
@@ -342,6 +333,7 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, width, 0, height, -1.0, 1.0);
+	clipNear = -1; clipFar = 1;
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
@@ -471,6 +463,9 @@ Python
 a = display_dimentions()
 * */
 ibox display_dimensions() {
+	if(glfw_state == 0)
+		graphics();
+	
 	GLFWvidmode a;
 	glfwGetDesktopMode(&a);
 	
@@ -634,6 +629,7 @@ see:push pop get
 * */
 void orthographic(float a, float b, float c, float d, float e, float f) {
 	glOrtho(a, b, c, d, e, f);
+	clipNear = e; clipFar = f;
 }
 
 /* *
@@ -655,6 +651,8 @@ void perspective(float fovY, float aspect, float zNear, float zFar) {
 	float fH = tan(fovY / 360.0 * M_PI) * zNear;
 	float fW = fH * aspect;
 	glFrustum(-fW, fW, -fH, fH, zNear, zFar);
+	clipNear = zNear; clipFar = zFar;
+	aspect = aspect; FOV = tan(fovY / 360.0 * M_PI);
 } 
 
 /* *
@@ -671,6 +669,7 @@ see:push pop get
 * */
 void frustum(float a, float b, float c, float d, float e, float f) {
 	glFrustum(a, b, c, d, e, f);
+	clipNear = e; clipFar = f;
 }
 
 /* *
@@ -687,7 +686,7 @@ Python
 polygon_mode('outline')
 * */
 void polygon_mode(const char* a) {
-	int c;
+	int c = -1;
 	
 	if (!strcmp(a, "dot"))
 		c = GL_POINT;
@@ -699,7 +698,7 @@ void polygon_mode(const char* a) {
 	if(c > -1)
 		glPolygonMode(GL_FRONT_AND_BACK, c);
 	else
-		err(" polygon_mode", "invalid option");
+		err("polygon_mode", "invalid option");
 }
 
 /* *
@@ -711,12 +710,17 @@ Enable or disable different things:
 "line smooth" - draw lines smoothly
 "blend" - blending, such as with alpha
 "depth" - depth testing
-"cull" - cull back faces
+"cull" - cull
 "stencil" - stencil testing
 "alpha" - alpha testing
 "polygon stipple" - stippling of the polygons
+"polygon depth offset" - offsetting the depth values of polygons
+"line depth offset" - offsetting the depth values of lines
+"point depth offset" - offsetting the depth values of points
 "line stipple" - stipple on the lines
 "light" - shade with lights
+"smooth" - smooth shading
+"normalize" - normalize normals
 
 C++
 enable("texture");
@@ -749,12 +753,24 @@ void enable(const char* a, bool b) {
 		c = GL_ALPHA_TEST;
 	else if (!strcmp(a, "polygon stipple"))
 		c = GL_POLYGON_STIPPLE;
+	else if (!strcmp(a, "polygon depth offset"))
+		c = GL_POLYGON_OFFSET_FILL;
+	else if (!strcmp(a, "line depth offset"))
+		c = GL_POLYGON_OFFSET_LINE;
+	else if (!strcmp(a, "point depth offset"))
+		c = GL_POLYGON_OFFSET_POINT;
 	else if (!strcmp(a, "line stipple"))
 		c = GL_LINE_STIPPLE;
 	else if (!strcmp(a, "cull"))
 		c = GL_CULL_FACE;
 	else if (!strcmp(a, "light"))
 		c = GL_LIGHTING;
+	else if (!strcmp(a, "smooth")) {
+		glShadeModel(b ? GL_SMOOTH : GL_FLAT);
+		return;
+	}
+	else if (!strcmp(a, "normalize"))
+		c = GL_NORMALIZE;
 	
 	if(c > -1) {
 		if(b) glEnable(c);
@@ -762,6 +778,36 @@ void enable(const char* a, bool b) {
 	}
 	else
 		err("enable", "invalid option");
+}
+
+/* *
+cull(string)
+Set the faces to cull:
+"back" - cull faces that face away
+"front" - cull faces that face the camera
+"all" - cull all faces
+
+C++
+cull("back");
+
+Python
+cull('back')
+
+* */
+void cull(const char* a) {
+	GLint c = -1;
+	
+	if (!strcmp(a, "front"))
+		c = GL_FRONT;
+	else if (!strcmp(a, "back"))
+		c = GL_BACK;
+	else if (!strcmp(a, "all"))
+		c = GL_FRONT_AND_BACK;
+	
+	if(c > -1)
+		glCullFace(c);
+	else
+		err("cull", "invalid option");
 }
 
 /* *
@@ -907,6 +953,8 @@ void material(const char* face, const char* w, float r, float g, float b, float 
 		glMaterialfv(fce, GL_SPECULAR, f);
 	else if(!strcmp(w, "emission"))
 		glMaterialfv(fce, GL_EMISSION, f);
+	else
+		err("material", "invalid value");
 		
 }
 
@@ -981,7 +1029,7 @@ GLenum comparison_string_to_gl(const char* a) {
 
 /* *
 depth_test(const char* = "<")
-Clear the depth buffer.
+How to compare depth values to decide if the fragment should be discarded.
 
 C++
 depth_test();
@@ -993,6 +1041,20 @@ see: enable
 * */
 void depth_test(const char* a) {
 	glDepthFunc(comparison_string_to_gl(a));
+}
+
+/* *
+depth_op(bool)
+Disable or enable writing to the depth buffer.
+
+C++
+depth_op(false);
+
+Python
+depth_op(False) 
+* */
+void depth_op(bool a) {
+	glDepthMask(a ? GL_TRUE : GL_FALSE);
 }
 
 /* *
@@ -1799,6 +1861,22 @@ void polygon_stipple(const char* a, bool inverse, const char* interpolation, int
 }
 
 /* *
+polygon_depth_offset(float = 0.0, float = 0.0)
+Set a offset in the depth buffer to be used for polygons.
+
+C++
+polygon_depth_offset()
+
+Python
+polygon_depth_offset()
+
+see: depth_test
+* */
+void polygon_depth_offset(float a, float b) {
+	glPolygonOffset(a, b);
+}
+
+/* *
 blend_color(float, float, float, float = 1.0)
 Set the blending color.
 !The only use for this is with "alpha" blending.
@@ -1815,6 +1893,25 @@ void blend_color(float r, float g, float b, float a) {
 	glBlendColor(r, g, b, a);
 }
 
+/* *
+color_mask(bool r, bool g, bool b, bool a)
+Disable or enable colors.
+
+C++
+color_mask(false); // Disable color rendering
+
+Python
+color_mask(False) # Disable color rendering
+
+see:blend_mode
+* */
+void color_mask(bool r, bool g, bool b, bool a) {
+	glColorMask(r, g, b, a);
+}
+
+void color_mask(bool a) {
+	glColorMask(a, a, a, a);
+}
 
 
 /* *
@@ -2145,11 +2242,13 @@ void display_set_blend_mode_from_string(const char* a) {
 
 		if(!strcmp(a, "add"))
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		else if (!strcmp(a, "color"))
+			glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
 		else if (!strcmp(a, "multiply"))
 			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
 		else if(!strcmp(a, "mix"))
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if(!strcmp(a, "none"))
+		else if(!strcmp(a, "color"))
 			glBlendFunc(GL_ONE, GL_ZERO);
 		else if(!strcmp(a, "saturate"))
 			glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA_SATURATE);
@@ -2161,7 +2260,7 @@ void display_set_blend_mode_from_string(const char* a) {
 /* *
 blend_mode(string)
 Set how you want to blend the images onto the window.
-"none" - do not blend
+"color" - color blending without alpha
 "mix" - normal alpha blending
 "multipy" - multiplicative blending
 "add" - additive blending
@@ -2573,6 +2672,13 @@ void imquad(float x, float y, float x2, float y2) {
 	glTexCoord2f(0, 1); glVertex2i(x, y2);
 }
 
+void imquad(float x, float y, float x2, float y2, float z) {
+	glTexCoord2f(0, 0); glVertex3f(x, y, z);
+	glTexCoord2f(1, 0); glVertex3f(x2, y, z);
+	glTexCoord2f(1, 1); glVertex3f(x2, y2, z);
+	glTexCoord2f(0, 1); glVertex3f(x, y2, z);
+}
+
 void point(float x, float y) {
 	glBegin(GL_POINTS);
 	glVertex2i(x, y);
@@ -2627,6 +2733,84 @@ void iline(float a, float b, float c, float d) {
 }
 
 /* *
+sprite(float x, float y, float z, float scaleX, float scaleY)
+Draw a mapped quad at a position according to the last saved matrix.
+
+C++
+sprite(0.0, 0.0, 0.0);
+
+Python
+sprite(0.0, 0.0, 0.0)
+
+see:save_matrix
+* */
+
+void sprite(float x, float y, float z, float sx, float sy, float r) {
+	if(!sy)
+		sy = sx;
+	
+	glm::vec3 pos(x, y, z);
+	
+	if(r) {
+		float c = cos(r), s = sin(r);
+		glm::vec3 bl, tl, tr, br;
+		
+		bl = glm::gtx::rotate_vector::rotate((-saved_right*sx - saved_up*sy), r, saved_z);
+		tl = glm::gtx::rotate_vector::rotate((saved_right*sx - saved_up*sy), r, saved_z);
+		tr = glm::gtx::rotate_vector::rotate((saved_right*sx + saved_up*sy), r, saved_z);
+		br = glm::gtx::rotate_vector::rotate((-saved_right*sx + saved_up*sy), r, saved_z);
+		
+	/*	
+		glTexCoord2f(co_x, co_y); glVertex2i(x + (-xo * rc - -yo * rs) * sx, y + (-yo * rc + -xo * rs) * sy);
+		glTexCoord2f(co_x2, co_y); glVertex2i(x + ((w - xo) * rc - -yo * rs) * sx, y + (-yo * rc + (w - xo) * rs) * sy);
+		glTexCoord2f(co_x2, co_y2); glVertex2i(x + ((w - xo) * rc - (h - yo) * rs) * sx, y + ((h - yo) * rc + (w - xo) * rs) * sy);
+		glTexCoord2f(co_x, co_y2); glVertex2i(x + (-xo * rc - (h - yo) * rs) * sx, y + ((h - yo) * rc + -xo * rs) * sy);
+	*/	
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0); glVertex3fv(glm::value_ptr(pos + bl));
+		glTexCoord2f(1, 0); glVertex3fv(glm::value_ptr(pos + tl));
+		glTexCoord2f(1, 1); glVertex3fv(glm::value_ptr(pos + tr));
+		glTexCoord2f(0, 1); glVertex3fv(glm::value_ptr(pos + br));
+		glEnd();
+		return;
+	}
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3fv(glm::value_ptr(pos + (-saved_right*sx - saved_up*sy)));
+	glTexCoord2f(1, 0); glVertex3fv(glm::value_ptr(pos + (saved_right*sx - saved_up*sy)));
+	glTexCoord2f(1, 1); glVertex3fv(glm::value_ptr(pos + (saved_right*sx + saved_up*sy)));
+	glTexCoord2f(0, 1); glVertex3fv(glm::value_ptr(pos + (-saved_right*sx + saved_up*sy)));
+	glEnd();
+}
+
+
+void save_matrix() {
+	saved_clipNear = clipNear;
+	saved_clipFar = clipFar;
+	saved_FOV = FOV;
+	saved_aspect = aspect;
+	glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+	glGetFloatv(GL_PROJECTION_MATRIX, pr);
+	
+	for(int column = 0; column < 4; column++) for(int row = 0; row < 4; row++)
+		saved_modelview_matrix[column][row] = mv[column + 4*row];
+	
+	for(int column = 0; column < 4; column++) for(int row = 0; row < 4; row++)
+		saved_projection_matrix[column][row] = pr[column + 4*row];
+	
+	saved_right[0] = saved_modelview_matrix[0][0];
+	saved_right[1] = saved_modelview_matrix[0][1];
+	saved_right[2] = saved_modelview_matrix[0][2];
+	
+	saved_up[0] = saved_modelview_matrix[1][0];
+	saved_up[1] = saved_modelview_matrix[1][1];
+	saved_up[2] = saved_modelview_matrix[1][2];
+	
+	saved_z[0] = saved_modelview_matrix[2][0];
+	saved_z[1] = saved_modelview_matrix[2][1];
+	saved_z[2] = saved_modelview_matrix[2][2];
+}
+
+/* *
 portion(int x, int y, int x2, int y2)
 Draw a portion of an image, keeping it's place.
 
@@ -2678,6 +2862,10 @@ void normal(float x, float y, float z) {
 /* *
 pixel(int x, int y, string = "")
 Returns and rgba containing the pixel information on the screen or as specified by the string.
+"depth"
+"stencil"
+"luminance"
+"color"
 
 C++
 rgba a();
@@ -3073,4 +3261,870 @@ bool key_state(const char* a) {
 	if(glfwGetKeyState(keyboard_key_string_to_int(a)))
 		return true;
 	return false;
+}
+
+/* *
+pixelcache
+A cache of pixels.
+
+	width int
+		the width of the cache
+	height int
+		the height of the cache
+	pixel(int x, int y)
+		get a pixel as an rgba
+	set_pixel(int, int, rgba)
+		set a pixel in the cache
+	data GLubyte
+		the cache data
+
+C++
+pixelcache a(24, 24);
+
+pixelcache b(a); //copy a
+
+Python
+a = pixelcache(24, 24)
+
+b = pixelcache(a) #copy a
+
+see:image.cache
+* */
+pixelcache::pixelcache(const pixelcache& a) {
+	width = a.width;
+	height = a.height;
+	
+	int s = height*width*3;
+	data = new GLubyte[s];
+	memcpy(data, a.data, sizeof(GLubyte)*s);
+}
+
+pixelcache::pixelcache(int w, int h) {
+	width = w;
+	height = h;
+	
+	data = new GLubyte[height*width*3];
+}
+
+pixelcache::~pixelcache() {
+	if(data)
+		delete data;
+}
+
+rgba pixelcache::pixel(int x, int y) {
+	int h;
+	
+	if(x < 0 || x >= width || y < 0 || y >= height)
+		return rgba(0.0, 0.0, 0.0);
+	
+	h = y * width * 3 + x * 3;
+	return rgba(static_cast<float>(data[h + 0]) / 255.0, static_cast<float>(data[h + 1]) / 255.0, static_cast<float>(data[h + 2]) / 255.0);
+}
+
+void pixelcache::set_pixel(int x, int y, rgba c) {
+	int h;
+	if(x < 0 || x >= width || y < 0 || y >= height) {
+		err("pixelcache", "set_pixel", "out of bounds");
+		return;
+	}
+	
+	h = y * width * 3 + x * 3;
+	data[h + 0] = static_cast<GLubyte>(c.r * 255.0);
+	data[h + 1] = static_cast<GLubyte>(c.g * 255.0);
+	data[h + 2] = static_cast<GLubyte>(c.b * 255.0);
+}
+
+/* *
+image
+An image.
+
+	width float
+		the width of the image
+	height float
+		the height of the image
+	cache pixelcache
+		the image's cache
+	set(string)
+		set options on the image:
+		"linear" - draw the image smoothly
+		"nearest" - draw the image pixelated
+		"mirrored repeat" - repeat the image coordinates, mirrored
+		"repeat" - repeat the image coordinates
+		"clamp" - clamp to image coordinates
+		"clamp to edge" - clamp min/max texel
+	from_pixelcache()
+		restore the image to it's cached state
+	from_pixelcache(pixelcache)
+		overwrites pixels with data from a pixelcache
+	from_pixelcache(int x, int y, int w, int h)
+		restore a portion of the image to it's cached state
+	from_pixelcache(pixelcache, int x, int y, int w, int h)
+		overwrites a portion of pixels with data from a pixelcache
+	refresh_pixel_cache()
+		caches the images current state
+	pixel(int x, int y)
+		returns an rgba containing the pixel color of x and y
+	save(string name, string format)
+		save the images pixelcache to disk.  If format is omitted it is guessed from the filename.
+		#Alpha is not currently saved.
+		"png"
+		"jpg"
+		"bmp"
+
+C++
+image a("tux.png");
+a.set("linear");
+rgba b();
+b = a.pixel(0, 0);
+
+image c(64, 64, false); //creates a blank image sized 64 by 64, and not high quality
+
+Python
+a = image('tux.png')
+a.set('linear')
+b = a.pixel(0, 0)
+
+c = image(64, 64, False); #creates a blank image sized 64 by 64, and not high quality
+
+see:use_image
+* */
+image::image(const char* a, bool m) {
+	if(glfw_state == 0)
+		graphics();
+	
+	id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL
+	
+	cache = NULL;
+	mipmaps = m;
+	
+	if(id == 0) {
+		err("image", "could not load");
+		return;
+	}
+	
+	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+	
+	if(m) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
+}
+
+image::image(int a, int b, bool quality) {
+	if(glfw_state == 0)
+		graphics();
+	
+	cache = NULL;
+	mipmaps = false;
+	
+	width = a;
+	height = b;
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	glTexImage2D(GL_TEXTURE_2D, 0, (quality ? GL_RGB12 : GL_RGB8), a, b, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+}
+
+/*void image::save(const char* a) {
+	unsigned char b[1] = {id};
+	if(!SOIL_save_image(a, SOIL_SAVE_TYPE_DDS, width, height, 3, b))
+		err("image", "save", "could not save image");
+	
+}*/
+
+image::~image() {
+	if(cache)
+		delete cache;
+}
+
+void image::set(const char* a) {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	if (!strcmp(a, "linear")) {
+		if(mipmaps)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		else
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	} else if (!strcmp(a, "nearest")) {
+		if(mipmaps)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		else
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}  else if (!strcmp(a, "nearest mipmap")) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	} else if (!strcmp(a, "mirrored repeat")) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	} else if (!strcmp(a, "repeat")) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	} else if (!strcmp(a, "clamp")) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	} else if (!strcmp(a, "clamp to edge")) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::from_pixelcache(pixelcache* a) {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, a->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::from_pixelcache(pixelcache* a, int x, int y, int w, int h) {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, a->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::from_pixelcache() {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::from_pixelcache(int x, int y, int w, int h) {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::refresh_pixel_cache() {
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, id);
+	
+	if(!cache)
+		cache = new pixelcache(width, height);
+	
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	
+	// Reset to the origional texture
+	if(bind != id)
+		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+rgba image::pixel(int x, int y) {
+	int h = height, w = width;
+	
+	if(x < 0 || x >= w || y < 0 || y >= h)
+		return rgba(0.0, 0.0, 0.0);
+	
+	if(!cache)
+		refresh_pixel_cache();
+	
+	h = y * w * 3 + x * 3;
+	return rgba(static_cast<float>(cache->data[h + 0]) / 255.0, static_cast<float>(cache->data[h + 1]) / 255.0, static_cast<float>(cache->data[h + 2]) / 255.0);
+}
+
+FREE_IMAGE_FORMAT fif_from_string(const char* a) {
+	if(strcmp(a, "png"))
+		return FIF_PNG;
+	else if(strcmp(a, "jpg"))
+		return FIF_JPEG;
+	else if(strcmp(a, "bmp"))
+		return FIF_BMP;
+	else if(strcmp(a, "png"))
+		return FIF_UNKNOWN;
+}
+
+bool image::save(const char* a, const char* b) {
+	if(!cache)
+		refresh_pixel_cache();
+	
+	FIBITMAP* c = FreeImage_Allocate((int) width, (int) height, 24);
+	RGBQUAD color;
+	
+	for(unsigned int x = 0; x < width; x++)
+		for(unsigned int y = 0; y < height; y++) {
+			int h = y * width * 3 + x * 3;
+			color.rgbRed = cache->data[h + 0];
+			color.rgbGreen = cache->data[h + 1];
+			color.rgbBlue = cache->data[h + 2];
+			FreeImage_SetPixelColor(c, x, y, &color);
+		}
+	
+	if (FreeImage_Save(b ? fif_from_string(b) : FreeImage_GetFIFFromFilename(a), c, a, 0))
+		return true;
+	return false;
+
+}
+
+/* *
+font
+A font.
+
+	width_of(string)
+		returns a float representing the width of the computed string
+	height_of(string)
+		returns the caclulated height of the string as a float
+	size(float)
+		set the font size
+		!It is better to create two fonts of different sizes rather than changing the font size each frame because the font has to be regenerated.
+	push_size()
+		store the current font size into a stack
+	pop_size()
+		reset the font size to the last stored value
+	get_size()
+		get the size of the font
+	outset(float[, float])
+		set the outset of the font, for use in extrude fonts
+	depth(float)
+		set the depth of the font, for use in extrude fonts
+	line_height()
+		set the line height
+	ascent()
+		get the ascent of the font
+	descent()
+		get the decent of the font
+	advance(string)
+		get the advance of the string, where the next character should be placed
+	bbox(string) rect
+		get the bounding box of a string
+
+C++
+font a("sans.ttf");
+
+font b("serif.ttf", 16.0); //default to size 16 instead of 12, the default
+b.push_size();
+b.size(12.0);
+b.pop_size();
+
+font c("sans.ttf", 12, "outline"); //create an outline font
+
+Python
+a = font('sans.ttf')
+
+b = font('serif.ttf', 16.0) #default to size 16 instead of 12, the default
+b.push_size()
+b.size(12.0)
+b.pop_size()
+
+c = font('sans.ttf', 12, 'outline') #create an outline font
+
+see: use_font, write
+
+* */
+font::font(const char* a, float b, const char* c) {
+	if(glfw_state == 0)
+		graphics();
+	
+	if(!b)
+		b = 12;
+	if(!strcmp("bitmap", c))
+		data = new FTBitmapFont(a);
+	else if(!strcmp("pixmap", c))
+		data = new FTPixmapFont(a);
+	else if(!strcmp("outline", c))
+		data = new FTOutlineFont(a);
+	else if(!strcmp("polygon", c))
+		data = new FTPolygonFont(a);
+	else if(!strcmp("buffer", c))
+		data = new FTBufferFont(a);
+	else if(!strcmp("extrude", c))
+		data = new FTExtrudeFont(a);
+	else if(!strcmp("texture", c))
+		data = new FTTextureFont(a);
+	else {
+		err("font", "invalid type");
+		return;
+	}
+	
+	if(data->Error()) {
+		err("font", "could not load");
+		delete data;
+		data = NULL;
+		return;
+	}
+	data->FaceSize(b);
+	
+	size_default = b;
+}
+
+void font::size(float a) {
+	size_stack.top() = a;
+	data->FaceSize(a);
+}
+
+void font::depth(float a) {
+	data->Depth(a);
+}
+
+void font::outset(float a) {
+	data->Outset(a);
+}
+
+void font::outset(float a, float b) {
+	data->Outset(a, b);
+}
+
+font::~font() {
+	delete data;
+}
+
+void font::push_size() {
+	if(size_stack.empty())
+		size_stack.push(size_default);
+	else
+		size_stack.push(size_stack.top());
+}
+
+void font::pop_size() {
+	if(size_stack.size() > 1)
+		size_stack.pop();
+	else
+		err("font", "pop_size", "already at begining of stack");
+	
+	if(size_stack.empty())
+		data->FaceSize(size_default);
+	else
+		data->FaceSize(size_stack.top());
+}
+
+float font::get_size() {
+	return data->FaceSize();
+}
+
+float font::line_height() {
+	return data->LineHeight();
+}
+
+float font::ascent() {
+	return data->Ascender();
+}
+
+float font::descent() {
+	return data->Descender();
+}
+
+float font::advance(const char* a) {
+	return data->Advance(a);
+}
+
+float font::width_of(const char* a) {
+	FTBBox b = data->BBox(a);
+	return b.Upper().Xf() - b.Lower().Xf();
+}
+
+float font::height_of(const char* a) {
+	FTBBox b = data->BBox(a);
+	return b.Upper().Yf() - b.Lower().Yf();
+}
+
+rect font::bbox(const char* a) {
+	FTBBox b = data->BBox(a);
+	return rect(b.Lower().Xf(), b.Lower().Yf(), b.Upper().Xf(), b.Upper().Yf());
+}
+
+/* *
+paper
+A paper.
+
+	align(string)
+		set the alignment of writing: left, center, right, justify
+	get_align()
+		returns the aligmnent method currently used
+	pen(font)
+		set the font used on this paper
+	get_pen()
+		get the font used on this paper
+	line_spacing(float)
+		set the line spacing
+	get_line_spacing()
+		get the line spacing
+	width(float)
+		set the width of the paper
+	get_width()
+		get the width of the paper
+	width_of(string)
+		returns a float representing the width of the computed string
+	height_of(string)
+		returns the caclulated height of the string as a float
+	write(string[, float, float, bool])
+		write some text using this paper, at x, y position, optionally flipped.
+
+C++
+paper a();
+
+font b("sans.ttf");
+paper b(b, 120.0, "center");
+
+Python
+a = paper()
+
+b = font('sans.ttf')
+b = paper(f, 120.0, 'center')
+
+see: font
+* */
+paper::paper() {
+	data = new FTSimpleLayout();
+}
+
+FTGL::TextAlignment paper_align_from_string(const char* a) {
+	if(!strcmp("left", a))
+		return FTGL::ALIGN_LEFT;
+	if(!strcmp("center", a))
+		return FTGL::ALIGN_CENTER;
+	if(!strcmp("right", a))
+		return FTGL::ALIGN_RIGHT;
+	if(!strcmp("justify", a))
+		return FTGL::ALIGN_JUSTIFY;
+	
+	err("paper", "align", "unknown method");
+	return FTGL::ALIGN_LEFT;
+}
+
+paper::paper(font* f, float a, const char* b) {
+	data = new FTSimpleLayout();
+	data->SetLineLength(a);
+	data->SetAlignment(paper_align_from_string(b));
+	data_font = f;
+	data->SetFont(data_font->data);
+}
+
+paper::~paper() {
+	delete data;
+}
+
+void paper::align(const char* a) {
+	data->SetAlignment(paper_align_from_string(a));
+}
+
+const char* paper::get_align() {
+	if(data->GetAlignment() == FTGL::ALIGN_LEFT)
+		return "left";
+	if(data->GetAlignment() == FTGL::ALIGN_CENTER)
+		return "center";
+	if(data->GetAlignment() == FTGL::ALIGN_RIGHT)
+		return "right";
+	if(data->GetAlignment() == FTGL::ALIGN_JUSTIFY)
+		return "justify";
+}
+
+void paper::pen(font* a) {
+	data_font = a;
+	data->SetFont(data_font->data);
+}
+
+font* paper::get_pen() {
+	return data_font;
+}
+
+void paper::line_spacing(float a) {
+	data->SetLineSpacing(a);
+}
+
+float paper::get_line_spacing() {
+	return data->GetLineSpacing();
+}
+
+void paper::width(float a) {
+	data->SetLineLength(a);
+}
+
+float paper::get_width() {
+	return data->GetLineLength();
+}
+
+float paper::width_of(const char* a) {
+	FTBBox b = data->BBox(a);
+	return b.Upper().Xf() - b.Lower().Xf();
+}
+
+float paper::height_of(const char* a) {
+	FTBBox b = data->BBox(a);
+	return b.Upper().Yf() - b.Lower().Yf();
+}
+
+void paper::write(const char* b, float x, float y, bool invert_y) {
+	glPushMatrix();
+	glTranslatef(x, y, 0.0);
+	if(invert_y) {
+		glScalef(1.0, -1.0, 1.0);
+	}
+	
+	GLint bind;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
+	data->Render(b);
+	
+	// Reset to the origional texture
+	glBindTexture(GL_TEXTURE_2D, bind);
+	
+	glPopMatrix();
+}
+
+/* *
+shader
+A shader object.
+
+	compile()
+		compile the shader
+
+C++
+shader a("fragment", "burgundy.frag"); //create a fragment shader from a file
+a.compile();
+
+shader b("vertex", "jitter.vert");
+
+Python
+a = shader('fragment', 'burgundy.frag') #create a fragment shader from a file
+a.compile()
+
+b = shader('vertex', 'jitter.vert')
+
+!Vertex shaders are not very useful yet. Fragment shaders are the ones you would use for post-processed image effects.
+* */
+shader::shader(const char* a, const char* b) {
+	if(glfw_state < 2) {
+		id = 0;
+		err("shader", "window needs to be open");
+		return;
+	}
+	
+	glGetError();
+	if(!strcmp(a, "vertex"))
+		id = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
+	else if(!strcmp(a, "fragment"))
+		id = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
+	else {
+		err("shader", "invalid type");
+		return;
+	}
+	const char* c = read_file(b);
+	if(c)
+		glShaderSourceARB(id, 1, &c, NULL);
+}
+
+shader::~shader() {
+	if(id)
+		glDeleteObjectARB(id);
+}
+
+void shader::compile() {
+	if(!id)
+		return;
+	
+	glCompileShaderARB(id);
+	
+	GLchar infoLog[2056]; int length;
+	glGetShaderInfoLog(id, 2056, &length, infoLog);
+	
+	int compiled;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &compiled);
+	
+	if(compiled != GL_TRUE) {
+		err("shader", "compile", "error");
+		std::cout << infoLog << std::endl;
+	}
+}
+
+/* *
+program
+A program that processes draw operations.
+
+	attach(shader)
+		attaches a shader to this program
+	link()
+		links and completes the program, making it ready for use
+	uniform_int(string, int)
+		set a uniform integer on the program
+	uniform_float(string, float, ...)
+		set a uniform float on the program
+	uniform_image(string, int, image)
+		set a uniform sampler2D with a multitexture ID
+
+C++
+program a();
+
+Python
+a = program()
+
+see: use_program
+* */
+program::program() {
+	if(glfw_state < 2) {
+		id = 0;
+		err("program", "window needs to be open");
+		return;
+	}
+	
+	id = glCreateProgramObjectARB();
+}
+
+program::~program() {
+	glDeleteObjectARB(id);
+}
+
+void program::uniform_int(const char* a, int b) {
+	glUniform1iARB(glGetUniformLocationARB(id, a), b);
+}
+
+void program::uniform_float(const char* a, float b) {
+	glUniform1fARB(glGetUniformLocationARB(id, a), b);
+}
+
+void program::uniform_float(const char* a, float b, float c) {
+	glUniform2fARB(glGetUniformLocationARB(id, a), b, c);
+}
+
+void program::uniform_float(const char* a, float b, float c, float d) {
+	glUniform3fARB(glGetUniformLocationARB(id, a), b, c, d);
+}
+
+void program::uniform_float(const char* a, float b, float c, float d, float e) {
+	glUniform4fARB(glGetUniformLocationARB(id, a), b, c, d, e);
+}
+
+void program::uniform_image(const char* a, int b, image* c) {
+	GLint act;
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &act);
+	glActiveTexture(GL_TEXTURE0 + b);
+	glBindTexture(GL_TEXTURE_2D, c->id);
+	
+	uniform_int(a, b);
+	
+	// Reset to the original texture
+	if(act != GL_TEXTURE0 + b) glActiveTexture(act);
+}
+
+void program::attach(shader* a) {
+	if(id)
+		glAttachObjectARB(id, a->id);
+}
+
+void program::link() {
+	if(id)
+		glLinkProgramARB(id);
+}
+
+/* *
+fbo
+A frame buffer object.
+
+C++
+fbo a(320, 240);
+
+fbo b(320, 240, true); //high quality
+
+Python
+a = fbo(320, 240)
+
+b = fbo(320, 240, true) #high quality
+
+see: use_fbo
+* */
+fbo::fbo(image* a) {
+	if(glfw_state == 0)
+		graphics();
+	
+	glGenFramebuffersEXT(1, &id);
+	
+	GLint last;
+	glGetIntegerv(GL_FRAMEBUFFER_EXT, &last);
+	
+	buffer = a;
+	buffer_is_mine = false;
+	depth_stencil = false;
+	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
+	
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, buffer->id, 0);
+	glGenerateMipmapEXT(GL_TEXTURE_2D);
+	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last);
+}
+
+fbo::fbo(int b, int c, bool quality, bool ds) {
+	if(glfw_state == 0)
+		graphics();
+	
+	glGenFramebuffersEXT(1, &id);
+	
+	GLint last, lastr;
+	glGetIntegerv(GL_FRAMEBUFFER_EXT, &last);
+	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
+	
+	buffer = new image(b, c, quality);
+	buffer_is_mine = true;
+	
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, buffer->id, 0);
+	glGenerateMipmapEXT(GL_TEXTURE_2D);
+	
+	if(ds) {
+		depth_stencil = true;
+		glGenRenderbuffersEXT(1, &depth_stencil_id);
+		
+		glGetIntegerv(GL_RENDERBUFFER_EXT, &lastr);
+		
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_id);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, b, c);
+		
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth_stencil_id);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth_stencil_id);
+		
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, lastr);
+	}
+	else
+		depth_stencil = false;
+	
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last);
+}
+
+fbo::~fbo() {
+	if(buffer_is_mine)
+		delete buffer;
+	if(depth_stencil_id)
+		glDeleteRenderbuffersEXT(1, &depth_stencil_id);
+	glDeleteFramebuffersEXT(1, &id);
 }

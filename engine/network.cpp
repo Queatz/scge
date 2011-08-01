@@ -120,9 +120,9 @@ A networkable host.
 		connect to a server, on a port, with max channels of and return a new peer
 	disconnect(peer, unsigned int = 0)
 		disconnect from a peer, optionally with some unusable data
-	send(peer, string = "", int = 0)
+	send(peer, string = "", int = 0, bool reliable = true, bool sequenced = true)
 		queue a message for a peer on a channel
-	broadcast(string = "", int = 0)
+	broadcast(string = "", int = 0, bool reliable = true, bool sequenced = true)
 		queue a message to all connected peers on a channel
 	service(int = 2000)
 		listen for commands from the server, within a timeout

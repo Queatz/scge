@@ -8,7 +8,7 @@ gcc -shared scge_wrap.o -lscge -L. -o _scge.so
 
 rm scge_wrap.cxx
 rm scge_wrap.o
-rm scge.hpp
+#rm scge.hpp
 
 if [ ! -d ./scge ]; then
 	mkdir ./scge

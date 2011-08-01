@@ -8,6 +8,7 @@ python (3.1)
 glfw (>=2.6)
 GLEW
 SOIL
+freeimage
 freetype
 ftgl
 vorbisfile
@@ -15,7 +16,7 @@ alure (>=1.1)
 openal
 enet (>=1.3.1)
 
-Debian: sudo apt-get install python3.1 libglfw-dev libglew1.5-dev libsoil-dev libfreetype6-dev libftgl-dev libvorbisfile3 libalure-dev libopenal-dev libenet-dev libeigen3-dev
+Debian: sudo apt-get install python3.1 libglfw-dev libglew1.5-dev libsoil-dev libfreetype6-dev libftgl-dev libvorbisfile3 libalure-dev libopenal-dev libenet-dev libfreeimage-dev
 
 If your repositories don't have some of the requirements you can find them here:
 

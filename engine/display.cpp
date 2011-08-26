@@ -6,7 +6,9 @@ std::stack<rgba, std::list<rgba> > color_stack;
 std::stack<crop, std::list<crop> > image_crop_stack;
 std::stack<icrop, std::list<icrop> > scissor_stack;
 std::stack<std::string, std::list<std::string> > blend_mode_stack;
-	
+
+GLFWwindow glfw_window = NULL;
+
 int width = 0, height = 0, glfw_state = 0;
 bool fullscreened;
 
@@ -40,6 +42,8 @@ bool graphics() {
 		err("graphics", "could not");
 		return false;
 	}
+	
+	FreeImage_Initialise();
 		
 	fbo_stack.push(NULL);
 	image_stack.push(NULL);
@@ -65,11 +69,44 @@ Python
 graphics_off()
 * */
 void graphics_off() {
+	FreeImage_DeInitialise();
 	glfwTerminate();
 }
 
-void GLFWCALL window_resize_callback(int w, int h) {
-	glViewport(0, 0, w, h);
+FREE_IMAGE_FORMAT fif_from_string(const char* a = NULL, const char* b = NULL) {
+	if(b) {
+		if(strcmp(b, "png"))
+			return FIF_PNG;
+		else if(strcmp(b, "jpg"))
+			return FIF_JPEG;
+		else if(strcmp(b, "bmp"))
+			return FIF_BMP;
+	}
+	
+	if(a) {
+		FREE_IMAGE_FORMAT t = FreeImage_GetFileType(a, 0);
+	
+		if(t == FIF_UNKNOWN)
+			t = FreeImage_GetFIFFromFilename(a);
+		return t;
+	}
+	
+	return FIF_UNKNOWN;
+}
+
+int default_from_fif(FREE_IMAGE_FORMAT a) {
+	if(a == FIF_PNG)
+		return PNG_DEFAULT;
+	else if(a == FIF_JPEG)
+		return JPEG_DEFAULT;
+	else if(a == FIF_BMP)
+		return BMP_DEFAULT;
+	else
+		return 0;
+}
+
+void window_resize_callback(GLFWwindow g, int w, int h) {
+//	glViewport(0, 0, w, h);
 }
 
 const char* int_to_key_name(int a) {
@@ -122,7 +159,6 @@ const char* int_to_key_name(int a) {
 	case '/': return "/";
 	case '`': return "`";
 	
-	case GLFW_KEY_UNKNOWN: return "unknown";
 	case GLFW_KEY_SPACE: return "space";
 	case GLFW_KEY_ESC: return "esc";
 	case GLFW_KEY_F1: return "f1";
@@ -181,7 +217,7 @@ const char* int_to_key_name(int a) {
 	case GLFW_KEY_RSUPER: return "left super";
 	case GLFW_KEY_MENU: return "menu";
 	}
-	return "";
+	return "unknown";
 }
 
 char key_int_to_char(int a) {
@@ -189,16 +225,15 @@ char key_int_to_char(int a) {
 	return NULL;
 }
 
-void GLFWCALL window_key_callback(int key, int action) {
+void window_key_callback(GLFWwindow w, int key, int action) {
 	if(action == GLFW_PRESS) {
 		key_pressed_list += ":";
 		key_pressed_list += int_to_key_name(key);
 	}
 }
 
-void GLFWCALL window_char_callback(int key, int action) {
-	if(action == GLFW_PRESS)
-		char_string += key_int_to_char(key);
+void window_char_callback(GLFWwindow w, int key) {
+	char_string += key_int_to_char(key);
 }
 
 /* *
@@ -272,29 +307,29 @@ key_repeat()
 * */
 void key_repeat(bool a) {
 	if(a)
-		glfwEnable(GLFW_KEY_REPEAT);
+		glfwEnable(glfw_window, GLFW_KEY_REPEAT);
 	else
-		glfwDisable(GLFW_KEY_REPEAT);
+		glfwDisable(glfw_window, GLFW_KEY_REPEAT);
 }
 
 /* *
-window(int w, int h, bool fullscreen = false, bool resizable = False, int fsaa = 0)
+window(string "title", int w, int h, bool fullscreen = false, bool resizable = False, int fsaa = 0)
 Open a window, optionally fullscreen. Returns true if the window was able to be opened, else false.
 #window sets up a default matrix with 0, 0 in the bottom-left.  If you want a different one you can call reset_matrix first.
 
 C++
-window(320, 240);
+window("Window", 320, 240);
 
-window(320, 240, true); //fullscreen
+window("Window", 320, 240, true); //fullscreen
 
 Python
-window(320, 240)
+window("Window", 320, 240)
 
-window(320, 240, True) //fullscreen
+window("Window", 320, 240, True) //fullscreen
 
 see:swap, poll
 * */
-bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
+bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	if(glfw_state == 0)
 		graphics();
 	
@@ -304,7 +339,8 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	if(!resizeable)
 		glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
 
-	if(glfwOpenWindow(x, y, 0, 0, 0, 0, 24, 16, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW)) != GL_TRUE) {
+	glfw_window = glfwOpenWindow(x, y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
+	if(!glfw_window) {
 		err("window", "could not initiate window");
 		return false;
 	}
@@ -319,7 +355,7 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	
 	glfwSwapInterval(0);
 	
-	//glfwGetWindowSize(&width, &height);
+	//glfwGetWindowSize(glfw_window, &width, &height);
 	width = x;
 	height = y;
 	
@@ -327,7 +363,6 @@ bool window(int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 	
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
@@ -354,7 +389,7 @@ close_window()
 see:window
 * */
 void close_window() {
-	glfwCloseWindow();
+	glfwCloseWindow(glfw_window);
 	glfw_state = 1;
 }
 
@@ -369,7 +404,7 @@ Python
 window_title('Hello World')
 * */
 void window_title(const char* a) {
-	glfwSetWindowTitle(a);
+	glfwSetWindowTitle(glfw_window, a);
 }
 
 /* *
@@ -384,9 +419,9 @@ a = window_resized()
 * */
 bool window_resized() {
 	int w, h;
-	glfwGetWindowSize(&w, &h);
+	glfwGetWindowSize(glfw_window, &w, &h);
 	if(w != width || h != height) {
-		glfwGetWindowSize(&width, &height);
+		glfwGetWindowSize(glfw_window, &width, &height);
 		return true;
 	}
 	return false;
@@ -403,7 +438,7 @@ Python
 a = window_opened()
 * */
 bool window_opened() {
-	if(glfwGetWindowParam(GLFW_OPENED))
+	if(glfwIsWindow(glfw_window))
 		return true;
 	return false;
 }
@@ -419,7 +454,7 @@ Python
 a = window_active()
 * */
 bool window_active() {
-	if(glfwGetWindowParam(GLFW_ACTIVE))
+	if(glfwGetWindowParam(glfw_window, GLFW_ACTIVE))
 		return true;
 	return false;
 }
@@ -449,7 +484,7 @@ Python
 rest(2.0)
 * */
 void rest(float a) {
-	glfwSleep(a);
+	usleep(a*1000);
 }
 
 /* *
@@ -469,7 +504,7 @@ ibox display_dimensions() {
 	GLFWvidmode a;
 	glfwGetDesktopMode(&a);
 	
-	return ibox(a.Width, a.Height);
+	return ibox(a.width, a.height);
 }
 
 /* *
@@ -484,7 +519,7 @@ a = window_dimentions()
 * */
 ibox window_dimensions() {
 	int w, h;
-	glfwGetWindowSize(&w, &h);
+	glfwGetWindowSize(glfw_window, &w, &h);
 	
 	return ibox(w, h);
 }
@@ -500,7 +535,7 @@ Python
 position_window(12, 12)
 * */
 void position_window(int x, int y) {
-	glfwSetWindowPos(x, y);
+	glfwSetWindowPos(glfw_window, x, y);
 }
 
 /* *
@@ -552,8 +587,8 @@ void poll() {
 }
 
 /* *
-screenshot(string)
-Save a screenshot to a TGA file.
+screenshot(string, type)
+Save a screenshot.
 
 C++
 screenshot("outcome.tga");
@@ -561,9 +596,16 @@ screenshot("outcome.tga");
 Python
 screenshot('outcome.tga')
 * */
-void screenshot(const char* a) {
-	if(!SOIL_save_screenshot(a, SOIL_SAVE_TYPE_TGA, 0, 0, width, height))
-		err("screenshot", "could not save");
+bool screenshot(const char* a, const char* b) {
+	pixelcache p(width, height);
+	
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, p.data);
+	
+	if (p.save(a, b))
+		return true;
+	err("screenshot", "could not save");
+	return false;
+
 }
 
 /* *
@@ -2382,6 +2424,14 @@ void texture_environment(const char* a) {
 		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
 		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
 	}
+	else if(!strcmp(a, "s")) {
+		float envColor[] = {1,0,0,1};
+		glTexEnvfv( GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, envColor );
+		glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
+		glTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE );
+		glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_CONSTANT );
+		glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_PREVIOUS );
+	}
 	else
 		err("texture_environment", "invalid parameter");
 }
@@ -3014,7 +3064,7 @@ see:move_mouse
 * */
 offset mouse_position() {
 	int x, y;
-	glfwGetMousePos(&x, &y);
+	glfwGetMousePos(glfw_window, &x, &y);
 	return offset(x, y);
 }
 
@@ -3030,9 +3080,9 @@ mouse() #hide the pointer
 * */
 void mouse(bool a) {
 	if(a)
-		glfwEnable(GLFW_MOUSE_CURSOR);
+		glfwEnable(glfw_window, GLFW_MOUSE_CURSOR);
 	else
-		glfwDisable(GLFW_MOUSE_CURSOR);
+		glfwDisable(glfw_window, GLFW_MOUSE_CURSOR);
 }
 
 // Utility function
@@ -3069,7 +3119,7 @@ bool button(short a) {
 	if(a < 1 || a > 8)
 		return false;
 	
-	return glfwGetMouseButton(GLFW_MOUSE_BUTTON_1 + a - 1) == GLFW_PRESS;
+	return glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_1 + a - 1) == GLFW_PRESS;
 }
 
 /* *
@@ -3083,7 +3133,9 @@ Python
 a = wheel()
 * */
 int wheel() {
-	return glfwGetMouseWheel();
+	int x, y;
+	glfwGetScrollOffset(glfw_window, &x, &y);
+	return y;
 }
 
 /* *
@@ -3097,7 +3149,7 @@ Python
 move_mouse(160, 120)
 * */
 void move_mouse(int a, int b) {
-	glfwSetMousePos(a, b);
+	glfwSetMousePos(glfw_window, a, b);
 }
 
 int keyboard_key_string_to_int(const char* a) {
@@ -3222,27 +3274,27 @@ a = key('left shift')
 * */
 bool key(const char* a) {
 	if(!strcmp(a, "shift")) {
-		if(glfwGetKey(keyboard_key_string_to_int("left shift")) || glfwGetKey(keyboard_key_string_to_int("right shift")))
+		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left shift")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right shift")))
 			return true;
 		return false;
 	}
 	if(!strcmp(a, "ctrl")) {
-		if(glfwGetKey(keyboard_key_string_to_int("left ctrl")) || glfwGetKey(keyboard_key_string_to_int("right ctrl")))
+		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left ctrl")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right ctrl")))
 			return true;
 		return false;
 	}
 	if(!strcmp(a, "alt")) {
-		if(glfwGetKey(keyboard_key_string_to_int("left alt")) || glfwGetKey(keyboard_key_string_to_int("right alt")))
+		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left alt")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right alt")))
 			return true;
 		return false;
 	}
 	if(!strcmp(a, "super")) {
-		if(glfwGetKey(keyboard_key_string_to_int("left super")) || glfwGetKey(keyboard_key_string_to_int("right super")))
+		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left super")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right super")))
 			return true;
 		return false;
 	}
 	
-	if(glfwGetKey(keyboard_key_string_to_int(a)))
+	if(glfwGetKey(glfw_window, keyboard_key_string_to_int(a)))
 		return true;
 	return false;
 }
@@ -3258,8 +3310,8 @@ Python
 a = key_state('caps lock')
 * */
 bool key_state(const char* a) {
-	if(glfwGetKeyState(keyboard_key_string_to_int(a)))
-		return true;
+	//if(glfwGetKeyState(glfw_window, keyboard_key_string_to_int(a)))
+	//	return true;
 	return false;
 }
 
@@ -3275,6 +3327,7 @@ A cache of pixels.
 		get a pixel as an rgba
 	set_pixel(int, int, rgba)
 		set a pixel in the cache
+	save(string filename, [string type])
 	data GLubyte
 		the cache data
 
@@ -3334,6 +3387,28 @@ void pixelcache::set_pixel(int x, int y, rgba c) {
 	data[h + 2] = static_cast<GLubyte>(c.b * 255.0);
 }
 
+bool pixelcache::save(const char* a, const char* b) {
+	if(!data)
+		return false;
+	
+	FIBITMAP* c = FreeImage_Allocate(width, height, 24);
+	RGBQUAD color;
+	
+	for(unsigned int x = 0; x < width; x++)
+		for(unsigned int y = 0; y < height; y++) {
+			int h = y * width * 3 + x * 3;
+			color.rgbRed = data[h + 0];
+			color.rgbGreen = data[h + 1];
+			color.rgbBlue = data[h + 2];
+			FreeImage_SetPixelColor(c, x, y, &color);
+		}
+	
+	if (FreeImage_Save(fif_from_string(a, b), c, a, 0))
+		return true;
+	return false;
+
+}
+
 /* *
 image
 An image.
@@ -3391,8 +3466,29 @@ see:use_image
 image::image(const char* a, bool m) {
 	if(glfw_state == 0)
 		graphics();
+
+	FIBITMAP *bm = FreeImage_Load(fif_from_string(a), a, 0);
+	bm = FreeImage_ConvertTo24Bits(bm);
+	bool has_alpha = FreeImage_IsTransparent(bm);
 	
-	id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL
+	BYTE *bits = new BYTE[FreeImage_GetWidth(bm) * FreeImage_GetHeight(bm) * (has_alpha ? 4 : 3)];
+	
+	FreeImage_ConvertToRawBits(bits, bm, FreeImage_GetPitch(bm), 24, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, FALSE);
+	
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, bits);
+	
+	if(m)
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+	
+	if (bm)
+		FreeImage_Unload(bm);
+	
+	
+	//id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL
 	
 	cache = NULL;
 	mipmaps = m;
@@ -3565,37 +3661,11 @@ rgba image::pixel(int x, int y) {
 	return rgba(static_cast<float>(cache->data[h + 0]) / 255.0, static_cast<float>(cache->data[h + 1]) / 255.0, static_cast<float>(cache->data[h + 2]) / 255.0);
 }
 
-FREE_IMAGE_FORMAT fif_from_string(const char* a) {
-	if(strcmp(a, "png"))
-		return FIF_PNG;
-	else if(strcmp(a, "jpg"))
-		return FIF_JPEG;
-	else if(strcmp(a, "bmp"))
-		return FIF_BMP;
-	else if(strcmp(a, "png"))
-		return FIF_UNKNOWN;
-}
-
 bool image::save(const char* a, const char* b) {
 	if(!cache)
 		refresh_pixel_cache();
 	
-	FIBITMAP* c = FreeImage_Allocate((int) width, (int) height, 24);
-	RGBQUAD color;
-	
-	for(unsigned int x = 0; x < width; x++)
-		for(unsigned int y = 0; y < height; y++) {
-			int h = y * width * 3 + x * 3;
-			color.rgbRed = cache->data[h + 0];
-			color.rgbGreen = cache->data[h + 1];
-			color.rgbBlue = cache->data[h + 2];
-			FreeImage_SetPixelColor(c, x, y, &color);
-		}
-	
-	if (FreeImage_Save(b ? fif_from_string(b) : FreeImage_GetFIFFromFilename(a), c, a, 0))
-		return true;
-	return false;
-
+	return cache->save(a, b);
 }
 
 /* *

@@ -4,10 +4,9 @@ http://queatz.com/scge/documentation.html
 INSTALLING
 
 Install all the requirements:
-python (3.1)
-glfw (>=2.6)
+python (>=3.1)
+glfw (>=3)
 GLEW
-SOIL
 freeimage
 freetype
 ftgl

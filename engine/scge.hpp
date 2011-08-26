@@ -9,14 +9,14 @@
 #include <sstream>
 #include <cstdarg>
 #include <ctype.h> // toupper()
+#include <unistd.h> // usleep()
 
 #include "conf.h"
 
 #ifdef WITH_GRAPHICS
 #include <GL/glew.h> // OpenGL extentions
-#include <GL/glfw.h> // Graphics
+#include <GL/glfw3.h> // Graphics
 
-#include <SOIL/SOIL.h>
 #include "FreeImage.h"
 
 #include <FTGL/ftgl.h> // Font rendering
@@ -151,6 +151,7 @@ struct pixelcache {
 	~pixelcache();
 	void set_pixel(int, int, rgba);
 	rgba pixel(int, int);
+	bool save(const char*, const char* = NULL);
 	
 	int width, height;
 	GLubyte *data;//x
@@ -283,7 +284,7 @@ const char* keyboard_presses();
 
 void key_repeat(bool = true);
 
-bool window(int = 320, int = 240, bool = false, bool = false, int = 0);
+bool window(const char* = "scge test", int = 320, int = 240, bool = false, bool = false, int = 0);
 void close_window();
 
 void window_title(const char*);
@@ -300,7 +301,7 @@ void position_window(int, int);
 void vsync(bool = true);
 void swap();
 void poll();
-void screenshot(const char*);
+bool screenshot(const char*, const char* = NULL);
 
 void matrix(const char* = NULL);
 void reset_matrix();

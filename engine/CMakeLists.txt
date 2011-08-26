@@ -13,18 +13,15 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.in ${CMAKE_CURRENT_SOURCE_DIR}/c
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 if(${WITH_GRAPHICS})
-	target_link_libraries(scge glfw GLEW SOIL freeimage freetype ftgl)
-#	target_link_libraries(scge Xxf86vm Xext X11 GL pthread m /usr/local/lib/libglfw.a GLEW SOIL freeimage freetype /usr/local/lib/libftgl.a)
+	target_link_libraries(scge GL GLU /usr/local/lib/libglfw.so GLEW freeimage freetype ftgl)
 endif()
 
 if(${WITH_SOUND})
 	target_link_libraries(scge fluidsynth vorbisfile alure openal)
-#	target_link_libraries(scge fluidsynth vorbisfile /usr/local/lib/libalure-static.a openal)
 endif()
 
 if(${WITH_NETWORK})
 	target_link_libraries(scge enet)
-#	target_link_libraries(scge /usr/local/lib/libenet.a)
 endif()
 
 install(TARGETS scge LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)

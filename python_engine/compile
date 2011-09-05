@@ -1,9 +1,9 @@
 #! /usr/bin/env sh
 
-python3.1 copyh.py
+python3 copyh.py
 
 swig -python -py3 -c++ scge.i
-gcc -c -x c++ -fPIC scge_wrap.cxx -I/usr/include/python3.1 -I/usr/include/freetype2
+gcc -c -x c++ -fPIC scge_wrap.cxx -I/usr/include/python3.2 -I/usr/include/freetype2
 gcc -shared scge_wrap.o -lscge -L. -o _scge.so
 
 rm scge_wrap.cxx
@@ -17,5 +17,11 @@ fi
 mv scge.py ./scge/__init__.py
 mv _scge.so ./scge/_scge.so
 
-sudo python3.1 setup.py install
+if [ -d ./scge/shared ]; then
+	rm -r ./scge/shared
+fi
+
+cp -r ./shared ./scge/shared
+
+sudo python3.2 setup.py install
 

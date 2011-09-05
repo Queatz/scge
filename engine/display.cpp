@@ -24,6 +24,9 @@ GLfloat pr[16];
 std::string key_pressed_list = "";
 std::string char_string = "";
 
+void glfw_error(int code, const char* string) {
+}
+
 /* * General Functions
 graphics()
 Initiate the context.  Returns true if it could happen, otherwise false.
@@ -38,6 +41,8 @@ graphics()
 see:window, key, button
 * */
 bool graphics() {
+	glfwSetErrorCallback(glfw_error);
+	
 	if(glfwInit() != GL_TRUE) {
 		err("graphics", "could not");
 		return false;
@@ -3468,25 +3473,34 @@ image::image(const char* a, bool m) {
 		graphics();
 
 	FIBITMAP *bm = FreeImage_Load(fif_from_string(a), a, 0);
-	bm = FreeImage_ConvertTo24Bits(bm);
+	
+	if(!bm) {
+		err("image", "could not load");
+		return;
+	}
+	
 	bool has_alpha = FreeImage_IsTransparent(bm);
 	
-	BYTE *bits = new BYTE[FreeImage_GetWidth(bm) * FreeImage_GetHeight(bm) * (has_alpha ? 4 : 3)];
+	if(has_alpha)
+		bm = FreeImage_ConvertTo32Bits(bm);
+	else
+		bm = FreeImage_ConvertTo24Bits(bm);
 	
-	FreeImage_ConvertToRawBits(bits, bm, FreeImage_GetPitch(bm), 24, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, FALSE);
+	BYTE *bits = new BYTE[FreeImage_GetHeight(bm) * FreeImage_GetPitch(bm)];
+	
+	FreeImage_ConvertToRawBits(bits, bm, FreeImage_GetPitch(bm), (has_alpha ? 32 : 24), FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
 	
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_RGBA : GL_RGB), GL_UNSIGNED_BYTE, bits);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_BGRA : GL_BGR), GL_UNSIGNED_BYTE, bits);
 	
 	if(m)
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	
 	if (bm)
 		FreeImage_Unload(bm);
-	
 	
 	//id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL
 	

@@ -1,11 +1,16 @@
 #!/usr/bin/env python3.1
 
-import sys
+import sys, os
 sys.prefix = '/usr'
 sys.exec_prefix = '/usr'
 
 from distutils.core import setup
 from distutils.extension import Extension
+
+shared = ['_scge.so']
+for r, d, f in os.walk('shared'):
+	for s in f:
+		shared.append(os.path.join(r, s))
 
 setup(name='scge',
       version='0.1',
@@ -14,5 +19,5 @@ setup(name='scge',
       author_email='queatz@gmail.com',
       url='http://www.queatz.com',
       packages=['scge'],
-      package_data={'scge': ['_scge.so']},
+      package_data={'scge': shared},
 )

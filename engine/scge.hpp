@@ -17,7 +17,7 @@
 #include <GL/glew.h> // OpenGL extentions
 #include <GL/glfw3.h> // Graphics
 
-#include "FreeImage.h"
+#include "FreeImagePlus.h"
 
 #include <FTGL/ftgl.h> // Font rendering
 #endif

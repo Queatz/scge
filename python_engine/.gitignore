@@ -3,3 +3,5 @@
 !setup.py
 !scge.i
 !compile
+!shared
+!shared/*

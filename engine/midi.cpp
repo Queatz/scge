@@ -54,6 +54,9 @@ void midi_off() {
 soundfont
 A soundfont.
 
+	get_presets()
+		Returns a semicolon-seperated list of presets.
+
 C++
 soundfont a("soundfont.sf2");
 
@@ -72,6 +75,31 @@ soundfont::soundfont(const char* a) {
 	}
 	else
 		id = -1;
+}
+
+std::string soundfont::get_presets() {
+	fluid_sfont_t *f = fluid_synth_get_sfont_by_id(midi_synth, id);
+	fluid_preset_t p;
+	std::ostringstream s;
+	std::string t;
+	
+	if(!f) {
+		err("soundfont", "get_presets", "error");
+		return "";
+	}
+	
+	f->iteration_start(f);
+	while(f->iteration_next(f, &p)) {
+		s << p.get_banknum(&p);
+		s << ":";
+		s << p.get_num(&p);
+		s << ":";
+		s << p.get_name(&p);
+		s << ";";
+	}
+	
+	t = s.str();
+	return t;
 }
 
 /*const char* soundfont::instrument(unsigned int bank, unsigned int preset) {

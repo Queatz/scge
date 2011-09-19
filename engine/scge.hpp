@@ -279,8 +279,8 @@ bool graphics();
 void graphics_off();
 
 void keyboard_enable(const char*, bool = true);
-const char* keyboard_string();
-const char* keyboard_presses();
+std::string keyboard_string();
+std::string keyboard_presses();
 
 void key_repeat(bool = true);
 
@@ -470,7 +470,9 @@ void midi_off();
 struct soundfont {
 	soundfont(const char* = NULL);
 	
-	int id;
+	std::string get_presets();
+	
+	unsigned int id;
 };
 
 void midi_preset(soundfont*, int = 0, unsigned int = 0, unsigned int = 0);

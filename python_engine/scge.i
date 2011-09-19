@@ -1,7 +1,7 @@
 /* File : scge.i */
 %module scge
 
-//%include "std_string.i"
+%include "std_string.i"
 
 %{
 #include "../engine/scge.hpp"

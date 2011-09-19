@@ -275,10 +275,10 @@ a = keyboard_string()
 
 see:keyboard_enable
 * */
-const char* keyboard_string() {
+std::string keyboard_string() {
 	std::string a = char_string;
 	char_string = "";
-	return a.c_str();
+	return a;
 }
 
 /* *
@@ -294,10 +294,10 @@ a = keyboard_presses()
 
 see:keyboard_enable
 * */
-const char* keyboard_presses() {
+std::string keyboard_presses() {
 	std::string a = key_pressed_list;
 	key_pressed_list = "";
-	return a.c_str();
+	return a;
 }
 
 /* *
@@ -337,6 +337,13 @@ see:swap, poll
 bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	if(glfw_state == 0)
 		graphics();
+	
+	if(!x || !y) {
+		GLFWvidmode d;
+		glfwGetDesktopMode(&d);
+		x = d.width;
+		y = d.height;
+	}
 	
 	if(fsaa)
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
@@ -3499,7 +3506,7 @@ image::image(const char* a, bool m) {
 	if(m)
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	
-	if (bm)
+	if(bm)
 		FreeImage_Unload(bm);
 	
 	//id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL

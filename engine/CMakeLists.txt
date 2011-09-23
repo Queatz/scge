@@ -17,7 +17,7 @@ if(${WITH_GRAPHICS})
 endif()
 
 if(${WITH_SOUND})
-	target_link_libraries(scge fluidsynth vorbisfile alure openal)
+	target_link_libraries(scge fluidsynth vorbisfile alure openal aubio)
 endif()
 
 if(${WITH_NETWORK})

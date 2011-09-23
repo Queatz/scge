@@ -25,9 +25,8 @@
 #ifdef WITH_SOUND
 #include <AL/alure.h> // Sound
 #include <fluidsynth.h>
+#include <aubio/aubio.h> // Pitch, etc
 #endif
-
-/*#include <aubio/aubio.h> // Pitch, etc*/
 
 #ifdef WITH_NETWORK
 #include <enet/enet.h> // Networking
@@ -57,6 +56,7 @@ struct offset {
 	
 	offset operator+(const offset&) const;
 	offset operator-(const offset&) const;
+	bool operator==(const offset&) const;
 		
 	float x, y;
 };
@@ -96,6 +96,19 @@ struct rgba {
 #ifdef WITH_SOUND
 
 #define NUM_BUFS 3
+
+struct soundbyte {
+	soundbyte();
+	soundbyte(ALshort*, unsigned int);
+	~soundbyte();
+	
+	float calculate_frequency(unsigned int = 0, const char* = "schmitt");
+	float get(unsigned int);
+	
+	ALshort* data;
+	unsigned int length;
+	unsigned int frequency;
+};
 
 struct buffer {
 	buffer(const char*);
@@ -443,7 +456,7 @@ void stencil_op(const char* = "keep");
 
 void alpha_test(const char* = "always", float = 0.0);
 
-offset mouse_position();
+offset mouse_position(bool = false);
 
 void mouse(bool = false);
 bool button(short);
@@ -482,12 +495,11 @@ void midi_play(int = 0, int = 60, int = 100);
 void midi_stop(int = 0, int = 60);
 void midi_pan(int = 0, int = 63);
 
-/*
-void microphone();
+void microphone_on();
 void microphone_off();
 void microphone_update();
-sound* ms();
-*/
+soundbyte* microphone_buffer();
+
 
 #endif
 

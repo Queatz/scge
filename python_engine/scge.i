@@ -11,6 +11,7 @@
 
 %rename(__add__) offset::operator+;
 %rename(__sub__) offset::operator-;
+%rename(__eq__) offset::operator==;
 
 %include "scge.hpp"
 

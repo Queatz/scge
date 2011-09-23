@@ -2,6 +2,12 @@ std::vector<ALuint> loaded_sounds;
 std::vector<ALuint> loaded_buffers;
 int alure_state = 0;
 
+ALCdevice* capture_device = NULL;
+unsigned int capture_samples_available = 0;
+unsigned int capture_samples_length = 0;
+ALshort* capture_samples = NULL;
+soundbyte capture_soundbyte;
+
 /* * Audio Functions
 audio()
 Turn on audio dealings and returns true if it could.
@@ -31,6 +37,7 @@ bool audio() {
 	
 	atexit(audio_off);
 	//alDistanceModel(AL_NONE);
+	//TODO: audio_model(const char* s)
 	
 	alure_state = 1;
 	return true;
@@ -132,7 +139,213 @@ void audio_soundfont(const char* a) {
 
 /* Microphone */
 
+const char * alErrorString(ALenum code) {
+	if(code == AL_NO_ERROR)
+		return "no error";
+	if(code == AL_INVALID_NAME)
+		return "invalid name";
+	if(code == AL_INVALID_ENUM)
+		return "invalid enum";
+	if(code == AL_INVALID_VALUE)
+		return "invalid value";
+	if(code == AL_INVALID_OPERATION)
+		return "invalid operation";
+	if(code == AL_OUT_OF_MEMORY)
+		return "out of memory";
+}
+
+const char * alcErrorString(ALenum code) {
+	if(code == AL_NO_ERROR)
+		return "not an error";
+	if(code == ALC_INVALID_VALUE)
+		return "invalid value";
+	if(code == ALC_OUT_OF_MEMORY)
+		return "out of memory";
+}
+
+#define CAPTURE_FREQ 44100
+#define CAPTURE_BUF_SIZE 22050
+
+
+/* * Microphone
+microphone_on()
+Turn on microphone capturing.
+
+C++
+microphone_on();
+
+Python
+microphone_on()
+* */
+void microphone_on() {
+	if(alure_state == 0)
+		audio();
+	
+	if(!capture_device) {
+		alGetError();
+		
+		capture_device = alcCaptureOpenDevice(NULL, CAPTURE_FREQ, AL_FORMAT_MONO16, CAPTURE_BUF_SIZE);
+	
+		if(!capture_device) {
+			err("microphone_on", alErrorString(alGetError()));
+			return;
+		}
+		
+		ALenum e;
+		e = alcGetError(capture_device);
+		if(e != AL_NO_ERROR)
+			err("microphone_on", alcErrorString(e));
+	}
+	
+	alcCaptureStart(capture_device);
+}
+
+/* *
+microphone_off()
+Turn off microphone capturing.
+
+C++
+microphone_off();
+
+Python
+microphone_off()
+* */
+void microphone_off() {
+	if(!capture_device)
+		return;
+	
+	alcCaptureStop(capture_device);
+	alcCaptureCloseDevice(capture_device);
+	
+	capture_device = NULL;
+}
+
+/* *
+microphone_update()
+Refresh the microphone soundbyte with the latest captured samples.
+
+C++
+microphone_update();
+
+Python
+microphone_update()
+* */
+void microphone_update() {
+	if(!capture_device)
+		return;
+	
+	ALCint samps;
+	alcGetIntegerv(capture_device, ALC_CAPTURE_SAMPLES, 1, &samps);
+	
+	ALenum e = alcGetError(capture_device);
+	if(e) {
+		err("microphone_update", alcErrorString(e));
+		return;
+	}
+	
+	// Resize if needed
+	if(samps > capture_samples_available) {
+		if(capture_samples)
+			delete capture_samples;
+		capture_samples = new ALshort[samps];
+		capture_samples_available = samps;
+	}
+	
+	capture_samples_length = samps;
+	
+	alcCaptureSamples(capture_device, capture_samples, samps);
+}
+
+/* *
+microphone_buffer()
+Get the soundbyte associated with the microphone.
+
+C++
+microphone_buffer();
+
+Python
+microphone_buffer()
+* */
+soundbyte* microphone_buffer() {
+	capture_soundbyte.data = capture_samples;
+	capture_soundbyte.length = capture_samples_length;
+	capture_soundbyte.frequency = CAPTURE_FREQ;
+	return &capture_soundbyte;
+}
+
 /* * Resources
+soundbyte
+Bytes of sound.
+
+	get(sample)
+		Get a sample as a float
+	calculate_pitch(max_samples = 0, method = "schmitt")
+		tries to find a pitch in this soundbyte and returns the frequency
+		"mcomb"
+		"fcomb"
+		"schmitt"
+		"yin"
+		"yinfft"
+C++
+soundbyte a();
+
+Python
+a = soundbyte()
+* */
+soundbyte::soundbyte() : data(NULL), length(0) {
+}
+
+soundbyte::soundbyte(ALshort* d, unsigned int l) : data(d), length(l) {
+}
+
+soundbyte::~soundbyte() {
+}
+
+float soundbyte::calculate_frequency(unsigned int max_samples, const char* method) {
+	uint_t len = length;
+	uint_t nblocks = 4;
+	uint_t hop;
+	uint_t offset;
+	fvec_t* smpls;
+	fvec_t* freq;
+	float ret;
+	
+	if(max_samples && len > max_samples) len = max_samples;
+	// Use the samples at the end of the soundbyte
+	offset = length - len;
+	
+	hop = len / nblocks;
+	
+	smpls = new_fvec(hop);
+	freq = new_fvec(1);
+	
+	aubio_pitch_t* p = new_aubio_pitch(const_cast<char*>(method), len, hop, frequency);
+	aubio_pitch_set_unit(p, const_cast<char*>("freq"));
+	
+	int n, i;
+	for(n = 0; n < nblocks; n++) {
+		for(i = 0; i < hop; i++)
+			fvec_write_sample(smpls, (smpl_t) data[offset + n * hop + i] / 32768, i);
+		
+		aubio_pitch_do(p, smpls, freq);
+	}
+	
+	ret = freq->data[0];
+	
+	del_fvec(freq);
+	del_fvec(smpls);
+	del_aubio_pitch(p);
+	
+	return ret;
+}
+
+float soundbyte::get(unsigned int i) {
+	if(i >= length)
+		return 0.0;
+	return (float) data[i] / 32768;
+}
+
+/* *
 buffer
 A sound buffer.
 	data(bytes data, string, unsigned int bytes, unsigned int frequency)
@@ -163,7 +376,7 @@ buffer::buffer(const char* a) {
 	buf = alureCreateBufferFromFile(a);
 	if(buf == AL_NONE) {
 		buf = 0;
-		err("sound", "could not load");
+		err("buffer", "could not load");
 	}
 	else
 		buffer_loaded(buf);
@@ -187,9 +400,9 @@ ALint al_format_from_string(const char* a) {
 	else if(!strcmp(a, "mono 16"))
 		return AL_FORMAT_MONO16;
 	else if(!strcmp(a, "stereo 8"))
-		return AL_FORMAT_MONO8;
+		return AL_FORMAT_STEREO8;
 	else if(!strcmp(a, "stereo 16"))
-		return AL_FORMAT_MONO16;
+		return AL_FORMAT_STEREO16;
 	
 	return AL_FORMAT_MONO8;
 }
@@ -322,6 +535,7 @@ sound::sound(const char* a, bool b) {
 	sound_loaded(source);
 	
 	//alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
+	// TODO is3D
 	
 	if(!is_stream)
 		alSourcei(source, AL_BUFFER, bufs[0]);

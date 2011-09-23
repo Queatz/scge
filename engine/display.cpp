@@ -3074,9 +3074,11 @@ a = mouse_position()
 
 see:move_mouse
 * */
-offset mouse_position() {
+offset mouse_position(bool topdown) {
 	int x, y;
 	glfwGetMousePos(glfw_window, &x, &y);
+	if(!topdown)
+		y = height - y;
 	return offset(x, y);
 }
 

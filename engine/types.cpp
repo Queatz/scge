@@ -90,6 +90,10 @@ offset offset::operator-(const offset& other) const {
 	return offset(x - other.x, y - other.y);
 }
 
+bool offset::operator==(const offset& other) const {
+	return other.x == x && other.y == y;
+}
+
 /* *
 rect
 A rect, with offset and dimention.

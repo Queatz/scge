@@ -102,7 +102,7 @@ struct soundbyte {
 	soundbyte(ALshort*, unsigned int);
 	~soundbyte();
 	
-	float calculate_frequency(unsigned int = 0, const char* = "schmitt");
+	float calculate_frequency(unsigned int = 0, unsigned int = 0, const char* = "schmitt");
 	float get(unsigned int);
 	
 	ALshort* data;

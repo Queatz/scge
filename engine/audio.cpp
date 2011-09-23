@@ -279,7 +279,7 @@ Bytes of sound.
 
 	get(sample)
 		Get a sample as a float
-	calculate_pitch(max_samples = 0, method = "schmitt")
+	calculate_pitch(max_samples = 0, resolution = 8, method = "schmitt")
 		tries to find a pitch in this soundbyte and returns the frequency
 		"mcomb"
 		"fcomb"
@@ -301,14 +301,17 @@ soundbyte::soundbyte(ALshort* d, unsigned int l) : data(d), length(l) {
 soundbyte::~soundbyte() {
 }
 
-float soundbyte::calculate_frequency(unsigned int max_samples, const char* method) {
+float soundbyte::calculate_frequency(unsigned int max_samples, unsigned int nblocks, const char* method) {
 	uint_t len = length;
-	uint_t nblocks = 4;
 	uint_t hop;
 	uint_t offset;
 	fvec_t* smpls;
 	fvec_t* freq;
 	float ret;
+	
+	if(!nblocks)
+		nblocks = 8;
+	
 	
 	if(max_samples && len > max_samples) len = max_samples;
 	// Use the samples at the end of the soundbyte

@@ -307,6 +307,7 @@ bool window_active();
 float window_timer();
 void rest(float);
 
+std::string display_modes();
 ibox display_dimensions();
 ibox window_dimensions();
 void position_window(int, int);
@@ -462,7 +463,7 @@ void mouse(bool = false);
 bool button(short);
 bool button(const char *);
 int wheel();
-void move_mouse(int, int);
+void move_mouse(int, int, bool = false);
 
 bool key(const char*);
 bool key_state(const char*);

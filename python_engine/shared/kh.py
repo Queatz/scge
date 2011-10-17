@@ -23,17 +23,21 @@ def assign(*a):
 def unassign(*a):
 	for k in a:
 		if k in PRESSED: del PRESSED[k]
-
+	
 def pressed(k, repeat = False):
+	if k not in PRESSED: PRESSED[k] = 0
 	return PRESSED[k] == 1 or repeat and PRESSED[k] == 3
 
 def released(k):
+	if k not in PRESSED: PRESSED[k] = 0
 	return PRESSED[k] == -1
 
 def down(k):
+	if k not in PRESSED: PRESSED[k] = 0
 	return PRESSED[k] > 0
 
 def block(k):
+	if k not in PRESSED: PRESSED[k] = 0
 	PRESSED[k] = 4
 
 def watch():

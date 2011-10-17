@@ -3,8 +3,8 @@
 python3 copyh.py
 
 swig -python -py3 -c++ scge.i
-gcc -c -x c++ -fPIC scge_wrap.cxx -I/usr/include/python3.2 -I/usr/include/freetype2
-gcc -shared scge_wrap.o -lscge -L. -o _scge.so
+g++ -c -x c++ -fPIC scge_wrap.cxx -I/usr/include/python3.2 -I/usr/include/freetype2
+g++ -shared scge_wrap.o -lscge -L. -o _scge.so
 
 rm scge_wrap.cxx
 rm scge_wrap.o

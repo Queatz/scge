@@ -49,6 +49,10 @@ A network event.
 		get the channel
 	type()
 		get the type of the event
+		'connect'
+		'disconnect'
+		'receive'
+		'none'
 	data()
 		get the data, if any
 	who()
@@ -124,8 +128,6 @@ A networkable host.
 		queue a message for a peer on a channel
 	broadcast(string = "", int = 0, bool reliable = true, bool sequenced = true)
 		queue a message to all connected peers on a channel
-	service(int = 2000)
-		listen for commands from the server, within a timeout
 
 C++
 host client();

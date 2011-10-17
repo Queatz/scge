@@ -114,6 +114,11 @@ void window_resize_callback(GLFWwindow g, int w, int h) {
 //	glViewport(0, 0, w, h);
 }
 
+int window_close_callback(GLFWwindow g) {
+	glfw_window = NULL;
+	return 1;
+}
+
 const char* int_to_key_name(int a) {
 	switch(a) {
 	case 'A': return "a";
@@ -364,6 +369,7 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 		note("window", "extentions unsupported");
 	
 	glfwSetWindowSizeCallback(window_resize_callback);
+	glfwSetWindowCloseCallback(window_close_callback);
 	
 	glfwSwapInterval(0);
 	
@@ -497,6 +503,36 @@ rest(2.0)
 * */
 void rest(float a) {
 	usleep(a*1000);
+}
+
+/* *
+display_modes()
+Returns a space-seperated string of possible video modes for the display, in the format: WxH.
+
+C++
+std::string s = display_modes();
+
+Python
+s = display_modes()
+* */
+std::string display_modes() {
+	if(glfw_state == 0)
+		graphics();
+	
+	GLFWvidmode m[128] = {NULL};
+	std::ostringstream s;
+	std::string l;
+	int i, c;
+	
+	c = glfwGetVideoModes(m, 128);
+	
+	for(i = 0; i < c; i++) {
+		if(i > 0) s << " ";
+		s << m[i].width << "x" << m[i].height;
+	}
+	
+	l = s.str();
+	return l;
 }
 
 /* *
@@ -3062,7 +3098,7 @@ void alpha_test(const char* a, float b) {
 }
 
 /* *
-mouse_position()
+mouse_position(bool topdown = false)
 Returns an offset with the mouse position.
 
 C++
@@ -3093,10 +3129,7 @@ Python
 mouse() #hide the pointer
 * */
 void mouse(bool a) {
-	if(a)
-		glfwEnable(glfw_window, GLFW_MOUSE_CURSOR);
-	else
-		glfwDisable(glfw_window, GLFW_MOUSE_CURSOR);
+		glfwSetCursorMode(glfw_window, a ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_CAPTURED);
 }
 
 // Utility function
@@ -3153,7 +3186,7 @@ int wheel() {
 }
 
 /* *
-move_mouse(int x, int y)
+move_mouse(int x, int y, bool topdown = false)
 Move the mouse to some position.
 
 C++
@@ -3162,7 +3195,9 @@ move_mouse(160, 120);
 Python
 move_mouse(160, 120)
 * */
-void move_mouse(int a, int b) {
+void move_mouse(int a, int b, bool topdown) {
+	if(!topdown)
+		b = height - b;
 	glfwSetMousePos(glfw_window, a, b);
 }
 
@@ -3238,6 +3273,8 @@ int keyboard_key_string_to_int(const char* a) {
 	else if(!strcmp(a, "right shift")) return GLFW_KEY_RSHIFT;
 	else if(!strcmp(a, "left ctrl")) return GLFW_KEY_LCTRL;
 	else if(!strcmp(a, "right ctrl")) return GLFW_KEY_RCTRL;
+	else if(!strcmp(a, "left control")) return GLFW_KEY_LCTRL;
+	else if(!strcmp(a, "right control")) return GLFW_KEY_RCTRL;
 	else if(!strcmp(a, "left alt")) return GLFW_KEY_LALT;
 	else if(!strcmp(a, "right alt")) return GLFW_KEY_RALT;
 	else if(!strcmp(a, "tab")) return GLFW_KEY_TAB;
@@ -3289,6 +3326,11 @@ a = key('left shift')
 bool key(const char* a) {
 	if(!strcmp(a, "shift")) {
 		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left shift")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right shift")))
+			return true;
+		return false;
+	}
+	if(!strcmp(a, "control")) {
+		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left control")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right control")))
 			return true;
 		return false;
 	}
@@ -3503,10 +3545,11 @@ image::image(const char* a, bool m) {
 	glBindTexture(GL_TEXTURE_2D, id);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_BGRA : GL_BGR), GL_UNSIGNED_BYTE, bits);
-	
 	if(m)
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_BGRA : GL_BGR), GL_UNSIGNED_BYTE, bits);
+	
 	
 	if(bm)
 		FreeImage_Unload(bm);

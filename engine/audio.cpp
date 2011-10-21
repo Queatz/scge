@@ -84,13 +84,15 @@ void audio_off() {
 	if(!alureUpdateInterval(0.0))
 		err("audio_off", "could not stop");
 	
-	for(std::vector<ALuint>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end();i++) {
-		alSourcei(*i, AL_BUFFER, NULL);
-		alDeleteSources(1, &(*i));
-	}
+	if(!loaded_sounds.empty())
+		for(std::vector<ALuint>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end();i++) {
+			alSourcei(*i, AL_BUFFER, NULL);
+			alDeleteSources(1, &(*i));
+		}
 	
-	for(std::vector<ALuint>::iterator i = loaded_buffers.begin(); i != loaded_buffers.end();i++)
-		alDeleteBuffers(1, &(*i));
+	if(!loaded_buffers.empty())
+		for(std::vector<ALuint>::iterator i = loaded_buffers.begin(); i != loaded_buffers.end();i++)
+			alDeleteBuffers(1, &(*i));
 	
 	alureShutdownDevice();
 }

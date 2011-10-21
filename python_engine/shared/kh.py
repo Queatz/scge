@@ -11,6 +11,7 @@ PRESSED = {
 	'@ middle':0,
 	'@ right':0,
 }
+BLOCKALLEXCEPT = False
 
 def set_repeat(d = 1/2, t = 1/32):
 	global REPEAT_DELAY, REPEAT_TIME
@@ -25,14 +26,17 @@ def unassign(*a):
 		if k in PRESSED: del PRESSED[k]
 	
 def pressed(k, repeat = False):
+	if BLOCKALLEXCEPT and k not in BLOCKALLEXCEPT: return False
 	if k not in PRESSED: PRESSED[k] = 0
 	return PRESSED[k] == 1 or repeat and PRESSED[k] == 3
 
 def released(k):
+	if BLOCKALLEXCEPT and k not in BLOCKALLEXCEPT: return False
 	if k not in PRESSED: PRESSED[k] = 0
 	return PRESSED[k] == -1
 
 def down(k):
+	if BLOCKALLEXCEPT and k not in BLOCKALLEXCEPT: return False
 	if k not in PRESSED: PRESSED[k] = 0
 	return PRESSED[k] > 0
 
@@ -40,8 +44,17 @@ def block(k):
 	if k not in PRESSED: PRESSED[k] = 0
 	PRESSED[k] = 4
 
+def blockall(*a):
+	global BLOCKALLEXCEPT
+	if len(a) < 1:
+		a = [True]
+	BLOCKALLEXCEPT = a
+	
+
 def watch():
-	global PRESSED_TIME, REPEAT_DELAY, REPEAT_TIME, LAST_TIME, PRESSED
+	global PRESSED_TIME, REPEAT_DELAY, REPEAT_TIME, LAST_TIME, PRESSED, BLOCKALLEXCEPT
+	
+	BLOCKALLEXCEPT = False
 	
 	t = scge.window_timer()
 	

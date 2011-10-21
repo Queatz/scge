@@ -4,6 +4,7 @@
 
 #include "functions.cpp"
 #include "types.cpp"
+#include "extra.cpp"
 
 #ifdef WITH_GRAPHICS
 #include "display.cpp"

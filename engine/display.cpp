@@ -80,11 +80,11 @@ void graphics_off() {
 
 FREE_IMAGE_FORMAT fif_from_string(const char* a = NULL, const char* b = NULL) {
 	if(b) {
-		if(strcmp(b, "png"))
+		if(!strcmp(b, "png"))
 			return FIF_PNG;
-		else if(strcmp(b, "jpg"))
+		else if(!strcmp(b, "jpg"))
 			return FIF_JPEG;
-		else if(strcmp(b, "bmp"))
+		else if(!strcmp(b, "bmp"))
 			return FIF_BMP;
 	}
 	
@@ -103,7 +103,7 @@ int default_from_fif(FREE_IMAGE_FORMAT a) {
 	if(a == FIF_PNG)
 		return PNG_DEFAULT;
 	else if(a == FIF_JPEG)
-		return JPEG_DEFAULT;
+		return JPEG_QUALITYSUPERB;
 	else if(a == FIF_BMP)
 		return BMP_DEFAULT;
 	else
@@ -3371,7 +3371,7 @@ bool key_state(const char* a) {
 	return false;
 }
 
-/* *
+/* * Resources
 pixelcache
 A cache of pixels.
 
@@ -3399,6 +3399,35 @@ b = pixelcache(a) #copy a
 
 see:image.cache
 * */
+pixelcache::pixelcache(const char* a) {
+
+	FIBITMAP *bm = FreeImage_Load(fif_from_string(a), a, 0);
+	
+	if(!bm) {
+		err("pixelcache", "could not load");
+		return;
+	}
+	
+	bool has_alpha = FreeImage_IsTransparent(bm); // FIXME
+	
+	BYTE *bits = FreeImage_GetBits(bm);
+	int bpp = FreeImage_GetBPP(bm);
+	
+	width = FreeImage_GetWidth(bm);
+	height = FreeImage_GetHeight(bm);
+	
+	int i, j, s = height*width;
+	RGBQUAD pix;
+	data = new GLubyte[s*3];
+	for(i = 0; i < width; i++)
+	for(j = 0; j < height; j++) {
+		FreeImage_GetPixelColor(bm, i, j, &pix);
+		data[(j*width+i)*3] = pix.rgbRed;
+		data[(j*width+i)*3+1] = pix.rgbGreen;
+		data[(j*width+i)*3+2] = pix.rgbBlue;
+	}
+}
+
 pixelcache::pixelcache(const pixelcache& a) {
 	width = a.width;
 	height = a.height;
@@ -3459,7 +3488,7 @@ bool pixelcache::save(const char* a, const char* b) {
 			FreeImage_SetPixelColor(c, x, y, &color);
 		}
 	
-	if (FreeImage_Save(fif_from_string(a, b), c, a, 0))
+	if (FreeImage_Save(fif_from_string(a, b), c, a, default_from_fif(fif_from_string(a, b))))
 		return true;
 	return false;
 
@@ -3492,7 +3521,9 @@ An image.
 	from_pixelcache(pixelcache, int x, int y, int w, int h)
 		overwrites a portion of pixels with data from a pixelcache
 	refresh_pixel_cache()
-		caches the images current state
+		caches the image's current state
+	discard_pixel_cache()
+		discards the image's pixelcache
 	pixel(int x, int y)
 		returns an rgba containing the pixel color of x and y
 	save(string name, string format)
@@ -3556,6 +3587,7 @@ image::image(const char* a, bool m) {
 	
 	//id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL
 	
+	external_cache = false;
 	cache = NULL;
 	mipmaps = m;
 	
@@ -3583,6 +3615,7 @@ image::image(int a, int b, bool quality) {
 	
 	cache = NULL;
 	mipmaps = false;
+	external_cache = false;
 	
 	width = a;
 	height = b;
@@ -3594,15 +3627,29 @@ image::image(int a, int b, bool quality) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
-/*void image::save(const char* a) {
-	unsigned char b[1] = {id};
-	if(!SOIL_save_image(a, SOIL_SAVE_TYPE_DDS, width, height, 3, b))
-		err("image", "save", "could not save image");
+image::image(pixelcache* p) {
+	if(glfw_state == 0)
+		graphics();
 	
-}*/
+	mipmaps = false;
+	external_cache = true;
+	cache = p;
+	
+	width = p->width;
+	height = p->height;
+	
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	
+	from_pixelcache();
+}
 
 image::~image() {
-	if(cache)
+	if(!external_cache && cache)
 		delete cache;
 }
 
@@ -3673,6 +3720,11 @@ void image::from_pixelcache(pixelcache* a, int x, int y, int w, int h) {
 }
 
 void image::from_pixelcache() {
+	if(!cache) {
+		err("image", "from_pixelcache", "no cache");
+		return;
+	}
+	
 	GLint bind;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
 	if(bind != id)
@@ -3686,6 +3738,11 @@ void image::from_pixelcache() {
 }
 
 void image::from_pixelcache(int x, int y, int w, int h) {
+	if(!cache) {
+		err("image", "from_pixelcache", "no cache");
+		return;
+	}
+	
 	GLint bind;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
 	if(bind != id)
@@ -3712,6 +3769,12 @@ void image::refresh_pixel_cache() {
 	// Reset to the origional texture
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, bind);
+}
+
+void image::discard_pixel_cache() {
+	if(!external_cache && cache)
+		delete cache;
+	cache = NULL;
 }
 
 rgba image::pixel(int x, int y) {

@@ -159,6 +159,7 @@ struct sound {
 #ifdef WITH_GRAPHICS
 
 struct pixelcache {
+	pixelcache(const char*);
 	pixelcache(int, int);
 	pixelcache(const pixelcache&);
 	~pixelcache();
@@ -173,9 +174,8 @@ struct pixelcache {
 struct image {
 	image(const char*, bool = false);
 	image(int, int, bool = false);
+	image(pixelcache*);
 	~image();
-	
-	//void save(const char*);
 	
 	float width, height;
 	
@@ -186,6 +186,7 @@ struct image {
 	void from_pixelcache();
 	void from_pixelcache(int, int, int, int);
 	void refresh_pixel_cache();
+	void discard_pixel_cache();
 	rgba pixel(int, int);
 	bool save(const char*, const char* = NULL);
 	
@@ -193,6 +194,7 @@ struct image {
 	
 	GLuint id;
 	pixelcache* cache;
+	bool external_cache;
 };
 
 struct font {
@@ -547,6 +549,16 @@ struct host {
 };
 
 #endif
+
+// Extra
+
+struct noise {
+	noise(const char* = "simple", float = 0, float = 1);
+	float sample(float x, float y, float s = NULL);
+	float scale;
+	int type;//x
+	int seed;
+};
 
 // Other
 

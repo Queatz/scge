@@ -115,7 +115,6 @@ void window_resize_callback(GLFWwindow g, int w, int h) {
 }
 
 int window_close_callback(GLFWwindow g) {
-	glfw_window = NULL;
 	return 1;
 }
 
@@ -502,7 +501,7 @@ Python
 rest(2.0)
 * */
 void rest(float a) {
-	usleep(a*1000);
+	usleep(a*1000000);
 }
 
 /* *
@@ -584,6 +583,22 @@ position_window(12, 12)
 * */
 void position_window(int x, int y) {
 	glfwSetWindowPos(glfw_window, x, y);
+}
+
+/* *
+window_position()
+Get the position of the window as an ibox.
+
+C++
+ibox a = window_position();
+
+Python
+a = window_position()
+* */
+ibox window_position() {
+	ibox w;
+	glfwGetWindowPos(glfw_window, &w.w, &w.h);
+	return w;
 }
 
 /* *
@@ -2008,6 +2023,8 @@ void color_mask(bool a) {
 *
 push pop get
 Each push function stores the current state; each pop function restores it; each get function returns it.
+push_state can take a string argument, otherwise it pushes all state:
+"viewport"
 
 C++
 push_color();
@@ -2040,6 +2057,9 @@ get_program();
 push_matrix();
 pop_matrix();
 
+push_state();
+pop_state();
+
 Python
 push_color()
 push_fbo()
@@ -2070,6 +2090,9 @@ get_program()
 
 push_matrix()
 pop_matrix()
+
+push_state()
+pop_state()
 * */
 
 /* *
@@ -2435,6 +2458,22 @@ program* get_program() {
 	return program_stack.top();
 }
 
+void push_state(const char* a) {
+	GLbitfield b;
+	if(!a)
+		b = GL_ALL_ATTRIB_BITS;
+	else if(!strcmp(a, "viewport"))
+		b = GL_VIEWPORT_BIT;
+	else {
+		err("push state", "invalid");
+		return;
+	}
+	glPushAttrib(b);
+}
+
+void pop_state() {
+	glPopAttrib();
+}
 
 void push_matrix() {
 	glPushMatrix();
@@ -2628,16 +2667,16 @@ void idraw(float x, float y, float sx, float sy, float r, float xo, float yo) {
 	
 	if(r) {
 		float rc = cos(r), rs = sin(r);
-		glTexCoord2f(co_x, co_y); glVertex2i(x + (-xo * rc - -yo * rs) * sx, y + (-yo * rc + -xo * rs) * sy);
-		glTexCoord2f(co_x2, co_y); glVertex2i(x + ((w - xo) * rc - -yo * rs) * sx, y + (-yo * rc + (w - xo) * rs) * sy);
-		glTexCoord2f(co_x2, co_y2); glVertex2i(x + ((w - xo) * rc - (h - yo) * rs) * sx, y + ((h - yo) * rc + (w - xo) * rs) * sy);
-		glTexCoord2f(co_x, co_y2); glVertex2i(x + (-xo * rc - (h - yo) * rs) * sx, y + ((h - yo) * rc + -xo * rs) * sy);
+		glTexCoord2f(co_x, co_y); glVertex2f(x + (-xo * rc - -yo * rs) * sx, y + (-yo * rc + -xo * rs) * sy);
+		glTexCoord2f(co_x2, co_y); glVertex2f(x + ((w - xo) * rc - -yo * rs) * sx, y + (-yo * rc + (w - xo) * rs) * sy);
+		glTexCoord2f(co_x2, co_y2); glVertex2f(x + ((w - xo) * rc - (h - yo) * rs) * sx, y + ((h - yo) * rc + (w - xo) * rs) * sy);
+		glTexCoord2f(co_x, co_y2); glVertex2f(x + (-xo * rc - (h - yo) * rs) * sx, y + ((h - yo) * rc + -xo * rs) * sy);
 	}
 	else {
-		glTexCoord2f(co_x, co_y); glVertex2i(x - xo * sx, y - yo * sy);
-		glTexCoord2f(co_x2, co_y); glVertex2i(x + (w - xo) * sx, y - yo * sy);
-		glTexCoord2f(co_x2, co_y2); glVertex2i(x + (w - xo) * sx, y + (h - yo) * sy);
-		glTexCoord2f(co_x, co_y2); glVertex2i(x - xo * sx, y + (h - yo) * sy);
+		glTexCoord2f(co_x, co_y); glVertex2f(x - xo * sx, y - yo * sy);
+		glTexCoord2f(co_x2, co_y); glVertex2f(x + (w - xo) * sx, y - yo * sy);
+		glTexCoord2f(co_x2, co_y2); glVertex2f(x + (w - xo) * sx, y + (h - yo) * sy);
+		glTexCoord2f(co_x, co_y2); glVertex2f(x - xo * sx, y + (h - yo) * sy);
 	}
 }
 
@@ -2700,10 +2739,10 @@ void background_image(float x, float y, float x2, float y2, float sx, float sy, 
 	yo /= image_stack.top()->height;
 	
 	glBegin(GL_QUADS);
-	glTexCoord2f(xo, yo); glVertex2i(x, y);
-	glTexCoord2f(xo + cx, yo); glVertex2i(x2, y);
-	glTexCoord2f(xo + cx, yo + cy); glVertex2i(x2, y2);
-	glTexCoord2f(xo, yo + cy); glVertex2i(x, y2);
+	glTexCoord2f(xo, yo); glVertex2f(x, y);
+	glTexCoord2f(xo + cx, yo); glVertex2f(x2, y);
+	glTexCoord2f(xo + cx, yo + cy); glVertex2f(x2, y2);
+	glTexCoord2f(xo, yo + cy); glVertex2f(x, y2);
 	glEnd();
 }
 
@@ -2734,10 +2773,10 @@ void quad(float x, float y, float x2, float y2) {
 
 void quad() {
 	glBegin(GL_QUADS);
-	glVertex2i(0, 0);
-	glVertex2i(width, 0);
-	glVertex2i(width, height);
-	glVertex2i(0, height);
+	glVertex2f(0, 0);
+	glVertex2f(width, 0);
+	glVertex2f(width, height);
+	glVertex2f(0, height);
 	glEnd();
 }
 
@@ -2749,25 +2788,25 @@ void mquad(float x, float y, float x2, float y2) {
 
 void mquad() {
 	glBegin(GL_QUADS);
-	glTexCoord2f(0, 0); glVertex2i(0, 0);
-	glTexCoord2f(1, 0); glVertex2i(width, 0);
-	glTexCoord2f(1, 1); glVertex2i(width, height);
-	glTexCoord2f(0, 1); glVertex2i(0, height);
+	glTexCoord2f(0, 0); glVertex2f(0, 0);
+	glTexCoord2f(1, 0); glVertex2f(width, 0);
+	glTexCoord2f(1, 1); glVertex2f(width, height);
+	glTexCoord2f(0, 1); glVertex2f(0, height);
 	glEnd();
 }
 
 void iquad(float x, float y, float x2, float y2) {
-	glVertex2i(x, y);
-	glVertex2i(x2, y);
-	glVertex2i(x2, y2);
-	glVertex2i(x, y2);
+	glVertex2f(x, y);
+	glVertex2f(x2, y);
+	glVertex2f(x2, y2);
+	glVertex2f(x, y2);
 }
 
 void imquad(float x, float y, float x2, float y2) {
-	glTexCoord2f(0, 0); glVertex2i(x, y);
-	glTexCoord2f(1, 0); glVertex2i(x2, y);
-	glTexCoord2f(1, 1); glVertex2i(x2, y2);
-	glTexCoord2f(0, 1); glVertex2i(x, y2);
+	glTexCoord2f(0, 0); glVertex2f(x, y);
+	glTexCoord2f(1, 0); glVertex2f(x2, y);
+	glTexCoord2f(1, 1); glVertex2f(x2, y2);
+	glTexCoord2f(0, 1); glVertex2f(x, y2);
 }
 
 void imquad(float x, float y, float x2, float y2, float z) {
@@ -2779,14 +2818,14 @@ void imquad(float x, float y, float x2, float y2, float z) {
 
 void point(float x, float y) {
 	glBegin(GL_POINTS);
-	glVertex2i(x, y);
+	glVertex2f(x, y);
 	glEnd();
 }
 
 void line(float a, float b, float c, float d) {
 	glBegin(GL_LINES);
-	glVertex2i(a, b);
-	glVertex2i(c, d);
+	glVertex2f(a, b);
+	glVertex2f(c, d);
 	glEnd();
 }
 
@@ -2814,7 +2853,7 @@ end()
 see:begin end, shapes
 * */
 void ipoint(float x, float y) {
-	glVertex2i(x, y);
+	glVertex2f(x, y);
 }
 
 void ipoint(float x, float y, float z) {
@@ -2822,12 +2861,12 @@ void ipoint(float x, float y, float z) {
 }
 
 void impoint(float x, float y) {
-	glTexCoord2f(x/image_stack.top()->width, y/image_stack.top()->height); glVertex2i(x, y);
+	glTexCoord2f(x/image_stack.top()->width, y/image_stack.top()->height); glVertex2f(x, y);
 }
 
 void iline(float a, float b, float c, float d) {
-	glVertex2i(a, b);
-	glVertex2i(c, d);
+	glVertex2f(a, b);
+	glVertex2f(c, d);
 }
 
 /* *
@@ -3401,14 +3440,14 @@ see:image.cache
 * */
 pixelcache::pixelcache(const char* a) {
 
-	FIBITMAP *bm = FreeImage_Load(fif_from_string(a), a, 0);
+	FIBITMAP* bm = FreeImage_Load(fif_from_string(a), a, 0);
 	
 	if(!bm) {
 		err("pixelcache", "could not load");
 		return;
 	}
 	
-	bool has_alpha = FreeImage_IsTransparent(bm); // FIXME
+	colors = FreeImage_IsTransparent(bm) ? 4 : 3;
 	
 	BYTE *bits = FreeImage_GetBits(bm);
 	int bpp = FreeImage_GetBPP(bm);
@@ -3418,29 +3457,34 @@ pixelcache::pixelcache(const char* a) {
 	
 	int i, j, s = height*width;
 	RGBQUAD pix;
-	data = new GLubyte[s*3];
+	data = new GLubyte[s*colors];
 	for(i = 0; i < width; i++)
 	for(j = 0; j < height; j++) {
 		FreeImage_GetPixelColor(bm, i, j, &pix);
-		data[(j*width+i)*3] = pix.rgbRed;
-		data[(j*width+i)*3+1] = pix.rgbGreen;
-		data[(j*width+i)*3+2] = pix.rgbBlue;
+		data[(j*width+i)*colors] = pix.rgbRed;
+		data[(j*width+i)*colors+1] = pix.rgbGreen;
+		data[(j*width+i)*colors+2] = pix.rgbBlue;
+		if(colors == 4)
+			data[(j*width+i)*colors+3] = pix.rgbReserved;
 	}
+	
+	FreeImage_Unload(bm);
 }
 
 pixelcache::pixelcache(const pixelcache& a) {
 	width = a.width;
 	height = a.height;
+	colors = a.colors;
 	
-	int s = height*width*3;
+	int s = height*width*colors;
 	data = new GLubyte[s];
 	memcpy(data, a.data, sizeof(GLubyte)*s);
 }
 
-pixelcache::pixelcache(int w, int h) {
+pixelcache::pixelcache(int w, int h, bool a) {
 	width = w;
 	height = h;
-	
+	colors = a ? 4 : 3;
 	data = new GLubyte[height*width*3];
 }
 
@@ -3455,8 +3499,8 @@ rgba pixelcache::pixel(int x, int y) {
 	if(x < 0 || x >= width || y < 0 || y >= height)
 		return rgba(0.0, 0.0, 0.0);
 	
-	h = y * width * 3 + x * 3;
-	return rgba(static_cast<float>(data[h + 0]) / 255.0, static_cast<float>(data[h + 1]) / 255.0, static_cast<float>(data[h + 2]) / 255.0);
+	h = y * width * colors + x * colors;
+	return rgba(static_cast<float>(data[h + 0]) / 255.0, static_cast<float>(data[h + 1]) / 255.0, static_cast<float>(data[h + 2]) / 255.0, colors == 4 ? static_cast<float>(data[h + 3]) / 255.0 : 1.0);
 }
 
 void pixelcache::set_pixel(int x, int y, rgba c) {
@@ -3466,10 +3510,12 @@ void pixelcache::set_pixel(int x, int y, rgba c) {
 		return;
 	}
 	
-	h = y * width * 3 + x * 3;
+	h = y * width * colors + x * colors;
 	data[h + 0] = static_cast<GLubyte>(c.r * 255.0);
 	data[h + 1] = static_cast<GLubyte>(c.g * 255.0);
 	data[h + 2] = static_cast<GLubyte>(c.b * 255.0);
+	if(colors == 4)
+		data[h + 3] = static_cast<GLubyte>(c.a * 255.0);
 }
 
 bool pixelcache::save(const char* a, const char* b) {
@@ -3481,17 +3527,20 @@ bool pixelcache::save(const char* a, const char* b) {
 	
 	for(unsigned int x = 0; x < width; x++)
 		for(unsigned int y = 0; y < height; y++) {
-			int h = y * width * 3 + x * 3;
+			int h = y * width * colors + x * colors;
 			color.rgbRed = data[h + 0];
 			color.rgbGreen = data[h + 1];
 			color.rgbBlue = data[h + 2];
+			if(colors == 4)
+				color.rgbReserved = data[h + 3];
 			FreeImage_SetPixelColor(c, x, y, &color);
 		}
 	
 	if (FreeImage_Save(fif_from_string(a, b), c, a, default_from_fif(fif_from_string(a, b))))
 		return true;
 	return false;
-
+	
+	FreeImage_Unload(c);
 }
 
 /* *
@@ -3528,7 +3577,6 @@ An image.
 		returns an rgba containing the pixel color of x and y
 	save(string name, string format)
 		save the images pixelcache to disk.  If format is omitted it is guessed from the filename.
-		#Alpha is not currently saved.
 		"png"
 		"jpg"
 		"bmp"
@@ -3563,10 +3611,13 @@ image::image(const char* a, bool m) {
 	
 	bool has_alpha = FreeImage_IsTransparent(bm);
 	
+	FIBITMAP *tmp = bm;
 	if(has_alpha)
 		bm = FreeImage_ConvertTo32Bits(bm);
 	else
 		bm = FreeImage_ConvertTo24Bits(bm);
+	FreeImage_Unload(tmp);
+	
 	
 	BYTE *bits = new BYTE[FreeImage_GetHeight(bm) * FreeImage_GetPitch(bm)];
 	
@@ -3582,8 +3633,7 @@ image::image(const char* a, bool m) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_BGRA : GL_BGR), GL_UNSIGNED_BYTE, bits);
 	
 	
-	if(bm)
-		FreeImage_Unload(bm);
+	FreeImage_Unload(bm);
 	
 	//id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL
 	
@@ -3596,8 +3646,8 @@ image::image(const char* a, bool m) {
 		return;
 	}
 	
-	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
 	
 	if(m) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -3609,7 +3659,7 @@ image::image(const char* a, bool m) {
 	}
 }
 
-image::image(int a, int b, bool quality) {
+image::image(int a, int b, bool alpha, bool quality) {
 	if(glfw_state == 0)
 		graphics();
 	
@@ -3621,7 +3671,7 @@ image::image(int a, int b, bool quality) {
 	height = b;
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
-	glTexImage2D(GL_TEXTURE_2D, 0, (quality ? GL_RGB12 : GL_RGB8), a, b, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, alpha ? (quality ? GL_RGBA12 : GL_RGBA8) : (quality ? GL_RGB12 : GL_RGB8), a, b, 0, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -3637,10 +3687,11 @@ image::image(pixelcache* p) {
 	
 	width = p->width;
 	height = p->height;
+	colors = p->colors;
 	
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, p->colors == 4 ? GL_RGBA8 : GL_RGB8, width, height, 0, p->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -3730,7 +3781,7 @@ void image::from_pixelcache() {
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
 	
 	// Reset to the origional texture
 	if(bind != id)
@@ -3748,7 +3799,7 @@ void image::from_pixelcache(int x, int y, int w, int h) {
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
-	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
 	
 	// Reset to the origional texture
 	if(bind != id)
@@ -3764,7 +3815,7 @@ void image::refresh_pixel_cache() {
 	if(!cache)
 		cache = new pixelcache(width, height);
 	
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	glGetTexImage(GL_TEXTURE_2D, 0, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
 	
 	// Reset to the origional texture
 	if(bind != id)
@@ -3786,8 +3837,8 @@ rgba image::pixel(int x, int y) {
 	if(!cache)
 		refresh_pixel_cache();
 	
-	h = y * w * 3 + x * 3;
-	return rgba(static_cast<float>(cache->data[h + 0]) / 255.0, static_cast<float>(cache->data[h + 1]) / 255.0, static_cast<float>(cache->data[h + 2]) / 255.0);
+	h = y * w * colors + x * colors;
+	return rgba(static_cast<float>(cache->data[h + 0]) / 255.0, static_cast<float>(cache->data[h + 1]) / 255.0, static_cast<float>(cache->data[h + 2]) / 255.0, cache->colors == 4 ? static_cast<float>(cache->data[h + 3]) / 255.0 : 1.0);
 }
 
 bool image::save(const char* a, const char* b) {
@@ -4253,12 +4304,12 @@ A frame buffer object.
 C++
 fbo a(320, 240);
 
-fbo b(320, 240, true); //high quality
+fbo b(320, 240, true, true, true); //with alpha, high quality, and with depth and stencil testing
 
 Python
 a = fbo(320, 240)
 
-b = fbo(320, 240, true) #high quality
+b = fbo(320, 240, true, true, true) #with alpha, high quality, and with depth and stencil testing
 
 see: use_fbo
 * */
@@ -4266,10 +4317,10 @@ fbo::fbo(image* a) {
 	if(glfw_state == 0)
 		graphics();
 	
-	glGenFramebuffersEXT(1, &id);
-	
 	GLint last;
-	glGetIntegerv(GL_FRAMEBUFFER_EXT, &last);
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &last);
+	
+	glGenFramebuffersEXT(1, &id);
 	
 	buffer = a;
 	buffer_is_mine = false;
@@ -4283,18 +4334,18 @@ fbo::fbo(image* a) {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last);
 }
 
-fbo::fbo(int b, int c, bool quality, bool ds) {
+fbo::fbo(int b, int c, bool alpha, bool quality, bool ds) {
 	if(glfw_state == 0)
 		graphics();
 	
 	glGenFramebuffersEXT(1, &id);
 	
 	GLint last, lastr;
-	glGetIntegerv(GL_FRAMEBUFFER_EXT, &last);
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &last);
 	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
 	
-	buffer = new image(b, c, quality);
+	buffer = new image(b, c, alpha, quality);
 	buffer_is_mine = true;
 	
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, buffer->id, 0);
@@ -4304,7 +4355,7 @@ fbo::fbo(int b, int c, bool quality, bool ds) {
 		depth_stencil = true;
 		glGenRenderbuffersEXT(1, &depth_stencil_id);
 		
-		glGetIntegerv(GL_RENDERBUFFER_EXT, &lastr);
+		glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &lastr);
 		
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_id);
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, b, c);

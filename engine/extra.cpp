@@ -175,7 +175,7 @@ float sample_bit(int seed, int x, int y) {
 	return noise_matrix[std::abs((long)(x * 219586 + x * (seed-719385) * y + 519385 * y + seed)) % 2048];
 }
 
-float point_distance_from_line(float x, float y, float x1, float y1, float x2, float y2) {
+float point_corruption_line(float x, float y, float x1, float y1, float x2, float y2) {
 	x2 -= x1; y2 -= y1; x -= x1; y -= y1;
 	float a = std::atan2(y2, x2);
 	return std::abs((x * cos(a) - y * sin(a)));
@@ -194,7 +194,7 @@ float sample_net(int seed, int x, int y, float w, float h) {
 				continue;
 			float i = ((float) x + a) + (sample_bit(seed, x + a, y + b) - 0.5) * 4.0;
 			float j = ((float) y + b) + (sample_bit(seed + 1, x + a, y + b) - 0.5) * 4.0;
-			s += std::max(0.0, 1.0 - point_distance_from_line(w, h, xr, yr, i, j));
+			s += std::max(0.0, 1.0 - point_corruption_line(w, h, xr, yr, i, j));
 	}
 	return s / 4.0;
 }

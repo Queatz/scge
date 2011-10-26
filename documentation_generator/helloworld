@@ -23,21 +23,20 @@ int main(int argc, char** argv) {
 [note]See the game/ folder for a template.
 
 [python]
-#import the module's contents
-from scge import *
+import scge
 		
 #open a window
-window('Hello World', 320, 240)
+scge.window('Hello World', 320, 240)
 
 #here is our main loop
-while not key('esc') and window_opened():
+while not scge.key('esc') and scge.window_opened():
 	
 	#draw a point in the center of the screen
-	point(160, 120)
+	scge.point(160, 120)
 	
 	#make the drawing of the point visible
-	swap()
+	scge.swap()
 	
 	#check for key presses and other events
-	poll()
+	scge.poll()
 [~python]

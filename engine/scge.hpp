@@ -88,7 +88,8 @@ struct icrop {
 };
 
 struct rgba {
-	rgba(float = 0.0, float = 0.0, float = 0.0, float = 1.0);
+	rgba(float, float, float, float = 1.0);
+	rgba(float = 0.0, float = 1.0);
 	
 	float r, g, b, a;
 };
@@ -160,24 +161,26 @@ struct sound {
 
 struct pixelcache {
 	pixelcache(const char*);
-	pixelcache(int, int);
 	pixelcache(const pixelcache&);
+	pixelcache(int, int, bool = false);
 	~pixelcache();
 	void set_pixel(int, int, rgba);
 	rgba pixel(int, int);
 	bool save(const char*, const char* = NULL);
 	
 	int width, height;
+	char colors;
 	GLubyte *data;//x
 };
 
 struct image {
 	image(const char*, bool = false);
-	image(int, int, bool = false);
+	image(int, int, bool = false, bool = false);
 	image(pixelcache*);
 	~image();
 	
-	float width, height;
+	int width, height;
+	char colors;
 	
 	void set(const char*);
 	
@@ -282,7 +285,7 @@ struct fbo {
 	image* buffer;
 	GLuint depth_stencil_id;
 
-	fbo(int, int, bool = false, bool = false);
+	fbo(int, int, bool = false, bool = false, bool = false);
 	fbo(image*);
 	~fbo();
 	
@@ -313,6 +316,7 @@ std::string display_modes();
 ibox display_dimensions();
 ibox window_dimensions();
 void position_window(int, int);
+ibox window_position();
 
 void vsync(bool = true);
 void swap();
@@ -403,6 +407,9 @@ void use_program();
 void push_program();
 void pop_program();
 program* get_program();
+
+void push_state(const char* = NULL);
+void pop_state();
 
 void push_matrix();
 void pop_matrix();

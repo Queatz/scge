@@ -296,3 +296,10 @@ rgba::rgba(float w, float x, float y, float z) {
 	b = y;
 	a = z;
 }
+
+rgba::rgba(float i, float t) {
+	r = i;
+	g = i;
+	b = i;
+	a = t;
+}

@@ -11,6 +11,7 @@ GLFWwindow glfw_window = NULL;
 
 int width = 0, height = 0, glfw_state = 0;
 bool fullscreened;
+bool window_is_dirty = false;
 
 float clipNear, clipFar, FOV, aspect;
 float saved_clipNear, saved_clipFar, saved_FOV, saved_aspect;
@@ -112,6 +113,10 @@ int default_from_fif(FREE_IMAGE_FORMAT a) {
 
 void window_resize_callback(GLFWwindow g, int w, int h) {
 //	glViewport(0, 0, w, h);
+}
+
+void window_dirty_callback(GLFWwindow g) {
+	window_is_dirty = true;
 }
 
 int window_close_callback(GLFWwindow g) {
@@ -367,6 +372,7 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 	if(err != GLEW_OK)
 		note("window", "extentions unsupported");
 	
+	glfwSetWindowRefreshCallback(window_dirty_callback);
 	glfwSetWindowSizeCallback(window_resize_callback);
 	glfwSetWindowCloseCallback(window_close_callback);
 	
@@ -422,6 +428,24 @@ window_title('Hello World')
 * */
 void window_title(const char* a) {
 	glfwSetWindowTitle(glfw_window, a);
+}
+
+/* *
+window_dirty()
+Returns true if the window needs to be redrawn since the last call.
+
+C++
+bool a = window_dirty();
+
+Python
+a = window_dirty()
+* */
+bool window_dirty() {
+	if(window_is_dirty) {
+		window_is_dirty = false;
+		return true;
+	}
+	return false;
 }
 
 /* *

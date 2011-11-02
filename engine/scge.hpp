@@ -306,6 +306,7 @@ bool window(const char* = "scge test", int = 320, int = 240, bool = false, bool 
 void close_window();
 
 void window_title(const char*);
+bool window_dirty();
 bool window_resized();
 bool window_opened();
 bool window_active();

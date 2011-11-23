@@ -248,7 +248,7 @@ struct paper {
 	float width_of(const char*);
 	float height_of(const char*);
 	
-	void write(const char*, float = 0.0, float = 0.0, bool = false);
+	void write(const char*, float = 0.0, float = 0.0);
 	
 	FTSimpleLayout* data;//x
 	font* data_font;
@@ -432,7 +432,7 @@ void end();
 
 void draw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
 void idraw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
-void write(const char*, float = 0.0, float = 0.0, bool = false);
+void write(const char*, float = 0.0, float = 0.0);
 
 void background_image(float, float, float, float, float = 1.0, float = NULL, float = NULL, float = 0.0, float = 0.0);
 
@@ -469,9 +469,9 @@ void alpha_test(const char* = "always", float = 0.0);
 
 offset mouse_position(bool = false);
 
-void mouse(bool = false);
+void mouse(const char* = "show");
 bool button(short);
-bool button(const char *);
+bool button(const char*);
 int wheel();
 void move_mouse(int, int, bool = false);
 

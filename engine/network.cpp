@@ -116,7 +116,7 @@ void event::resolve() {
 host
 A networkable host.
 	service(int)
-		give service to connected peers, optionally waiting some milliseconds
+		returns events from peers, optionally waiting some milliseconds
 	commune()
 		send all the queued messages
 		#no need to call this if you service() regularly

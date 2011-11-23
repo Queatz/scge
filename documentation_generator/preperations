@@ -17,7 +17,7 @@ To compile, you first need to have some libraries installed:
 <a href="http://glm.g-truc.net/">glm</a> (header library)
 
 On <a href="http://debian.org">Debian</a>-based systems this would be a good start:
-<span class="command">sudo apt-get install libglfw-dev libglew1.5-dev libsoil-dev libfreetype6-dev libftgl-dev libvorbisfile3 libalure-dev libopenal-dev libenet-dev libfreeimage-dev</span>
+<span class="command">sudo apt-get install libglew1.5-dev libfreetype6-dev libftgl-dev libvorbisfile3 libalure-dev libopenal-dev libenet-dev libfreeimage-dev</span>
 
 [notice]GLFW needs to be version 3.
 [notice]alure needs to be version >= 1.1.

@@ -240,10 +240,10 @@ char key_int_to_char(int a) {
 }
 
 void window_key_callback(GLFWwindow w, int key, int action) {
-	if(action == GLFW_PRESS) {
-		key_pressed_list += ":";
-		key_pressed_list += int_to_key_name(key);
-	}
+	if(!key_pressed_list.empty())
+		key_pressed_list += "|";
+	key_pressed_list += int_to_key_name(key);
+	key_pressed_list += action == GLFW_PRESS ? ":1" : ":0";
 }
 
 void window_char_callback(GLFWwindow w, int key) {
@@ -292,8 +292,8 @@ std::string keyboard_string() {
 
 /* *
 keyboard_presses()
-Returns keys that have been pressed since last called as a string.
-Example: ":left:right:space:a"
+Returns keys that have been pressed and released since last called as a string.
+Example: "left:0|right:1|space:1"
 
 C++
 const char* a = keyboard_presses();
@@ -643,7 +643,7 @@ void vsync(bool a) {
 
 /* *
 swap()
-Show all the drawn things on the screen and update other states, such as the window, keyboard, and mouse.
+Show all the drawn things on the screen.
 
 C++
 swap();
@@ -2705,7 +2705,7 @@ void idraw(float x, float y, float sx, float sy, float r, float xo, float yo) {
 }
 
 /* *
-write(string, float x = 0.0, float y = 0.0, bool flip = false)
+write(string, float x = 0.0, float y = 0.0)
 Write some text down.
 
 C++
@@ -2716,29 +2716,21 @@ write('Hello World')
 
 see:use_font, paper
 * */
-void write(const char* b, float x, float y, bool invert_y) {
+void write(const char* b, float x, float y) {
 	if(!font_stack.top()) {
-		note("write", "no font");
+		err("write", "no font");
 		return;
-	}
-	
-	if(invert_y) {
-		glPushMatrix();
-		glScalef(1, -1, 1);
 	}
 	
 	GLint bind, act;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &act);
 	
-	font_stack.top()->data->Render(b, -1, FTPoint(x, invert_y ? -y : y));
+	font_stack.top()->data->Render(b, -1, FTPoint(x, y));
 	
 	// Reset to the origional texture
 	glBindTexture(GL_TEXTURE_2D, bind);
 	glActiveTexture(act);
-	
-	if(invert_y)
-		glPopMatrix();
 }
 
 /* *
@@ -3182,17 +3174,27 @@ offset mouse_position(bool topdown) {
 }
 
 /* *
-mouse(bool = false)
-Show or hide the mouse.
+mouse(string = "show")
+Set the state of the mouse.
+"show"
+"hide"
+"capture"
 
 C++
-mouse(); //hide the pointer
+mouse("hide"); //hide the pointer
 
 Python
-mouse() #hide the pointer
+mouse('hide') #hide the pointer
 * */
-void mouse(bool a) {
-		glfwSetCursorMode(glfw_window, a ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_CAPTURED);
+void mouse(const char* a) {
+	if(!strcmp(a, "show"))
+		glfwSetCursorMode(glfw_window, GLFW_CURSOR_NORMAL);
+	else if(!strcmp(a, "hide"))
+		glfwSetCursorMode(glfw_window, GLFW_CURSOR_HIDDEN);
+	else if(!strcmp(a, "capture"))
+		glfwSetCursorMode(glfw_window, GLFW_CURSOR_CAPTURED);
+	else
+		err("mouse", "invalid option");
 }
 
 // Utility function
@@ -3234,7 +3236,7 @@ bool button(short a) {
 
 /* *
 wheel()
-Get the wheel offset since the window was opened.
+Get the wheel offset.
 
 C++
 int a = wheel();
@@ -3762,6 +3764,8 @@ void image::set(const char* a) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
+	else
+		err("image", "set", "invalid value");
 	
 	// Reset to the origional texture
 	if(bind != id)
@@ -3961,6 +3965,7 @@ font::font(const char* a, float b, const char* c) {
 	data->FaceSize(b);
 	
 	size_default = b;
+	size_stack.push(size_default);
 }
 
 void font::size(float a) {
@@ -3992,7 +3997,7 @@ void font::push_size() {
 }
 
 void font::pop_size() {
-	if(size_stack.size() > 1)
+	if(size_stack.size() > 0)
 		size_stack.pop();
 	else
 		err("font", "pop_size", "already at begining of stack");
@@ -4159,12 +4164,9 @@ float paper::height_of(const char* a) {
 	return b.Upper().Yf() - b.Lower().Yf();
 }
 
-void paper::write(const char* b, float x, float y, bool invert_y) {
+void paper::write(const char* b, float x, float y) {
 	glPushMatrix();
 	glTranslatef(x, y, 0.0);
-	if(invert_y) {
-		glScalef(1.0, -1.0, 1.0);
-	}
 	
 	GLint bind;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);

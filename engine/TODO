@@ -1,6 +1,8 @@
+PYTHON
+	callbacks for events
+
 MAIN
 	Make mouse_position return a tuple in python
-	window close callback ... need to save canvas before destroyed
 	glfwSetWindowCloseCallback ;;;; report if user wants to close window
 	glfwEnable( GLFW_KEY_REPEAT );
 	background_image rotation
@@ -8,7 +10,7 @@ MAIN
 
 DISPLAY
 	glMultiTexCoord2fARB coords...glTexCoordPointer (maybe pass a rect in)
-	fix mquad() to not map to screen with, but image....................[really?]
+	fix mquad() to not map to screen
 	Enhance the write function to incorperate all capabilities of the draw function
 	pixel() needs to be able to get from the front or back buffer
 	Enable fullscreen switching | fullscreen(true);
@@ -18,24 +20,16 @@ DISPLAY
 NETWORK
 	host.disconnect() disconencts from all connected peers, (otherhost) still does from one
 
-FBO
-	Not just high quality or not
-	need to be able to chage the viewport...
-
 FONT
 	...
 
 PIXELCACHE
-	Internal type, rgb(a)
+	Internal type
 
 IMAGE
 	Color -> transparent
-	Easy way to edit a texture? Reload?
-	Refresh part of pixel cache
 
 SOUND
-	Make functions to read and write to the buffer
-	MIDI support...
 	seek streams
 
 OTHER
@@ -50,8 +44,5 @@ OTHER
 		A new type that can be passed to anything
 		Can be loaded from anywhere
 		Using PhysFX?
-	
-	Images, FBOs, will eventually need support for depth and stencil buffers....and changing type RGB, RGBA, UNSIGNED_BYTE
-	open window with depth buffer support
-	
-	Go to webpage / open file in it's own editor?
+
+WORLD AND 3D

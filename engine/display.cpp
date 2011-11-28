@@ -19,11 +19,10 @@ float saved_clipNear, saved_clipFar, saved_FOV, saved_aspect;
 glm::mat4 saved_projection_matrix, saved_modelview_matrix;
 glm::vec3 saved_up, saved_right, saved_z;
 
+#include "internal.cpp"
+
 GLfloat mv[16];
 GLfloat pr[16];
-
-std::string key_pressed_list = "";
-std::string char_string = "";
 
 void glfw_error(int code, const char* string) {
 }
@@ -79,6 +78,8 @@ void graphics_off() {
 	glfwTerminate();
 }
 
+
+
 FREE_IMAGE_FORMAT fif_from_string(const char* a = NULL, const char* b = NULL) {
 	if(b) {
 		if(!strcmp(b, "png"))
@@ -111,203 +112,7 @@ int default_from_fif(FREE_IMAGE_FORMAT a) {
 		return 0;
 }
 
-void window_resize_callback(GLFWwindow g, int w, int h) {
-//	glViewport(0, 0, w, h);
-}
 
-void window_dirty_callback(GLFWwindow g) {
-	window_is_dirty = true;
-}
-
-int window_close_callback(GLFWwindow g) {
-	return 1;
-}
-
-const char* int_to_key_name(int a) {
-	switch(a) {
-	case 'A': return "a";
-	case 'B': return "b";
-	case 'C': return "c";
-	case 'D': return "d";
-	case 'E': return "e";
-	case 'F': return "f";
-	case 'G': return "g";
-	case 'H': return "h";
-	case 'I': return "i";
-	case 'J': return "j";
-	case 'K': return "k";
-	case 'L': return "l";
-	case 'M': return "m";
-	case 'N': return "n";
-	case 'O': return "o";
-	case 'P': return "p";
-	case 'Q': return "q";
-	case 'R': return "r";
-	case 'S': return "s";
-	case 'T': return "t";
-	case 'U': return "u";
-	case 'V': return "v";
-	case 'W': return "w";
-	case 'X': return "x";
-	case 'Y': return "y";
-	case 'Z': return "z";
-	case '1': return "1";
-	case '2': return "2";
-	case '3': return "3";
-	case '4': return "4";
-	case '5': return "5";
-	case '6': return "6";
-	case '7': return "7";
-	case '8': return "8";
-	case '9': return "9";
-	case '0': return "0";
-	case '-': return "-";
-	case '=': return "=";
-	case '[': return "[";
-	case ']': return "]";
-	case '\\': return "\\";
-	case ';': return ";";
-	case '\'': return "'";
-	case ',': return ",";
-	case '.': return ".";
-	case '/': return "/";
-	case '`': return "`";
-	
-	case GLFW_KEY_SPACE: return "space";
-	case GLFW_KEY_ESC: return "esc";
-	case GLFW_KEY_F1: return "f1";
-	case GLFW_KEY_F2: return "f2";
-	case GLFW_KEY_F3: return "f3";
-	case GLFW_KEY_F4: return "f4";
-	case GLFW_KEY_F5: return "f5";
-	case GLFW_KEY_F6: return "f6";
-	case GLFW_KEY_F7: return "f7";
-	case GLFW_KEY_F8: return "f8";
-	case GLFW_KEY_F9: return "f9";
-	case GLFW_KEY_F10: return "f10";
-	case GLFW_KEY_F11: return "f11";
-	case GLFW_KEY_F12: return "f12";
-	case GLFW_KEY_UP: return "up";
-	case GLFW_KEY_DOWN: return "down";
-	case GLFW_KEY_LEFT: return "left";
-	case GLFW_KEY_RIGHT: return "right";
-	case GLFW_KEY_LSHIFT: return "left shift";
-	case GLFW_KEY_RSHIFT: return "right shift";
-	case GLFW_KEY_LCTRL: return "left ctrl";
-	case GLFW_KEY_RCTRL: return "right ctrl";
-	case GLFW_KEY_LALT: return "left alt";
-	case GLFW_KEY_RALT: return "right alt";
-	case GLFW_KEY_TAB: return "tab";
-	case GLFW_KEY_ENTER: return "enter";
-	case GLFW_KEY_BACKSPACE: return "backspace";
-	case GLFW_KEY_INSERT: return "insert";
-	case GLFW_KEY_DEL: return "delete";
-	case GLFW_KEY_PAGEUP: return "page up";
-	case GLFW_KEY_PAGEDOWN: return "page down";
-	case GLFW_KEY_HOME: return "home";
-	case GLFW_KEY_END: return "end";
-	case GLFW_KEY_KP_1: return "kp 1";
-	case GLFW_KEY_KP_2: return "kp 2";
-	case GLFW_KEY_KP_3: return "kp 3";
-	case GLFW_KEY_KP_4: return "kp 4";
-	case GLFW_KEY_KP_5: return "kp 5";
-	case GLFW_KEY_KP_6: return "kp 6";
-	case GLFW_KEY_KP_7: return "kp 7";
-	case GLFW_KEY_KP_8: return "kp 8";
-	case GLFW_KEY_KP_9: return "kp 9";
-	case GLFW_KEY_KP_0: return "kp 0";
-	case GLFW_KEY_KP_DIVIDE: return "kp divide";
-	case GLFW_KEY_KP_MULTIPLY: return "kp multiply";
-	case GLFW_KEY_KP_SUBTRACT: return "kp subtract";
-	case GLFW_KEY_KP_ADD: return "kp add";
-	case GLFW_KEY_KP_DECIMAL: return "kp decimal";
-	case GLFW_KEY_KP_EQUAL: return "kp equal";
-	case GLFW_KEY_KP_ENTER: return "kp enter";
-	case GLFW_KEY_KP_NUM_LOCK: return "num lock";
-	case GLFW_KEY_CAPS_LOCK: return "caps lock";
-	case GLFW_KEY_SCROLL_LOCK: return "scroll lock";
-	case GLFW_KEY_PAUSE: return "pause";
-	case GLFW_KEY_LSUPER: return "right super";
-	case GLFW_KEY_RSUPER: return "left super";
-	case GLFW_KEY_MENU: return "menu";
-	}
-	return "unknown";
-}
-
-char key_int_to_char(int a) {
-	if(a < 256) return (char) a;
-	return NULL;
-}
-
-void window_key_callback(GLFWwindow w, int key, int action) {
-	if(!key_pressed_list.empty())
-		key_pressed_list += "|";
-	key_pressed_list += int_to_key_name(key);
-	key_pressed_list += action == GLFW_PRESS ? ":1" : ":0";
-}
-
-void window_char_callback(GLFWwindow w, int key) {
-	char_string += key_int_to_char(key);
-}
-
-/* *
-keyboard_enable(string, bool = true)
-Enable keyboard features.
-"string" - see keyboard_string
-"presses" - see keyboard_presses
-
-C++
-keyboard_enable("string");
-
-Python
-keyboard_enable('string')
-* */
-void keyboard_enable(const char* a, bool b) {
-	if(!strcmp(a, "string"))
-		glfwSetCharCallback(b ? window_char_callback : NULL);
-	else if(!strcmp(a, "presses"))
-		glfwSetKeyCallback(b ? window_key_callback : NULL);
-	else
-		err("keyboard_enable", "invalid value");
-		
-}
-
-/* *
-keyboard_string()
-Returns typed characters since last called.
-
-C++
-const char* a = keyboard_string();
-
-Python
-a = keyboard_string()
-
-see:keyboard_enable
-* */
-std::string keyboard_string() {
-	std::string a = char_string;
-	char_string = "";
-	return a;
-}
-
-/* *
-keyboard_presses()
-Returns keys that have been pressed and released since last called as a string.
-Example: "left:0|right:1|space:1"
-
-C++
-const char* a = keyboard_presses();
-
-Python
-a = keyboard_presses()
-
-see:keyboard_enable
-* */
-std::string keyboard_presses() {
-	std::string a = key_pressed_list;
-	key_pressed_list = "";
-	return a;
-}
 
 /* *
 key_repeat(bool)
@@ -371,10 +176,6 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 	GLenum err = glewInit();
 	if(err != GLEW_OK)
 		note("window", "extentions unsupported");
-	
-	glfwSetWindowRefreshCallback(window_dirty_callback);
-	glfwSetWindowSizeCallback(window_resize_callback);
-	glfwSetWindowCloseCallback(window_close_callback);
 	
 	glfwSwapInterval(0);
 	
@@ -2690,7 +2491,7 @@ void idraw(float x, float y, float sx, float sy, float r, float xo, float yo) {
 	}
 	
 	if(r) {
-		float rc = cos(r), rs = sin(r);
+		float rc = std::cos(r), rs = std::sin(r);
 		glTexCoord2f(co_x, co_y); glVertex2f(x + (-xo * rc - -yo * rs) * sx, y + (-yo * rc + -xo * rs) * sy);
 		glTexCoord2f(co_x2, co_y); glVertex2f(x + ((w - xo) * rc - -yo * rs) * sx, y + (-yo * rc + (w - xo) * rs) * sy);
 		glTexCoord2f(co_x2, co_y2); glVertex2f(x + ((w - xo) * rc - (h - yo) * rs) * sx, y + ((h - yo) * rc + (w - xo) * rs) * sy);
@@ -2905,7 +2706,7 @@ void sprite(float x, float y, float z, float sx, float sy, float r) {
 	glm::vec3 pos(x, y, z);
 	
 	if(r) {
-		float c = cos(r), s = sin(r);
+		float c = std::cos(r), s = std::sin(r);
 		glm::vec3 bl, tl, tr, br;
 		
 		bl = glm::gtx::rotate_vector::rotate((-saved_right*sx - saved_up*sy), r, saved_z);

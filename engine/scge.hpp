@@ -150,9 +150,9 @@ struct sound {
 	buffer* data;
 	ALuint bufs[NUM_BUFS];
 	ALuint source;
-	alureStream* stream;//x
 	bool is_stream, looping;
 	unsigned int pending;
+	alureStream* stream;//x
 };
 
 #endif
@@ -250,8 +250,8 @@ struct paper {
 	
 	void write(const char*, float = 0.0, float = 0.0);
 	
-	FTSimpleLayout* data;//x
 	font* data_font;
+	FTSimpleLayout* data;//x
 };
 
 struct shader {
@@ -296,9 +296,15 @@ struct fbo {
 bool graphics();
 void graphics_off();
 
-void keyboard_enable(const char*, bool = true);
-std::string keyboard_string();
-std::string keyboard_presses();
+typedef void (* _resize_callback_function)(int, int);
+typedef int (* _close_callback_function)();
+typedef void (* _focus_callback_function)(int);
+typedef void (* _iconify_callback_function)(int);
+typedef void (* _button_callback_function)(const char*, int);
+typedef void (* _mousemove_callback_function)(int, int);
+typedef void (* _scroll_callback_function)(int);
+typedef void (* _key_callback_function)(const char*, int);
+typedef void (* _string_callback_function)(const char*);
 
 void key_repeat(bool = true);
 
@@ -306,12 +312,8 @@ bool window(const char* = "scge test", int = 320, int = 240, bool = false, bool 
 void close_window();
 
 void window_title(const char*);
-bool window_dirty();
-bool window_resized();
 bool window_opened();
 bool window_active();
-float window_timer();
-void rest(float);
 
 std::string display_modes();
 ibox display_dimensions();
@@ -564,8 +566,8 @@ struct noise {
 	noise(const char* = "simple", float = 0, float = 1);
 	float sample(float x, float y, float s = NULL);
 	float scale;
-	int type;//x
 	int seed;
+	int type;//x
 };
 
 // Other

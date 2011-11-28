@@ -66,7 +66,7 @@ const char* int_to_key_name(int a) {
 	case '`': return "`";
 	
 	case GLFW_KEY_SPACE: return "space";
-	case GLFW_KEY_ESC: return "esc";
+	case GLFW_KEY_ESC: return "escape";
 	case GLFW_KEY_F1: return "f1";
 	case GLFW_KEY_F2: return "f2";
 	case GLFW_KEY_F3: return "f3";

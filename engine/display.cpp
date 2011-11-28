@@ -3118,7 +3118,7 @@ int keyboard_key_string_to_int(const char* a) {
 		return toupper(a[0]);
 
 	if(!strcmp(a, "space")) return GLFW_KEY_SPACE;
-	else if(!strcmp(a, "esc") || !strcmp(a, "escape")) return GLFW_KEY_ESC;
+	else if(!strcmp(a, "escape")) return GLFW_KEY_ESC;
 	else if(!strcmp(a, "f1")) return GLFW_KEY_F1;
 	else if(!strcmp(a, "f2")) return GLFW_KEY_F2;
 	else if(!strcmp(a, "f3")) return GLFW_KEY_F3;
@@ -3192,11 +3192,6 @@ a = key('left shift')
 bool key(const char* a) {
 	if(!strcmp(a, "shift")) {
 		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left shift")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right shift")))
-			return true;
-		return false;
-	}
-	if(!strcmp(a, "control")) {
-		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left control")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right control")))
 			return true;
 		return false;
 	}

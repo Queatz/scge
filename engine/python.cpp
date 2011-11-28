@@ -74,8 +74,8 @@ void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 
 void _string_callback_wrap(GLFWwindow w, int x) {
 	PyObject* args;
-	args = Py_BuildValue("(s)", x);
-	PyEval_CallObject(_string_callback, args);
+	args = Py_BuildValue("(C)", x);
+	PyObject_Call(_string_callback, args, (PyObject *) NULL);
 	Py_DECREF(args);
 }
 
@@ -103,43 +103,74 @@ set_callback('dirty', dirty)
 
 void set_callback(const char* e, PyObject* o) {
 	if(!strcmp(e, "size")) {
+		if(_size_callback)
+			Py_DECREF(_size_callback);
 		_size_callback = o;
+		Py_INCREF(o);
 		glfwSetWindowSizeCallback(o == Py_None ? NULL : _size_callback_wrap);
 	}
 	else if(!strcmp(e, "close")) {
+		if(_close_callback)
+			Py_DECREF(_close_callback);
 		_close_callback = o;
+		Py_INCREF(o);
 		glfwSetWindowCloseCallback(o == Py_None ? NULL : _close_callback_wrap);
 	}
 	else if(!strcmp(e, "dirty")) {
+		if(_dirty_callback)
+			Py_DECREF(_dirty_callback);
 		_dirty_callback = o;
+		Py_INCREF(o);
 		glfwSetWindowRefreshCallback(o == Py_None ? NULL : _dirty_callback_wrap);
 	}
 	else if(!strcmp(e, "focus")) {
+		if(_focus_callback)
+			Py_DECREF(_focus_callback);
 		_focus_callback = o;
+		Py_INCREF(o);
 		glfwSetWindowFocusCallback(o == Py_None ? NULL : _focus_callback_wrap);
 	}
 	else if(!strcmp(e, "iconify")) {
+		if(_iconify_callback)
+			Py_DECREF(_iconify_callback);
 		_iconify_callback = o;
+		Py_INCREF(o);
 		glfwSetWindowIconifyCallback(o == Py_None ? NULL : _iconify_callback_wrap);
 	}
 	else if(!strcmp(e, "button")) {
+		if(_button_callback)
+			Py_DECREF(_button_callback);
 		_button_callback = o;
+		Py_INCREF(o);
 		glfwSetMouseButtonCallback(o == Py_None ? NULL : _button_callback_wrap);
 	}
 	else if(!strcmp(e, "key")) {
+		if(_key_callback)
+			Py_DECREF(_key_callback);
 		_key_callback = o;
+		Py_INCREF(o);
 		glfwSetKeyCallback(o == Py_None ? NULL : _key_callback_wrap);
 	}
 	else if(!strcmp(e, "scroll")) {
+		if(_scroll_callback)
+			Py_DECREF(_scroll_callback);
 		_scroll_callback = o;
+		Py_INCREF(o);
 		glfwSetScrollCallback(o == Py_None ? NULL : _scroll_callback_wrap);
 	}
 	else if(!strcmp(e, "string")) {
+		if(_string_callback)
+			Py_DECREF(_string_callback);
 		_string_callback = o;
+		Py_INCREF(o);
+		
 		glfwSetCharCallback(o == Py_None ? NULL : _string_callback_wrap);
 	}
 	else if(!strcmp(e, "mousemove")) {
+		if(_mousemove_callback)
+			Py_DECREF(_mousemove_callback);
 		_mousemove_callback = o;
+		Py_INCREF(o);
 		glfwSetMousePosCallback(o == Py_None ? NULL : _mousemove_callback_wrap);
 	}
 	else

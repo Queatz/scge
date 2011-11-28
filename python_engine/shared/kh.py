@@ -72,6 +72,10 @@ def _keycallback(k, s):
 def _buttoncallback(b, s):
 	_handle('@ ' + b, s)
 
+def events(self):
+	for k in PRESSED:
+		yield k, max(0, PRESSED[k])
+
 def watch(poll = True):
 	global SETUP, PRESSED, BLOCKALLEXCEPT
 	if not SETUP:

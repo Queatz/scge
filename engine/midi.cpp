@@ -1,3 +1,4 @@
+#ifndef _WIN32
 /* * Midi
 midi_on()
 Enable midi.
@@ -211,3 +212,4 @@ midi_pan()
 void midi_pan(int channel, int a) {
 	fluid_synth_cc(midi_synth, channel, 10, a);
 }
+#endif

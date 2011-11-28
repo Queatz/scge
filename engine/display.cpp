@@ -276,20 +276,6 @@ float window_timer() {
 }
 
 /* *
-rest(float)
-Rest for some seconds.
-
-C++
-rest(2.0);
-
-Python
-rest(2.0)
-* */
-void rest(float a) {
-	usleep(a*1000000);
-}
-
-/* *
 display_modes()
 Returns a space-seperated string of possible video modes for the display, in the format: WxH.
 

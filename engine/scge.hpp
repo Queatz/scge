@@ -9,7 +9,6 @@
 #include <sstream>
 #include <cstdarg>
 #include <ctype.h> // toupper()
-#include <unistd.h> // usleep()
 
 #include "conf.h"
 
@@ -24,8 +23,12 @@
 
 #ifdef WITH_SOUND
 #include <AL/alure.h> // Sound
+
+#ifndef _WIN32
 #include <fluidsynth.h>
 #include <aubio/aubio.h> // Pitch, etc
+#endif
+
 #endif
 
 #ifdef WITH_NETWORK
@@ -490,6 +493,7 @@ void audio_gain(float = 1.0);
 void audio_pan(float = 0.0);
 void audio_soundfont(const char*);
 
+#ifndef _WIN32
 void midi_on();
 void midi_off();
 
@@ -507,6 +511,7 @@ void midi_bank(int = 0, unsigned int = 0);
 void midi_play(int = 0, int = 60, int = 100);
 void midi_stop(int = 0, int = 60);
 void midi_pan(int = 0, int = 63);
+#endif
 
 void microphone_on();
 void microphone_off();

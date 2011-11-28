@@ -136,7 +136,9 @@ Python
 audio_soundfont()
 * */
 void audio_soundfont(const char* a) {
+#ifndef _WIN32
 	setenv("FLUID_SOUNDFONT", a, 1);
+#endif
 }
 
 /* Microphone */

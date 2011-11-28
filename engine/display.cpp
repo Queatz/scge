@@ -9,10 +9,6 @@ std::stack<std::string, std::list<std::string> > blend_mode_stack;
 
 GLFWwindow glfw_window = NULL;
 
-int width = 0, height = 0, glfw_state = 0;
-bool fullscreened;
-bool window_is_dirty = false;
-
 float clipNear, clipFar, FOV, aspect;
 float saved_clipNear, saved_clipFar, saved_FOV, saved_aspect;
 
@@ -183,6 +179,8 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 	width = x;
 	height = y;
 	
+	glfwSetWindowSizeCallback(_size_callback_default);
+	
 	// ...should these be here...
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -229,44 +227,6 @@ window_title('Hello World')
 * */
 void window_title(const char* a) {
 	glfwSetWindowTitle(glfw_window, a);
-}
-
-/* *
-window_dirty()
-Returns true if the window needs to be redrawn since the last call.
-
-C++
-bool a = window_dirty();
-
-Python
-a = window_dirty()
-* */
-bool window_dirty() {
-	if(window_is_dirty) {
-		window_is_dirty = false;
-		return true;
-	}
-	return false;
-}
-
-/* *
-window_resized()
-Returns true if the window was resized since the last call.
-
-C++
-bool a = window_resized();
-
-Python
-a = window_resized()
-* */
-bool window_resized() {
-	int w, h;
-	glfwGetWindowSize(glfw_window, &w, &h);
-	if(w != width || h != height) {
-		glfwGetWindowSize(glfw_window, &width, &height);
-		return true;
-	}
-	return false;
 }
 
 /* *

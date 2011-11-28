@@ -1,5 +1,13 @@
 #include "functions.cpp"
 
+int width = 0, height = 0, glfw_state = 0;
+bool fullscreened;
+
+void _size_callback_default(GLFWwindow w, int x, int y) {
+	width = x;
+	height = y;
+}
+
 char key_int_to_char(int a) {
 	if(a < 256) return (char) a;
 	return NULL;

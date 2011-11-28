@@ -5,6 +5,7 @@ import scge
 PRESSED = {}
 SETUP = False
 BLOCKALLEXCEPT = False
+CALLBACK = None
 
 def combine(k1, k2):
 	k1 = _ks(k1)
@@ -61,20 +62,38 @@ def _handle(i, s):
 		if i not in PRESSED:
 			PRESSED[i] = 1
 		else:
-			PRESSED[i] = 3
+			PRESSED[i] = 2
 	else:
-		PRESSED[i] = -1
+		PRESSED[i] = 0
 	
+	if CALLBACK:
+		if isinstance(CALLBACK, tuple):
+			if i[:6] == 'mouse ':
+				CALLBACK[1](i[6:], PRESSED[i])
+			else:
+				CALLBACK[0](i, PRESSED[i])
+		else:
+			CALLBACK(i, PRESSED[i])
 
 def _keycallback(k, s):
 	_handle(k, s)
 
 def _buttoncallback(b, s):
-	_handle('@ ' + b, s)
+	_handle('mouse ' + b, s)
 
 def events(self):
 	for k in PRESSED:
-		yield k, max(0, PRESSED[k])
+		yield k, PRESSED[k]
+
+def set_callback(f):
+	"Callbacks accept 2 parameters: key (a string), state (0 released | 1 pressed | 2 repeated)"
+	global CALLBACK
+	CALLBACK = f
+
+def set_callbacks(kf, bf):
+	"Same as set_callback but mouse and keys are sent seperately and 'mouse ' is dropped from mouse events."
+	global CALLBACK
+	CALLBACK = kf, bf
 
 def watch(poll = True):
 	global SETUP, PRESSED, BLOCKALLEXCEPT
@@ -89,10 +108,10 @@ def watch(poll = True):
 	
 	dellist = []
 	for i in PRESSED:
-		if PRESSED[i] == -1:
+		if PRESSED[i] < 1:
 			dellist.append(i)
-		elif PRESSED[i] == 1 or PRESSED[i] == 3:
-			PRESSED[i] = 2
+		elif PRESSED[i] == 1 or PRESSED[i] == 2:
+			PRESSED[i] = 3
 	for i in dellist:
 		del PRESSED[i]
 	if poll:

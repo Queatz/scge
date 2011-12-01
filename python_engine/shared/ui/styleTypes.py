@@ -1,4 +1,3 @@
-import math
 import numbers
 
 # # # Mechanics # # #
@@ -129,7 +128,7 @@ class Offset(Style):
 	
 	def __setattr__(self, a, v):
 		if a == 'x' or a == 'y':
-			v = math.floor(v)
+			v = round(v)
 		Style.__setattr__(self, a, v)
 	
 	def __repr__(self):

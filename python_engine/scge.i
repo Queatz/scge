@@ -16,11 +16,3 @@
 %rename(__eq__) offset::operator==;
 
 %include "scge.hpp"
-
-// Python Only
-
-%{
-	#include "../engine/python.cpp"
-%}
-
-%include "../engine/python.h"

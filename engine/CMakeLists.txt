@@ -7,6 +7,7 @@ option(WITH_GRAPHICS "Enable graphics." ON)
 option(WITH_SOUND "Enable sound." ON)
 option(WITH_NETWORK "Enable networking." ON)
 option(WITH_MATH "Enable advanced math." ON)
+option(WITH_PYTHON "Enable Python specifics." ON)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.in ${CMAKE_CURRENT_SOURCE_DIR}/conf.h)
 

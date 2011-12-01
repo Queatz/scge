@@ -17,13 +17,4 @@ fi
 sudo mv scge.py ./scge/__init__.py
 sudo mv _scge.so ./scge/_scge.so
 
-if [ -d ./scge/shared ]; then
-	sudo rm -r ./scge/shared
-fi
-
-sudo cp -r ./shared ./scge/shared
-
-
-
-sudo python3 setup.py install
-
+./pyinstall

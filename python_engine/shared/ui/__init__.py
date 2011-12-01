@@ -251,7 +251,7 @@ class Element:
 		self.dirty = True
 		
 		# Standard
-		self.style = styleTypes.StyleDef(self._refit, self.redraw)
+		self.style = styleTypes.StyleDef(self._boundschanged, self.redraw)
 		
 		self.init()
 	
@@ -386,19 +386,19 @@ class Element:
 			
 			if isinstance(self.dirty, tuple):
 				_clip.overlap(self.dirty[1] + _offset)
-			
 			if not _clip.valid():
 				self.dirty = False
 				return
 			
 			scge.scissor(_clip.x, _clip.y, _clip.w, _clip.h)
 		
-		if not isinstance(self.dirty, tuple):
+		if isinstance(self.dirty, tuple):
+			drawc = True
+			startfrom = self.children.index(self.dirty[0])
+		else:
 			drawc = self.draw() is not False
 			startfrom = 0
-		else:
-			drawc = False
-			startfrom = self.children.index(self.dirty[0])
+		
 		self.dirty = False
 		
 		if drawc:
@@ -415,7 +415,12 @@ class Element:
 					l = e.style.offset
 			scge.translate(-l.x, -l.y)
 	
-	def _refit(self):
+	def _boundschanged(self):
+		self._refit()
+		self._redraw(None, None, True)
+		self.interface.mousemove()
+	
+	def _refit(self, child = None):
 		# Suppose there is a dialog with a long, wrapping sentance in it.
 		# The dialog is horizontally resizeable.
 		# The dialog automatically expands vertically to hold all the text.
@@ -424,14 +429,14 @@ class Element:
 		# the text refits to the width of the dialog and computes a height,
 		# and finally the dialog resizes vertically to accomidate the text.
 		# Now everyone is happy.
-		if self.refit() is not False and self.children:
+		if not child and self.refit() is not False and self.children:
 			for e in self.children:
 				e._refit()
 		
 		self.childfit()
 		
 		if self.parent:
-			self.parent.childfit()
+			self.parent._refit(self)
 	
 	def _redraw(self, e = None, b = None, c = False):
 		# Already fully dirty
@@ -442,34 +447,34 @@ class Element:
 			# Full redraw
 			self.dirty = True
 		else:
+			# b may get overwritten, but we need to know if bounds were specified
 			bb = bool(b)
 			
-			# Make dirty if not already doing a full redraw
-			if self.dirty is not True:
-				if isinstance(e, Element):
-					if isinstance(b, Bounds):
-						b = b + e.style.offset
-					else:
-						if e.imaginary:
-							b = None
-						else:
-							b = Bounds(e.style.offset, e.style.size)
-					if isinstance(self.dirty, tuple):
-						if b and self.dirty[0] is e and e.soliddraw:
-							if not b.within(self.dirty[1]):
-								self.dirty = e, Bounds(e.style.offset, e.style.size)
-							# Do nothing if redrawing a second element is contained already
-						else:
-							self.dirty = True
-					else:
-						# Not yet dirty, so use this element's bounds if it is solid
-						if b and (e.soliddraw or bb):
-							self.dirty = (e, b)
-						else:
-							self.dirty = True
-				else:
-					# No element specified, redraw everything
+			# Make bounds in self's space
+			if isinstance(b, Bounds):
+				b = b + e.style.offset
+			else:
+				if e.imaginary:
+					b = None
 					self.dirty = True
+				else:
+					b = Bounds(e.style.offset, e.style.size)
+			
+			# Overlap bounds
+			if b:
+				if isinstance(self.dirty, tuple):
+					if self.dirty[0] is e and e.soliddraw:
+						if not b.within(self.dirty[1]):
+							self.dirty = e, Bounds(e.style.offset, e.style.size)
+						# Do nothing if redrawing a second element is contained already
+					else:
+						self.dirty = True
+				else:
+					# Not yet dirty, so use this element's bounds if it is solid
+					if e.soliddraw or bb:
+						self.dirty = (e, b)
+					else:
+						self.dirty = True
 		
 		if self.parent:
 			self.parent._redraw((None if c else self), (b if isinstance(self.dirty, tuple) else None))
@@ -578,19 +583,6 @@ class Element:
 
 class Interface:
 	def __init__(self, e = None):
-		# Root element
-		if e:
-			self.body = e(self)
-		else:
-			# Default body shall be solid clear color
-			self.body = Element(self)
-			self.body.draw = lambda: scge.clear()
-			self.body.soliddraw = True
-		
-		# Default to covering the whole window
-		dd = scge.window_dimensions()
-		self.body.style.size = Offset(dd.w, dd.h)
-		
 		# List of callbacks that will be handled
 		self.timeouts = []
 		
@@ -613,11 +605,25 @@ class Interface:
 		# Mouse position caches
 		self.mouse_position_in_over = None
 		self.mouse_global = None
+		self._mouse_moved_this_tick = False
 		
 		# There is a delay when changing the element to scroll so the mouse doesn't get caught
 		self.scroll_element = None
 		self.scroll_time = 0
 		self.scroll_timeout = 1
+		
+		# Root element
+		if e:
+			self.body = e(self)
+		else:
+			# Default body shall be solid clear color
+			self.body = Element(self)
+			self.body.draw = lambda: scge.clear()
+			self.body.soliddraw = True
+		
+		# Default to covering the whole window
+		dd = scge.window_dimensions()
+		self.body.style.size = Offset(dd.w, dd.h)
 	
 	# Event functions
 	
@@ -707,6 +713,14 @@ class Interface:
 	def mousemove(self, x = None, y = None):
 		"Call this when the mouse moves."
 		
+		# We don't need overloads of mousemoves
+		# But we might want them for precision in some apps...
+		if x:
+			self._mouse_moved_this_tick = (x, y)
+		elif not self._mouse_moved_this_tick:
+			self._mouse_moved_this_tick = True
+	
+	def _mousemove(self, x, y):
 		# Moving the mouse cancels the scroll timeout
 		self.scroll_time = 0
 		
@@ -869,8 +883,6 @@ class Interface:
 	
 	def mouse(self, e):
 		"Returns the mouse position in the element."
-		if e is self.over:
-			return Offset(*self.mouse_position_in_over)
 		return Offset(*self.mouse_global) - e.globalOffset()
 	
 	def below(self):
@@ -890,6 +902,10 @@ class Interface:
 	
 	def update(self):
 		"Update timeouts."
+		
+		if self._mouse_moved_this_tick:
+			self._mousemove(*self._mouse_moved_this_tick)
+		
 		t = 0
 		tme = time.time()
 		while t < len(self.timeouts):
@@ -905,7 +921,7 @@ class Interface:
 	def draw(self):
 		"Draw the interface."
 		# Draw no matter what if the interface is seethrough
-		if not self.body.soliddraw:
+		if not self.body.soliddraw and not isinstance(self.body.dirty, tuple):
 			self.body.dirty = True
 		
 		if self.body.dirty:

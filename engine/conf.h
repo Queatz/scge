@@ -2,3 +2,4 @@
 #define WITH_SOUND
 #define WITH_NETWORK
 #define WITH_MATH
+#define WITH_PYTHON

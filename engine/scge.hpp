@@ -1,16 +1,27 @@
+#include "conf.h"
+
+#ifdef WITH_PYTHON
+#include <Python.h>
+#endif
+
 #include <cstdlib>
 #include <cstring>
 #include <vector>
 #include <stack>
 #include <list>
 #include <cmath>
+#ifdef _WIN32
+#define M_PI 3.141592653589793
+#endif
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cstdarg>
 #include <ctype.h> // toupper()
 
-#include "conf.h"
+#ifdef WITH_NETWORK
+#include <enet/enet.h> // Networking
+#endif
 
 #ifdef WITH_GRAPHICS
 #include <GL/glew.h> // OpenGL extentions
@@ -29,10 +40,6 @@
 #include <aubio/aubio.h> // Pitch, etc
 #endif
 
-#endif
-
-#ifdef WITH_NETWORK
-#include <enet/enet.h> // Networking
 #endif
 
 #ifdef WITH_MATH
@@ -296,6 +303,20 @@ struct fbo {
 	bool buffer_is_mine, depth_stencil;
 };
 
+struct vbo {
+	vbo(int, const char* = "static draw");
+#ifdef WITH_PYTHON
+	vbo(PyObject*, const char* = "static draw");
+#endif
+	~vbo();
+	
+	void bind(const char*, const char*, int, int, int = 0, int = 0);
+	
+	GLuint id;
+};
+
+void vbo_enable(const char*, bool = true);
+
 bool graphics();
 void graphics_off();
 
@@ -380,6 +401,9 @@ void push_fbo();
 void pop_fbo();
 fbo* get_fbo();
 
+void use_vbo(vbo*);
+void use_vbo();
+
 void use_image(image*);
 void push_image();
 void pop_image();
@@ -434,6 +458,8 @@ void scale(float, float, float);
 
 void begin(const char*);
 void end();
+
+void draw(const char*, int = 0, int = 0);
 
 void draw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
 void idraw(float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0, float = 0.0);
@@ -582,3 +608,8 @@ void seed_rnd(int);
 
 // Random 0-1
 float rnd();
+
+// Python
+#ifdef WITH_PYTHON
+void set_callback(const char*, PyObject*);
+#endif

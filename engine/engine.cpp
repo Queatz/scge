@@ -3,6 +3,7 @@
 #include "scge.hpp"
 
 #include "functions.cpp"
+
 #include "types.cpp"
 #include "extra.cpp"
 
@@ -17,4 +18,8 @@
 
 #ifdef WITH_NETWORK
 #include "network.cpp"
+#endif
+
+#ifdef WITH_PYTHON
+#include "python.cpp"
 #endif

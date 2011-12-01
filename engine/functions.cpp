@@ -1,6 +1,3 @@
-#ifndef _FUNCTIONS_CPP_
-#define _FUNCTIONS_CPP_
-
 void err(const char* a, const char* b, const char* c) {
 	std::cout << "\033[1;34m" << a << " \033[1;31m" << b << "\033[0m " << c << std::endl;
 }
@@ -63,4 +60,3 @@ a = rnd()
 float rnd() {
 	return rand() / (float) RAND_MAX;
 }
-#endif

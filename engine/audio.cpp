@@ -19,19 +19,23 @@ Python
 audio()
 * */
 
+#ifndef _WIN32
 FLUIDSYNTH_API void dumberror(int level, char *message, void *data) {
 	;
 }
+#endif
 
 bool audio() {
 	if(!alureInitDevice(NULL, NULL)) {
 		err("audio", "could not initiate");
 		return false;
 	}
+#ifndef _WIN32
 	fluid_set_log_function(FLUID_WARN, dumberror, NULL);
 	fluid_set_log_function(FLUID_ERR, dumberror, NULL);
 	fluid_set_log_function(FLUID_INFO, dumberror, NULL);
 	fluid_set_log_function(FLUID_DBG, dumberror, NULL);
+#endif
 	
 	alureUpdateInterval(0.05);
 	
@@ -306,6 +310,9 @@ soundbyte::~soundbyte() {
 }
 
 float soundbyte::calculate_frequency(unsigned int max_samples, unsigned int nblocks, const char* method) {
+#ifdef _WIN32
+	return 0.0;
+#else
 	uint_t len = length;
 	uint_t hop;
 	uint_t offset;
@@ -344,6 +351,7 @@ float soundbyte::calculate_frequency(unsigned int max_samples, unsigned int nblo
 	del_aubio_pitch(p);
 	
 	return ret;
+#endif
 }
 
 float soundbyte::get(unsigned int i) {

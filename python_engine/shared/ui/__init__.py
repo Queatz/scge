@@ -249,6 +249,7 @@ class Element:
 		self.parent = None
 		self.children = []
 		self.dirty = True
+		self._fitting_state = set()
 		
 		# Standard
 		self.style = styleTypes.StyleDef(self._boundschanged, self.redraw)
@@ -429,11 +430,19 @@ class Element:
 		# the text refits to the width of the dialog and computes a height,
 		# and finally the dialog resizes vertically to accomidate the text.
 		# Now everyone is happy.
-		if not child and self.refit() is not False and self.children:
-			for e in self.children:
-				e._refit()
+		fitc = True
+		if not 1 in self._fitting_state:
+			self._fitting_state.add(1)
+			fitc = self.refit()
+			self._fitting_state.discard(1)
 		
-		self.childfit()
+		if not 2 in self._fitting_state:
+			if not child and fitc is not False and self.children:
+				for e in self.children:
+					e._refit()
+			self._fitting_state.add(2)
+			self.childfit()
+			self._fitting_state.discard(2)
 		
 		if self.parent:
 			self.parent._refit(self)
@@ -737,15 +746,17 @@ class Interface:
 		# Captures get all mousemove events
 		if self.captured:
 			go = self.captured.globalOffset()
-			self.mouse_position_in_over = (x - go.x, y - go.y)
+			mouse_position_in_over = (x - go.x, y - go.y)
 			
-			if self.over is not self.captured:
-				if self.over:
-					self.over.mouseoff()
-				self.over = self.captured
-				self.over.mouseon(Offset(*self.mouse_position_in_over))
+			if self.mouse_position_in_over != mouse_position_in_over:
+				self.mouse_position_in_over = mouse_position_in_over
+				if self.over is not self.captured:
+					if self.over:
+						self.over.mouseoff()
+					self.over = self.captured
+					self.over.mouseon(Offset(*self.mouse_position_in_over))
 			
-			self.captured.mousemove(Offset(*self.mouse_position_in_over))
+				self.captured.mousemove(Offset(*self.mouse_position_in_over))
 			return
 		
 		# Find the element the mouse is now on
@@ -904,7 +915,11 @@ class Interface:
 		"Update timeouts."
 		
 		if self._mouse_moved_this_tick:
-			self._mousemove(*self._mouse_moved_this_tick)
+			if self._mouse_moved_this_tick is True:
+				self._mousemove(None, None)
+			else:
+				self._mousemove(*self._mouse_moved_this_tick)
+			self._mouse_moved_this_tick = False
 		
 		t = 0
 		tme = time.time()

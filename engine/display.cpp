@@ -3423,7 +3423,7 @@ rgba pixelcache::pixel(int x, int y) {
 	int h;
 	
 	if(x < 0 || x >= width || y < 0 || y >= height)
-		return rgba(0.0, 0.0, 0.0);
+		return rgba(0.0, 0.0, 0.0, 0.0);
 	
 	h = y * width * colors + x * colors;
 	return rgba(static_cast<float>(data[h + 0]) / 255.0, static_cast<float>(data[h + 1]) / 255.0, static_cast<float>(data[h + 2]) / 255.0, colors == 4 ? static_cast<float>(data[h + 3]) / 255.0 : 1.0);
@@ -3757,16 +3757,10 @@ void image::discard_pixel_cache() {
 }
 
 rgba image::pixel(int x, int y) {
-	int h = height, w = width;
-	
-	if(x < 0 || x >= w || y < 0 || y >= h)
-		return rgba(0.0, 0.0, 0.0);
-	
 	if(!cache)
 		refresh_pixel_cache();
 	
-	h = y * w * colors + x * colors;
-	return rgba(static_cast<float>(cache->data[h + 0]) / 255.0, static_cast<float>(cache->data[h + 1]) / 255.0, static_cast<float>(cache->data[h + 2]) / 255.0, cache->colors == 4 ? static_cast<float>(cache->data[h + 3]) / 255.0 : 1.0);
+	return cache->pixel(x, y);
 }
 
 bool image::save(const char* a, const char* b) {

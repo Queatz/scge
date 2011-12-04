@@ -419,17 +419,10 @@ class Element:
 		if self.messy:
 			return
 		
-		a = False
-		if resized:
-			a = self.interface._refit(self)
-		elif self.parent:
-			a = self.interface._refit(self.parent)
-		else:
-			return
-		if not a:
-			return
 		if resized:
 			self.messy = True
+		
+		self.interface._refit(self)
 		self._redraw(None, None, True)
 	
 	def _refit(self, up = False):
@@ -955,11 +948,13 @@ class Interface:
 		
 		# Refit
 		
-		self._refitting_state = True
-		for e in self.mess:
-			e._refit()
-		self._refitting_state = False
-		self.mess = set()
+		if self.mess:
+			self._refitting_state = True
+			for e in self.mess:
+				e._refit()
+			self._refitting_state = False
+			self.mess = set()
+			self.mousemove()
 		
 		# Draw no matter what if the interface is seethrough
 		if not self.body.soliddraw:

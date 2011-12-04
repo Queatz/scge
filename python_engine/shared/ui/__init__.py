@@ -249,7 +249,8 @@ class Element:
 		self.parent = None
 		self.children = []
 		self.dirty = True
-		self._fitting_state = set()
+		self.messy = False
+		self._changed = False
 		
 		# Standard
 		self.style = styleTypes.StyleDef(self._boundschanged, self.redraw)
@@ -352,8 +353,7 @@ class Element:
 			self.children.insert(i, e)
 		
 		# Refit
-		self._refit()
-		self.redraw()
+		self._boundschanged()
 	
 	def order(self, e, i = None):
 		self.children.remove(e)
@@ -363,8 +363,7 @@ class Element:
 			self.children.insert(i, e)
 		
 		# Refit
-		self._refit()
-		self.redraw()
+		self._boundschanged()
 	
 	def remove(self, e):
 		"Remove a child element."
@@ -372,8 +371,7 @@ class Element:
 		self.children.remove(e)
 		
 		# Refit
-		self._refit()
-		self.redraw()
+		self._boundschanged()
 	
 	def _draw(self, _clip, _offset = Offset(), parent_draw = False):
 		if parent_draw:
@@ -416,12 +414,25 @@ class Element:
 					l = e.style.offset
 			scge.translate(-l.x, -l.y)
 	
-	def _boundschanged(self):
-		self._refit()
+	def _boundschanged(self, resized = True):
+		self._changed = True
+		if self.messy:
+			return
+		
+		a = False
+		if resized:
+			a = self.interface._refit(self)
+		elif self.parent:
+			a = self.interface._refit(self.parent)
+		else:
+			return
+		if not a:
+			return
+		if resized:
+			self.messy = True
 		self._redraw(None, None, True)
-		self.interface.mousemove()
 	
-	def _refit(self, child = None):
+	def _refit(self, up = False):
 		# Suppose there is a dialog with a long, wrapping sentance in it.
 		# The dialog is horizontally resizeable.
 		# The dialog automatically expands vertically to hold all the text.
@@ -430,22 +441,19 @@ class Element:
 		# the text refits to the width of the dialog and computes a height,
 		# and finally the dialog resizes vertically to accomidate the text.
 		# Now everyone is happy.
-		fitc = True
-		if not 1 in self._fitting_state:
-			self._fitting_state.add(1)
-			fitc = self.refit()
-			self._fitting_state.discard(1)
+		self.refit()
+		if self.messy:
+			for e in self.children:
+				e._refit(True)
 		
-		if not 2 in self._fitting_state:
-			if not child and fitc is not False and self.children:
-				for e in self.children:
-					e._refit()
-			self._fitting_state.add(2)
-			self.childfit()
-			self._fitting_state.discard(2)
-		
-		if self.parent:
-			self.parent._refit(self)
+		self._childfit(up)
+		self.messy = False
+		self._changed = False
+	
+	def _childfit(self, up = False):
+		self.childfit()
+		if not up and self.parent and self._changed:
+			self.parent._childfit()
 	
 	def _redraw(self, e = None, b = None, c = False):
 		# Already fully dirty
@@ -620,6 +628,9 @@ class Interface:
 		self.scroll_element = None
 		self.scroll_time = 0
 		self.scroll_timeout = 1
+		
+		self._refitting_state = False
+		self.mess = set()
 		
 		# Root element
 		if e:
@@ -933,10 +944,25 @@ class Interface:
 		"Mark the interface for a redraw."
 		self.body.redraw()
 	
+	def _refit(self, e):
+		if self._refitting_state is True:
+			return False
+		self.mess.add(e)
+		return True
+	
 	def draw(self):
 		"Draw the interface."
+		
+		# Refit
+		
+		self._refitting_state = True
+		for e in self.mess:
+			e._refit()
+		self._refitting_state = False
+		self.mess = set()
+		
 		# Draw no matter what if the interface is seethrough
-		if not self.body.soliddraw and not isinstance(self.body.dirty, tuple):
+		if not self.body.soliddraw:
 			self.body.dirty = True
 		
 		if self.body.dirty:

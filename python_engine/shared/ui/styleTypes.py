@@ -4,7 +4,7 @@ import numbers
 
 class Style:
 	_callback_ = None
-	refitting = False
+	refitting = 0
 	
 	def _addcallback_(self, c):
 		if self._callback_ is None:
@@ -26,8 +26,12 @@ class StyleDef:
 	def __init__(self, fit_callback, draw_callback):
 		
 		# Standard
-		self.size = Offset()
-		self.offset = Offset()
+		o = Offset()
+		o.refitting = 1
+		s = Offset()
+		s.refitting = 2
+		self.offset = o
+		self.size = s
 		
 		# Mechanics
 		object.__setattr__(self, '_fit_callback', fit_callback)
@@ -57,7 +61,7 @@ class StyleDef:
 			if self._draw_callback:
 				self._draw_callback()
 			if hasattr(v, '_callback_'):
-				v._addcallback_(self._modified_ if v.refitting else self._dirty_)
+				v._addcallback_(self._offset_ if v.refitting == 1 else self._sized_ if v.refitting == 2 else self._dirty_)
 	
 	def __delattr__(self, a):
 		v = object.__getattribute__(self, a)
@@ -65,13 +69,17 @@ class StyleDef:
 		if self._draw_callback:
 			self._draw_callback()
 		if hasattr(v, '_callback_'):
-			v._discardcallback_(self._modified_ if v.refitting else self._dirty_)
+			v._discardcallback_(self._offset_ if v.refitting == 1 else self._sized_ if v.refitting == 2 else self._dirty_)
 	
 	def _dirty_(self):
 		if self._draw_callback:
 			self._draw_callback()
 	
-	def _modified_(self):
+	def _offset_(self):
+		if self._fit_callback:
+			self._fit_callback(False)
+	
+	def _sized_(self):
 		if self._fit_callback:
 			self._fit_callback()
 
@@ -81,7 +89,6 @@ class StyleDef:
 
 
 class Offset(Style):
-	refitting = True
 	def __init__(self, x = 0, y = 0):
 		if isinstance(x, Offset):
 			self.x = x.x

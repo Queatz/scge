@@ -7,7 +7,7 @@ SETUP = False
 BLOCKALLEXCEPT = False
 CALLBACK = None
 
-def combine(k1, k2):
+def _combine(k1, k2):
 	k1 = _ks(k1)
 	k2 = _ks(k2)
 	if k1 == 1 or k2 == 1:
@@ -22,18 +22,17 @@ def combine(k1, k2):
 		return 0
 
 def _ks(k):
-	if BLOCKALLEXCEPT and k not in BLOCKALLEXCEPT: return 0
-	if k not in PRESSED: return 0
-	
 	if k == 'ctrl':
-		return _combile('left ctrl', 'right ctrl')
+		return _combine('left ctrl', 'right ctrl')
 	elif k == 'alt':
-		return _combile('left alt', 'right alt')
+		return _combine('left alt', 'right alt')
 	elif k == 'shift':
-		return _combile('left shift', 'right shift')
+		return _combine('left shift', 'right shift')
 	elif k == 'super':
-		return _combile('left super', 'right super')
+		return _combine('left super', 'right super')
 	else:
+		if BLOCKALLEXCEPT and k not in BLOCKALLEXCEPT: return 0
+		if k not in PRESSED: return 0
 		return PRESSED[k]
 
 def pressed(k, repeat = False):
@@ -41,7 +40,7 @@ def pressed(k, repeat = False):
 	return k == 1 or repeat and k == 3
 
 def released(k):
-	return _ks(k) == -1
+	return _ks(k) == 0
 
 def down(k):
 	return _ks(k) > 0
@@ -104,7 +103,10 @@ def watch(poll = True):
 		SETUP = True
 	
 	BLOCKALLEXCEPT = False
-	PRESSED = {}
+	
+	for k in list(PRESSED.keys()):
+		if PRESSED[k] == 0:
+			del PRESSED[k]
 	
 	dellist = []
 	for i in PRESSED:

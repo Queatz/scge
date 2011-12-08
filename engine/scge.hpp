@@ -287,6 +287,7 @@ struct program {
 	void uniform_float(const char*, float, float, float, float);
 	
 	void uniform_image(const char*, int, image*);
+	void attribute(const char*, int);
 	
 	GLhandleARB id;
 };
@@ -311,7 +312,21 @@ struct vbo {
 	~vbo();
 	
 	void bind(const char*, const char*, int, int, int = 0, int = 0);
+	void attribute(unsigned int, const char*, int, int = 0, int = 0, bool = false, bool = false);
 	
+	GLuint id;
+};
+
+struct ibo {
+	ibo(int, const char* = "int", const char* = "static draw");
+#ifdef WITH_PYTHON
+	ibo(PyObject*, const char* = "int", const char* = "static draw");
+#endif
+	~ibo();
+	
+	void draw(const char*, unsigned int, unsigned int);
+	
+	GLenum storage;
 	GLuint id;
 };
 
@@ -403,6 +418,9 @@ fbo* get_fbo();
 
 void use_vbo(vbo*);
 void use_vbo();
+
+void use_ibo(ibo*);
+void use_ibo();
 
 void use_image(image*);
 void push_image();
@@ -497,6 +515,8 @@ void stencil_test(const char* = "always", int = 0);
 void stencil_op(const char* = "keep");
 
 void alpha_test(const char* = "always", float = 0.0);
+
+void enable_attribute(unsigned int, bool = true);
 
 offset mouse_position(bool = false);
 

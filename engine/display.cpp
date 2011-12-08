@@ -290,13 +290,8 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 	if(fsaa)
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
 	
-	#ifdef _WIN32
 	if(resizeable)
 		glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, GL_TRUE);
-	#else
-	if(!resizeable)
-		glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
-	#endif
 
 	glfw_window = glfwOpenWindow(x, y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
 	if(!glfw_window) {
@@ -2097,10 +2092,10 @@ use_vbo(vbo)
 Use a vbo.
 
 C++
-use_fbo(); //use no vbo
+use_vbo(); //use no vbo
 
 Python
-use_fbo() #use no vbo
+use_vbo() #use no vbo
 * */
 void use_vbo(vbo* a) {
 	glBindBuffer(GL_ARRAY_BUFFER, a->id);
@@ -2108,6 +2103,24 @@ void use_vbo(vbo* a) {
 
 void use_vbo() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+/* *
+use_ibo(vbo)
+Use an ibo.
+
+C++
+use_ibo(); //use no ibo
+
+Python
+use_ibo() #use no ibo
+* */
+void use_ibo(ibo* a) {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, a->id);
+}
+
+void use_ibo() {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 /* *
@@ -4152,6 +4165,8 @@ A program that processes draw operations.
 		set a uniform float on the program
 	uniform_image(string, int, image)
 		set a uniform sampler2D with a multitexture ID
+	attribute(string, int)
+		set a name for an attribute
 
 C++
 program a();
@@ -4205,6 +4220,10 @@ void program::uniform_image(const char* a, int b, image* c) {
 	
 	// Reset to the original texture
 	if(act != GL_TEXTURE0 + b) glActiveTexture(act);
+}
+
+void program::attribute(const char* a, int b) {
+	glBindAttribLocation(id, b, a);
 }
 
 void program::attach(shader* a) {
@@ -4307,6 +4326,23 @@ A buffer on the graphics.
 		"color"
 		"texcoord"
 		
+		"float"
+		"byte"
+		"unsigned byte"
+		"short"
+		"unsigned short"
+		"int"
+		"unsigned int"
+		"double"
+	.attribute(int, string type, int size, int stride, int offset, bool normalized, bool integers)
+		size is the number of components per attribute.
+		normalized specifies whether values should be normalized.
+		
+		stride is the byte offset between adjacent attributes.
+		offset is the offset to the first attribute.
+		integers specifies if the data is read as integers or not.
+		
+		type can be one of:
 		"float"
 		"byte"
 		"unsigned byte"
@@ -4421,6 +4457,22 @@ void vbo::bind(const char* what, const char* type, int stride, int offset, int s
 		glBindBuffer(GL_ARRAY_BUFFER, last);
 }
 
+void vbo::attribute(unsigned int index, const char* type, int size, int stride, int offset, bool normalized, bool integers) {
+	GLint last;
+	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last);
+	
+	if(last != id)
+		glBindBuffer(GL_ARRAY_BUFFER, id);
+	
+	if(integers)
+		glVertexAttribIPointer(index, size, common_type_from_string(type), stride, (const GLvoid*) offset);
+	else
+		glVertexAttribPointer(index, size, common_type_from_string(type), normalized, stride, (const GLvoid*) offset);
+	
+	if(last != id)
+		glBindBuffer(GL_ARRAY_BUFFER, last);
+}
+
 void draw(const char* a, int first, int count) {
 	glDrawArrays(primitive_from_string(a), first, count);
 }
@@ -4456,4 +4508,70 @@ void vbo_enable(const char* a, bool b) {
 		glEnableClientState(e);
 	else
 		glDisableClientState(e);
+}
+
+/* *
+enable_attribute(int, bool)
+Enable or disable an attribute.
+
+C++
+attribute(1, true);
+
+Python
+attribute(1, True)
+* */
+void enable_attribute(unsigned int i, bool e) {
+	if(e)
+		glEnableVertexAttribArray(i);
+	else
+		glDisableVertexAttribArray(i);
+}
+
+/* *
+ibo
+An index buffer.
+	draw(string, first, count)
+		string can be anything that begin can be
+C++
+ibo a(256, "static draw");
+
+Python
+a = ibo(256, 'static draw')
+* */
+ibo::ibo(int l, const char* s, const char* t) {
+	glGenBuffers(1, &id);
+	
+	GLint last;
+	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, l, NULL, buffer_usage_from_string(t));
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last);
+	
+	storage = common_type_from_string(s);
+}
+
+ibo::~ibo() {
+	glDeleteBuffers(1, &id);
+}
+
+#ifdef WITH_PYTHON
+ibo::ibo(PyObject* o, const char* s, const char* t) {
+	glGenBuffers(1, &id);
+	
+	GLint last;
+	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, PyBytes_Size(o), const_cast<const char*>(PyBytes_AsString(o)), buffer_usage_from_string(t));
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last);
+	
+	storage = common_type_from_string(s);
+}
+#endif
+
+void ibo::draw(const char* a, unsigned int first, unsigned int count) {
+	glDrawElements(primitive_from_string(a), count, storage, (const GLvoid*) first);
 }

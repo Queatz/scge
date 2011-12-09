@@ -35,6 +35,7 @@ const char* read_file(const char* a) {
 
 /* * Other
 seed_rnd(int)
+!- to be removed -
 Seed rnd.
 
 C++
@@ -49,6 +50,7 @@ void seed_rnd(int a) {
 
 /* *
 rnd()
+!- to be removed -
 Returns a float between 0 and 1.
 
 C++

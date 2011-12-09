@@ -31,6 +31,11 @@ IMAGE
 
 SOUND
 	seek streams
+	render note[/midi?] to soundbyte
+	should there be 'note's and 'score's? yeah...
+	score.render()
+	note.render()
+	YES
 
 OTHER
 	Implement box2d / Bullet Physics

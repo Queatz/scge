@@ -56,6 +56,7 @@ soundfont
 A soundfont.
 
 	get_presets()
+		!- return type to be changed -
 		Returns a semicolon-seperated list of presets.
 
 C++
@@ -124,7 +125,7 @@ instrument a();
 Python
 a = instrument()
 ***/
-#define RED
+#define RED //what?
 /* *
 midi_soundfont(soundfont, int channel = 0)
 Set the soundfont to use on a channel.

@@ -2,6 +2,7 @@
 * */
 /* *
 box
+! - to be removed -
 A box, containing a width and height.
 	w float
 		the width of the box
@@ -29,6 +30,7 @@ box::box(float a, float b) {
 
 /* *
 ibox
+! - to be removed -
 An integer struct, containing a width and height.
 	w int
 		the width component
@@ -56,6 +58,7 @@ ibox::ibox(int a, int b) {
 
 /* *
 offset
+! - to be removed -
 A 2D offset.
 
 	x float
@@ -96,6 +99,7 @@ bool offset::operator==(const offset& other) const {
 
 /* *
 rect
+! - to be removed -
 A rect, with offset and dimention.
 
 	x float
@@ -135,6 +139,7 @@ rect::rect(float a, float b, float c, float d) {
 
 /* *
 irect
+! - to be removed -
 An integer rectangle.
 
 	x int
@@ -173,6 +178,7 @@ irect::irect(int a, int b, int c, int d) {
 
 /* *
 crop
+! - to be removed -
 A crop, with an enabled option and a rect.
 
 	use bool
@@ -216,6 +222,7 @@ crop::crop(bool a, float b, float c, float d, float e) {
 
 /* *
 icrop
+! - to be removed -
 An integer crop, with an enabled option and a rect.
 
 	use bool
@@ -259,6 +266,7 @@ icrop::icrop(bool a, int b, int c, int d, int e) {
 
 /* *
 rgba
+! - to be removed -
 A color, with alpha.
 
 	r float

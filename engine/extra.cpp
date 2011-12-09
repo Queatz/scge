@@ -205,6 +205,7 @@ float mix_corners(float a, float b, float c, float d, float x, float y) {
 
 /* * Extra
 noise
+!- the 'scale' element is to be removed -
 A noise generator.
 "simple"
 "net"

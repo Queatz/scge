@@ -1,7 +1,7 @@
 bool connected = false;
 /* * Network
 connection()
-Establish a connection.  Returns true if it succeeded in doing so.
+Enable networking.  Returns true if it succeeded in doing so.
 
 C++
 connection();

@@ -409,6 +409,7 @@ float window_timer() {
 
 /* *
 display_modes()
+!- return type to be changed -
 Returns a space-seperated string of possible video modes for the display, in the format: WxH.
 
 C++
@@ -557,10 +558,10 @@ screenshot(string, type)
 Save a screenshot.
 
 C++
-screenshot("outcome.tga");
+screenshot("outcome.png");
 
 Python
-screenshot('outcome.tga')
+screenshot('outcome.png')
 * */
 bool screenshot(const char* a, const char* b) {
 	pixelcache p(width, height);
@@ -576,6 +577,7 @@ bool screenshot(const char* a, const char* b) {
 
 /* *
 matrix(string = "view")
+!- to be removed -
 Choose the matrix to alter.
 "projection" - use only for setting the projection, i.e. with orthographic or perspective
 "view" - use for moving the camera around and other uses
@@ -595,6 +597,7 @@ void matrix(const char* a) {
 
 /* *
 reset_matrix()
+!- to be removed -
 Resets the matrix to its identity.
 
 C++
@@ -623,6 +626,7 @@ void viewport(float x, float y, float w, float h) {
 
 /* *
 orthographic(float left, float right, float bottom, float top, float near = -1.0, float far = 1.0)
+!- to be removed -
 Set up an orthographic display matrix.
 
 C++
@@ -642,6 +646,7 @@ void orthographic(float a, float b, float c, float d, float e, float f) {
 
 /* *
 perspective(float fov = 60, float aspect = NULL, float near = 0.1, float far = 1000.0)
+!- to be removed -
 Set up a perspective display matrix.
 
 C++
@@ -665,6 +670,7 @@ void perspective(float fovY, float aspect, float zNear, float zFar) {
 
 /* *
 frustum(float left, float right, float bottom, float top, float near = 0.1, float far = 1000.0)
+!- to be removed -
 Set up a perspective display matrix.
 
 C++
@@ -1887,7 +1893,7 @@ void polygon_depth_offset(float a, float b) {
 /* *
 blend_color(float, float, float, float = 1.0)
 Set the blending color.
-!The only use for this is with "alpha" blending.
+!The only use for this is with "alpha" texture environment.
 
 C++
 blend_color(1.0, 1.0, 1.0);
@@ -1925,6 +1931,7 @@ void color_mask(bool a) {
 /* *
 *
 push pop get
+!- some to be removed -
 Each push function stores the current state; each pop function restores it; each get function returns it.
 push_state can take a string argument, otherwise it pushes all state:
 "viewport"
@@ -2106,7 +2113,7 @@ void use_vbo() {
 }
 
 /* *
-use_ibo(vbo)
+use_ibo(ibo)
 Use an ibo.
 
 C++
@@ -2464,6 +2471,7 @@ void texture_environment(const char* a) {
 /* *
 *
 transform
+!- to be removed -
 These functions manipulate drawing.
 
 C++
@@ -2805,6 +2813,7 @@ void iline(float a, float b, float c, float d) {
 
 /* *
 sprite(float x, float y, float z, float scaleX, float scaleY)
+!- to be removed -
 Draw a mapped quad at a position according to the last saved matrix.
 
 C++
@@ -3974,8 +3983,8 @@ A paper.
 		returns a float representing the width of the computed string
 	height_of(string)
 		returns the caclulated height of the string as a float
-	write(string[, float, float, bool])
-		write some text using this paper, at x, y position, optionally flipped.
+	write(string[, float, float])
+		write some text using this paper, at x, y position.
 
 C++
 paper a();
@@ -4104,8 +4113,6 @@ a = shader('fragment', 'burgundy.frag') #create a fragment shader from a file
 a.compile()
 
 b = shader('vertex', 'jitter.vert')
-
-!Vertex shaders are not very useful yet. Fragment shaders are the ones you would use for post-processed image effects.
 * */
 shader::shader(const char* a, const char* b) {
 	if(glfw_state < 2) {
@@ -4325,7 +4332,7 @@ A buffer on the graphics.
 		"vertex"
 		"color"
 		"texcoord"
-		
+		...
 		"float"
 		"byte"
 		"unsigned byte"
@@ -4515,10 +4522,10 @@ enable_attribute(int, bool)
 Enable or disable an attribute.
 
 C++
-attribute(1, true);
+enable_attribute(1, true);
 
 Python
-attribute(1, True)
+enable_attribute(1, True)
 * */
 void enable_attribute(unsigned int i, bool e) {
 	if(e)

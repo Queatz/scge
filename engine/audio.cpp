@@ -474,7 +474,7 @@ A sound.
 		"byte"
 		"sample"
 	font(string)
-		set the soundfont used for this sound
+		set the soundfont used for this sound if it is a midi file
 
 C++
 sound a("click.ogg");

@@ -32,33 +32,3 @@ const char* read_file(const char* a) {
 	
 	return buf;
 }
-
-/* * Other
-seed_rnd(int)
-!- to be removed -
-Seed rnd.
-
-C++
-seed_rnd(0);
-
-Python
-seed_rnd(0)
-* */
-void seed_rnd(int a) {
-	srand(a);
-}
-
-/* *
-rnd()
-!- to be removed -
-Returns a float between 0 and 1.
-
-C++
-float a = rnd();
-
-Python
-a = rnd()
-* */
-float rnd() {
-	return rand() / (float) RAND_MAX;
-}

@@ -1,6 +1,6 @@
 @font-face {
-	font-family: WhiteRabbit;
-	src: url('WhiteRabbit.ttf');
+	font-family: pointfree;
+	src: url('pointfree.ttf');
 } 
 
 body {
@@ -38,7 +38,7 @@ a {
 	padding: 1em;
 	margin: 0.25em;
 	white-space: pre;
-	font-family: White Rabbit, WhiteRabbit, monospace;
+	font-family: White Rabbit, pointfree, monospace;
 }
 
 .type {

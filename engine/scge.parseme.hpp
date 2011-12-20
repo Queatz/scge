@@ -56,11 +56,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
+namespace scge {
+
 #ifdef WITH_SOUND
 
 #define NUM_BUFS 3
-
-namespace scge {
 
 struct soundbyte {
 	soundbyte();
@@ -219,18 +219,9 @@ struct program {
 
 	void uniform(const char*, int);
 	void uniform(const char*, float);
-	void uniform(const char*, glm::vec2);
-	void uniform(const char*, glm::vec3);
-	void uniform(const char*, glm::vec4);
-	void uniform(const char*, glm::mat2);
-	void uniform(const char*, glm::mat3);
-	void uniform(const char*, glm::mat4);
-	void uniform(const char*, glm::mat2x3);
-	void uniform(const char*, glm::mat3x2);
-	void uniform(const char*, glm::mat2x4);
-	void uniform(const char*, glm::mat4x2);
-	void uniform(const char*, glm::mat3x4);
-	void uniform(const char*, glm::mat4x3);
+/*$ PROGRAM::UNIFORM $*/
+	void uniform(const char*, glm::${p}${type}${n});
+/*$ $*/
 	void uniform(const char*, image*, int = 0);
 	
 	void attribute(int, const char*);

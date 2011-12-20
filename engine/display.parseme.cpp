@@ -276,11 +276,13 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
 	
 	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
-	
+
+#ifndef _WIN32
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
 	glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
 	glfw_window = glfwOpenWindow(x, y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
 	if(!glfw_window) {
@@ -2718,7 +2720,7 @@ int text::lines() {
 }
 
 float text::advance() {
-	data->advance();
+	return data->advance();
 }
 
 void text::draw(int a, int b) {
@@ -2840,54 +2842,12 @@ void program::uniform(const char* a, int b) {
 void program::uniform(const char* a, float b) {
 	glUniform1f(glGetUniformLocation(id, a), b);
 }
+/*$ PROGRAM::UNIFORM $*/
 
-void program::uniform(const char* a, glm::vec2 m) {
-	glUniform2fv(glGetUniformLocation(id, a), 1, glm::value_ptr(m));
+void program::uniform(const char* a, glm::${p}${type}${n} m) {
+	glUniform${'Matrix' if type == 'mat' else ''}${n}${p if p else 'f'}v(glGetUniformLocation(id, a), 1${', GL_FALSE' if type == 'mat' else ''}, glm::value_ptr(m));
 }
-
-void program::uniform(const char* a, glm::vec3 m) {
-	glUniform3fv(glGetUniformLocation(id, a), 1, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::vec4 m) {
-	glUniform4fv(glGetUniformLocation(id, a), 1, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat2 m) {
-	glUniformMatrix2fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat3 m) {
-	glUniformMatrix3fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat4 m) {
-	glUniformMatrix4fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat2x3 m) {
-	glUniformMatrix2x3fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat3x2 m) {
-	glUniformMatrix3x2fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat2x4 m) {
-	glUniformMatrix2x4fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat4x2 m) {
-	glUniformMatrix4x2fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat3x4 m) {
-	glUniformMatrix3x4fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
-
-void program::uniform(const char* a, glm::mat4x3 m) {
-	glUniformMatrix4x3fv(glGetUniformLocation(id, a), 1, GL_FALSE, glm::value_ptr(m));
-}
+/*$ $*/
 
 void program::uniform(const char* a, image* c, int b) {
 	GLint act;

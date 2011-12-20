@@ -2,6 +2,30 @@
 if [ ! -e ./cmake ]; then
 	mkdir ./cmake
 fi
+
+python3 -c """
+import parseme
+import glob
+
+PROGRAM__UNIFORM = parseme.Section('PROGRAM::UNIFORM')
+PROGRAM__UNIFORM.add(parseme.Round(type = 'vec', p = '', n = '2', c = 2))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'vec', p = '', n = '3', c = 3))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'vec', p = '', n = '4', c = 4))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '2', c = 2*2, rows = 2))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '3', c = 3*3, rows = 3))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '4', c = 4*4, rows = 4))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '2x3', c = 2*3, rows = 3))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '3x2', c = 3*2, rows = 2))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '2x4', c = 2*4, rows = 4))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '4x2', c = 4*2, rows = 2))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '3x4', c = 3*4, rows = 4))
+PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '4x3', c = 4*3, rows = 3))
+
+parseme.Project(
+	PROGRAM__UNIFORM
+).parse(*glob.glob('./engine/*.parseme*'))
+"""
+
 cd cmake
 cmake ..
 make

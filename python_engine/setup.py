@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os
-sys.prefix = '/usr'
-sys.exec_prefix = '/usr'
+import os
 
 from distutils.core import setup
 from distutils.extension import Extension

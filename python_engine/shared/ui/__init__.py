@@ -142,6 +142,8 @@
 #   .drop(Drag)
 
 import scge
+import glm
+
 import time
 import numbers
 import math
@@ -404,15 +406,15 @@ class Element:
 			l = Offset()
 			if startfrom:
 				for e in self.children[startfrom:]:
-					scge.translate(e.style.offset.x - l.x, e.style.offset.y - l.y)
+					self.interface.matrix = InterfaceMatrix(self.interface.matrix.translate(glm.vec2(e.style.offset.x - l.x, e.style.offset.y - l.y)))
 					e._draw(Bounds(_clip), Offset(_offset + e.style.offset), parent_draw)
 					l = e.style.offset
 			else:
 				for e in self.children:
-					scge.translate(e.style.offset.x - l.x, e.style.offset.y - l.y)
+					self.interface.matrix = InterfaceMatrix(self.interface.matrix.translate(glm.vec2(e.style.offset.x - l.x, e.style.offset.y - l.y)))
 					e._draw(Bounds(_clip), Offset(_offset + e.style.offset), parent_draw)
 					l = e.style.offset
-			scge.translate(-l.x, -l.y)
+			self.interface.matrix = InterfaceMatrix(self.interface.matrix.translate(glm.vec2(-l.x, -l.y)))
 	
 	def _boundschanged(self, resized = True):
 		self._changed = True
@@ -591,6 +593,12 @@ class Element:
 
 # # # INTERFACE # # #
 
+class InterfaceMatrix(glm.mat4):
+	def translate(self, vec):
+		if isinstance(vec, glm.vec2):
+			return glm.mat4.translate(self, glm.vec3(vec, 0))
+		return glm.mat4.translate(self, vec)
+
 class Interface:
 	def __init__(self, e = None):
 		# List of callbacks that will be handled
@@ -622,6 +630,8 @@ class Interface:
 		self.scroll_time = 0
 		self.scroll_timeout = 1
 		
+		self.matrix = None
+		
 		self._refitting_state = False
 		self.mess = set()
 		
@@ -636,7 +646,7 @@ class Interface:
 		
 		# Default to covering the whole window
 		dd = scge.window_dimensions()
-		self.body.style.size = Offset(dd.w, dd.h)
+		self.body.style.size = Offset(dd.x, dd.y)
 	
 	# Event functions
 	
@@ -961,29 +971,23 @@ class Interface:
 			self.body.dirty = True
 		
 		if self.body.dirty:
-			scge.matrix('projection')
-			scge.push_matrix()
-			scge.reset_matrix()
-			scge.push_state('viewport')
-		
-			scge.orthographic(self.body.style.offset.x, self.body.style.offset.x + self.body.style.size.x, self.body.style.offset.y, self.body.style.offset.y + self.body.style.size.y)
+			self.matrix = InterfaceMatrix(glm.ortho(self.body.style.offset.x, self.body.style.offset.x + self.body.style.size.x, self.body.style.offset.y, self.body.style.offset.y + self.body.style.size.y, -1, 1))
 			scge.viewport(self.body.style.offset.x, self.body.style.offset.y, self.body.style.size.x, self.body.style.size.y)
-		
-			scge.translate(self.body.style.offset.x, self.body.style.offset.y)
+			
+			scge.enable('scissor')
+			
+			self.matrix = InterfaceMatrix(self.matrix.translate(glm.vec2(self.body.style.offset)))
 			self.body._draw(Bounds(self.body.style.offset, self.body.style.size), Offset(self.body.style.offset))
-			scge.translate(-self.body.style.offset.x, -self.body.style.offset.y)
+			self.matrix = InterfaceMatrix(self.matrix.translate(-glm.vec2(self.body.style.offset)))
 			self.body.dirty = False
 		
-			scge.scissor()
+			scge.enable('scissor', False)
 		
 			if self.dragging:
-				scge.translate(*self.mouse_global)
+				self.matrix = InterfaceMatrix(self.matrix.translate(glm.vec2(self.mouse_global)))
 				self.dragging.drag.draw()
-				scge.translate(-self.mouse_global[0], -self.mouse_global[1])
+				self.matrix = InterfaceMatrix(self.matrix.translate(-glm.vec2(self.mouse_global)))
 		
-			scge.pop_state()
-			scge.pop_matrix()
-			scge.matrix('view')
 			return True
 		return False
 

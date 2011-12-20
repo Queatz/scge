@@ -1,5 +1,4 @@
 #cmakedefine WITH_GRAPHICS
 #cmakedefine WITH_SOUND
 #cmakedefine WITH_NETWORK
-#cmakedefine WITH_MATH
 #cmakedefine WITH_PYTHON

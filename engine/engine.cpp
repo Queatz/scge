@@ -2,9 +2,10 @@
 
 #include "scge.hpp"
 
+namespace scge {
+
 #include "functions.cpp"
 
-#include "types.cpp"
 #include "extra.cpp"
 
 #ifdef WITH_GRAPHICS
@@ -23,3 +24,5 @@
 #ifdef WITH_PYTHON
 #include "python.cpp"
 #endif
+
+}

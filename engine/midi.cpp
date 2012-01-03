@@ -18,7 +18,7 @@ fluid_audio_driver_t* midi_device = NULL;
 
 void midi_on() {
 	midi_settings = new_fluid_settings();
-	fluid_settings_setstr(midi_settings, "audio.driver", "alsa");
+	fluid_settings_setstr(midi_settings, "audio.driver", "pulseaudio");
 	fluid_settings_setnum(midi_settings, "synth.gain", 0.5);
 	fluid_settings_setstr(midi_settings, "synth.reverb.active", "yes");
 	fluid_settings_setstr(midi_settings, "synth.chorus.active", "yes");

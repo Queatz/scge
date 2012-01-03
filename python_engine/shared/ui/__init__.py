@@ -622,7 +622,7 @@ class Interface:
 		
 		# Mouse position caches
 		self.mouse_position_in_over = None
-		self.mouse_global = None
+		self.mouse_global = (0, 0)
 		self._mouse_moved_this_tick = False
 		
 		# There is a delay when changing the element to scroll so the mouse doesn't get caught

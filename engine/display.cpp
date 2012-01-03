@@ -276,18 +276,28 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
 	
 	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
-	
+
+#ifdef _WIN32
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
+#else
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
 	glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
 	glfw_window = glfwOpenWindow(x, y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
 	if(!glfw_window) {
 		err("window", "could not initiate window");
 		return false;
 	}
-	
+
+#ifdef _WIN32
+	if(glewInit() != GLEW_OK)
+		err("window", "(windows) extensions unsupported");
+#endif
+
 	glfw_state = 2;
 	
 	//GLenum err = glewInit();
@@ -2718,7 +2728,7 @@ int text::lines() {
 }
 
 float text::advance() {
-	data->advance();
+	return data->advance();
 }
 
 void text::draw(int a, int b) {
@@ -2729,20 +2739,15 @@ void text::draw(int a, int b) {
 shader
 A shader object.
 
-	compile()
-		compile the shader
-
 C++
-shader a("fragment", "burgundy.frag"); //create a fragment shader from a file
-a.compile();
+shader a("fragment", "burgundy.frag", true); //create a fragment shader from a file
 
-shader b("vertex", "jitter.vert");
+shader b("vertex", "jitter.vert", true);
 
 Python
-a = shader('fragment', 'burgundy.frag') #create a fragment shader from a file
-a.compile()
+a = shader('fragment', 'burgundy.frag', True) #create a fragment shader from a file
 
-b = shader('vertex', 'jitter.vert')
+b = shader('vertex', 'jitter.vert', True)
 * */
 shader::shader(const char* a, const char* b, bool isfile) {
 	if(glfw_state < 2) {
@@ -2771,16 +2776,6 @@ shader::shader(const char* a, const char* b, bool isfile) {
 	}
 	else
 		glShaderSource(id, 1, &b, NULL);
-}
-
-shader::~shader() {
-	if(id)
-		glDeleteShader(id);
-}
-
-void shader::compile() {
-	if(!id)
-		return;
 	
 	glCompileShader(id);
 	
@@ -2796,6 +2791,11 @@ void shader::compile() {
 		err("shader", "compile", "error");
 		std::cout << infoLog << std::endl;
 	}
+}
+
+shader::~shader() {
+	if(id)
+		glDeleteShader(id);
 }
 
 /* *
@@ -2998,12 +2998,16 @@ fbo::~fbo() {
 /* *
 vbo
 A buffer on the graphics.
+	data(ptr, offset, size)
+	data(vbo, offset, copy_offset, size = -1)
+	data(bytes(), offset)
 
 C++
 vbo a(256, "static draw");
 
 Python
 a = vbo(256, 'static draw')
+b = vbo(bytes(1024))
 * */
 GLenum buffer_usage_from_string(const char* t) {
 	if(!strcmp(t, "static draw"))
@@ -3056,9 +3060,11 @@ vbo::vbo(int l, const char* t) {
 	glBufferData(GL_ARRAY_BUFFER, l, NULL, buffer_usage_from_string(t));
 	
 	glBindBuffer(GL_ARRAY_BUFFER, last);
+	
+	size = l;
 }
 
-void vbo::data(int offset, int size, const void* data) {
+void vbo::data(const void* data, int offset, int size) {
 	GLint last;
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last);
 	
@@ -3082,9 +3088,11 @@ vbo::vbo(PyObject* o, const char* t) {
 	glBufferData(GL_ARRAY_BUFFER, PyBytes_Size(o), (const GLvoid *)const_cast<const char*>(PyBytes_AsString(o)), buffer_usage_from_string(t));
 	
 	glBindBuffer(GL_ARRAY_BUFFER, last);
+	
+	size = PyBytes_Size(o);
 }
 
-void vbo::data(int offset, PyObject * o) {
+void vbo::data(PyObject* o, int offset) {
 	GLint last;
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last);
 	
@@ -3098,10 +3106,29 @@ void vbo::data(int offset, PyObject * o) {
 }
 #endif
 
+void vbo::data(vbo* o, int offset, int copy_offset, int l) {
+	glBindBuffer(GL_COPY_READ_BUFFER, o->id);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, id);
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, offset, copy_offset, l >= 0 ? l : o->size);
+}
+
 vbo::~vbo() {
 	glDeleteBuffers(1, &id);
 }
 
+/* *
+draw(what, count, first = 0)
+Draws from the currently bound vao.
+
+what is one of:
+"triangle"
+"triangle strip"
+"triangle fan"
+"line"
+"line strip"
+"line loop"
+"point"
+* */
 void draw(const char* a, unsigned int count, unsigned int first) {
 	glDrawArrays(primitive_from_string(a), first, count);
 }
@@ -3109,8 +3136,17 @@ void draw(const char* a, unsigned int count, unsigned int first) {
 /* *
 ibo
 An index buffer.
+	data(ptr, offset, size)
+	data(vbo, offset, copy_offset, size = -1)
+	data(bytes(), offset)
 	draw(string, first, count)
-		string can be anything that begin can be
+		"triangle"
+		"triangle strip"
+		"triangle fan"
+		"line"
+		"line strip"
+		"line loop"
+		"point"
 C++
 ibo a(256, "static draw");
 
@@ -3129,9 +3165,11 @@ ibo::ibo(int l, const char* s, const char* t) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last);
 	
 	storage = common_type_from_string(s);
+	
+	size = l;
 }
 
-void ibo::data(int offset, int size, const void* data) {
+void ibo::data(const void* data, int offset, int size) {
 	GLint last;
 	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last);
 	
@@ -3161,9 +3199,10 @@ ibo::ibo(PyObject* o, const char* s, const char* t) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last);
 	
 	storage = common_type_from_string(s);
+	size = PyBytes_Size(o);
 }
 
-void ibo::data(int offset, PyObject * o) {
+void ibo::data(PyObject * o, int offset) {
 	GLint last;
 	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last);
 	
@@ -3176,6 +3215,12 @@ void ibo::data(int offset, PyObject * o) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last);
 }
 #endif
+
+void ibo::data(ibo* o, int offset, int copy_offset, int l) {
+	glBindBuffer(GL_COPY_READ_BUFFER, o->id);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, id);
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, offset, copy_offset, l >= 0 ? l : o->size);
+}
 
 void ibo::draw(const char* a, unsigned int count, unsigned int first) {
 	glDrawElements(primitive_from_string(a), count, storage, (const GLvoid*) first);
@@ -3255,7 +3300,7 @@ void vao::attribute(unsigned int index, vbo* v, const char* type, int size, int 
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &lastb);
 	
 	if(last != id)
-		glBindVertexArray(v->id);
+		glBindVertexArray(id);
 	if(lastb != id)
 		glBindBuffer(GL_ARRAY_BUFFER, v->id);
 	

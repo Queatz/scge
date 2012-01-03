@@ -8,23 +8,59 @@
 #include "../engine/conf.h"
 #include "../engine/scge.hpp"
 
-PyObject* GLMModule = PyImport_ImportModule("glm");
+static
+PyObject* GLMModule;
 
-PyObject* GLMvec2Type = PyObject_GetAttrString(GLMModule, "vec2");
-PyObject* GLMvec3Type = PyObject_GetAttrString(GLMModule, "vec3");
-PyObject* GLMvec4Type = PyObject_GetAttrString(GLMModule, "vec4");
-PyObject* GLMivec2Type = PyObject_GetAttrString(GLMModule, "ivec2");
-PyObject* GLMivec3Type = PyObject_GetAttrString(GLMModule, "ivec3");
-PyObject* GLMivec4Type = PyObject_GetAttrString(GLMModule, "ivec4");
-PyObject* GLMmat2Type = PyObject_GetAttrString(GLMModule, "mat2");
-PyObject* GLMmat3Type = PyObject_GetAttrString(GLMModule, "mat3");
-PyObject* GLMmat4Type = PyObject_GetAttrString(GLMModule, "mat4");
-PyObject* GLMmat2x3Type = PyObject_GetAttrString(GLMModule, "mat2x3");
-PyObject* GLMmat3x2Type = PyObject_GetAttrString(GLMModule, "mat3x2");
-PyObject* GLMmat2x4Type = PyObject_GetAttrString(GLMModule, "mat2x4");
-PyObject* GLMmat4x2Type = PyObject_GetAttrString(GLMModule, "mat4x2");
-PyObject* GLMmat3x4Type = PyObject_GetAttrString(GLMModule, "mat3x4");
-PyObject* GLMmat4x3Type = PyObject_GetAttrString(GLMModule, "mat4x3");
+static
+PyObject* GLMvec2Type;
+static
+PyObject* GLMvec3Type;
+static
+PyObject* GLMvec4Type;
+static
+PyObject* GLMivec2Type;
+static
+PyObject* GLMivec3Type;
+static
+PyObject* GLMivec4Type;
+static
+PyObject* GLMmat2Type;
+static
+PyObject* GLMmat3Type;
+static
+PyObject* GLMmat4Type;
+static
+PyObject* GLMmat2x3Type;
+static
+PyObject* GLMmat3x2Type;
+static
+PyObject* GLMmat2x4Type;
+static
+PyObject* GLMmat4x2Type;
+static
+PyObject* GLMmat3x4Type;
+static
+PyObject* GLMmat4x3Type;
+%}
+
+%init %{
+GLMModule = PyImport_ImportModule("glm");
+
+GLMvec2Type = PyObject_GetAttrString(GLMModule, "vec2");
+GLMvec3Type = PyObject_GetAttrString(GLMModule, "vec3");
+GLMvec4Type = PyObject_GetAttrString(GLMModule, "vec4");
+GLMivec2Type = PyObject_GetAttrString(GLMModule, "ivec2");
+GLMivec3Type = PyObject_GetAttrString(GLMModule, "ivec3");
+GLMivec4Type = PyObject_GetAttrString(GLMModule, "ivec4");
+GLMmat2Type = PyObject_GetAttrString(GLMModule, "mat2");
+GLMmat3Type = PyObject_GetAttrString(GLMModule, "mat3");
+GLMmat4Type = PyObject_GetAttrString(GLMModule, "mat4");
+GLMmat2x3Type = PyObject_GetAttrString(GLMModule, "mat2x3");
+GLMmat3x2Type = PyObject_GetAttrString(GLMModule, "mat3x2");
+GLMmat2x4Type = PyObject_GetAttrString(GLMModule, "mat2x4");
+GLMmat4x2Type = PyObject_GetAttrString(GLMModule, "mat4x2");
+GLMmat3x4Type = PyObject_GetAttrString(GLMModule, "mat3x4");
+GLMmat4x3Type = PyObject_GetAttrString(GLMModule, "mat4x3");
 %}
 
 %typemap(typecheck, precedence=SWIG_TYPECHECK_POINTER) glm::vec2 {

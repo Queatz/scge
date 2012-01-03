@@ -23,19 +23,19 @@
 #endif
 
 #ifdef WITH_GRAPHICS
-#define GLFW_INCLUDE_GL3 1
 #define GLFW_NO_GLU 1
 #ifdef _WIN32
 #undef GL3_PROTOTYPES
 #include <GL/glew.h>
 #else
+#define GLFW_INCLUDE_GL3 1
 #ifndef GL3_PROTOTYPES
 #define GL3_PROTOTYPES 1
 #endif
 #endif
 #include <GL/glfw3.h> // Graphics
 
-#include "FreeImagePlus.h"
+#include "FreeImagePlus.h" // Images
 
 #include <Shikoba.hpp> // Font rendering
 #endif
@@ -56,11 +56,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
+namespace scge {
+
 #ifdef WITH_SOUND
 
 #define NUM_BUFS 3
-
-namespace scge {
 
 struct soundbyte {
 	soundbyte();
@@ -205,8 +205,6 @@ struct shader {
 	shader(const char*, const char*, bool = false);
 	~shader();
 	
-	void compile();
-	
 	GLint id;
 };
 
@@ -252,29 +250,33 @@ struct fbo {
 
 struct vbo {
 	vbo(int, const char* = "static draw");
-	void data(int, int, const void*);
+	void data(const void*, int, int);
 #ifdef WITH_PYTHON
 	vbo(PyObject*, const char* = "static draw");
-	void data(int, PyObject*);
+	void data(PyObject*, int = 0);
 #endif
+	void data(vbo*, int = 0, int = 0, int = -1);
 	~vbo();
 	
 	GLuint id;
+	int size;//x
 };
 
 struct ibo {
 	ibo(int, const char* = "int", const char* = "static draw");
-	void data(int, int, const void*);
+	void data(const void*, int, int);
 #ifdef WITH_PYTHON
 	ibo(PyObject*, const char* = "int", const char* = "static draw");
-	void data(int, PyObject*);
+	void data(PyObject*, int = 0);
 #endif
+	void data(ibo*, int = 0, int = 0, int = -1);
 	~ibo();
 	
 	void draw(const char*, unsigned int, unsigned int = 0);
 	
 	GLenum storage;
 	GLuint id;
+	int size;
 };
 
 struct vao {

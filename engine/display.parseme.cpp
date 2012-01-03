@@ -616,7 +616,6 @@ void polygon_mode(const char* a) {
 /* *
 enable(string, bool = true)
 Enable or disable different things:
-"texture" - use texure when drawing
 "scissor" - scissor testing
 "polygon smooth" - draw polygons smoothly
 "line smooth" - draw lines smoothly
@@ -629,21 +628,19 @@ Enable or disable different things:
 "point depth offset" - offsetting the depth values of points
 
 C++
-enable("texture");
+enable("scissor");
 
-enable("texture", false);
+enable("scissor", false);
 
 Python
-enable('texture')
+enable('scissor')
 
-enable('texture', False)
+enable('scissor', False)
 * */
 void enable(const char* a, bool b) {
 	GLint c = -1;
 	
-	if (!strcmp(a, "texture"))
-		c = GL_TEXTURE_2D;
-	else if (!strcmp(a, "scissor"))
+	if (!strcmp(a, "scissor"))
 		c = GL_SCISSOR_TEST;
 	else if (!strcmp(a, "polygon smooth"))
 		c = GL_POLYGON_SMOOTH;
@@ -3006,6 +3003,10 @@ GLenum common_type_from_string(const char* a) {
 		return GL_UNSIGNED_INT;
 	else if(!strcmp(a, "double"))
 		return GL_DOUBLE;
+	else {
+		err("type", "invalid");
+		return -1;
+	}
 }
 
 vbo::vbo(int l, const char* t) {
@@ -3268,7 +3269,7 @@ void vao::attribute(unsigned int index, vbo* v, const char* type, int size, int 
 		glVertexAttribPointer(index, size, common_type_from_string(type), normalized, stride, (const GLvoid*) offset);
 	
 	if(lastb != id)
-		glBindBuffer(GL_ARRAY_BUFFER, last);
+		glBindBuffer(GL_ARRAY_BUFFER, lastb);
 	if(last != id)
 		glBindVertexArray(last);
 }

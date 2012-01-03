@@ -391,7 +391,8 @@ class Element:
 				self.dirty = False
 				return
 			
-			scge.scissor(_clip.x, _clip.y, _clip.w, _clip.h)
+			scge.scissor(*_clip)
+			self.interface._clip = _clip
 		
 		if isinstance(self.dirty, tuple):
 			drawc = True
@@ -953,6 +954,10 @@ class Interface:
 		self.mess.add(e)
 		return True
 	
+	def reclip(self):
+		scge.viewport(*self._viewport)
+		scge.scissor(*self._clip)
+	
 	def draw(self):
 		"Draw the interface."
 		
@@ -972,7 +977,8 @@ class Interface:
 		
 		if self.body.dirty:
 			self.matrix = InterfaceMatrix(glm.ortho(self.body.style.offset.x, self.body.style.offset.x + self.body.style.size.x, self.body.style.offset.y, self.body.style.offset.y + self.body.style.size.y, -1, 1))
-			scge.viewport(self.body.style.offset.x, self.body.style.offset.y, self.body.style.size.x, self.body.style.size.y)
+			self._viewport = (self.body.style.offset.x, self.body.style.offset.y, self.body.style.size.x, self.body.style.size.y)
+			scge.viewport(*self._viewport)
 			
 			scge.enable('scissor')
 			

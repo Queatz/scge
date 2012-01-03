@@ -24,8 +24,6 @@ def _setup():
 		gl_Position = matrix * vec4(coords, 0.0, 1.0);
 	}
 	''')
-
-	_font_vshader.compile()
 	
 	_font_fshader = scge.shader('fragment', '''#version 330 core
 	in vec4 color;
@@ -39,8 +37,6 @@ def _setup():
 		frag = vec4(.25, 0., 1., texture2D(tex, texcoord));
 	}
 	''')
-	
-	_font_fshader.compile()
 
 	_font_program = scge.program()
 	_font_program.attach(_font_vshader)
@@ -67,8 +63,6 @@ def _setup():
 	}
 	''')
 
-	_vshader.compile()
-	
 	_fshader = scge.shader('fragment', '''#version 330 core
 	in vec4 color;
 	in vec2 texcoord;
@@ -82,8 +76,6 @@ def _setup():
 	}
 	''')
 	
-	_fshader.compile()
-
 	_program = scge.program()
 	_program.attach(_vshader)
 	_program.attach(_fshader)
@@ -160,36 +152,36 @@ def _expand_color(c):
 
 def color(p1 = None, p2 = None, p3 = None, p4 = None):
 	if isinstance(p1, glm.Vector):
-		_vbo.data((4 * 2) * 4, struct.pack('ffff' * 4, *_expand_color(p1) * 4))
+		_vbo.data(struct.pack('ffff' * 4, *_expand_color(p1) * 4), (4 * 2) * 4)
 	elif isinstance(p1, numbers.Number):
-		_vbo.data((4 * 2) * 4, struct.pack('ffff' * 4, *_expand_color(((p1,) + ((p2,) + ((p3,) + ((p4,) if p4 is not None else ()) if p3 is not None else ()) if p2 is not None else ()) if p1 is not None else ())) * 4))
+		_vbo.data(struct.pack('ffff' * 4, *_expand_color(((p1,) + ((p2,) + ((p3,) + ((p4,) if p4 is not None else ()) if p3 is not None else ()) if p2 is not None else ()) if p1 is not None else ())) * 4), (4 * 2) * 4)
 	else:
 		if p1 is None:
-			_vbo.data((4 * 2) * 4, struct.pack('ffff' * 4, (1,) * 4))
+			_vbo.data(struct.pack('ffff' * 4, (1,) * 4), (4 * 2) * 4)
 		elif p2 is None:
-			_vbo.data((4 * 2) * 4, struct.pack('ffff' * 4, *(_expand_color(p1) * 4)))
+			_vbo.data(struct.pack('ffff' * 4, *(_expand_color(p1) * 4)), (4 * 2) * 4)
 		elif p3 is None or p4 is None:
 			print('Color must specify 1 point or all four.')
 		else:
-			_vbo.data((4 * 2) * 4, struct.pack('ffff' * 4, *(_expand_color(p1) + _expand_color(p2) + _expand_color(p3) + _expand_color(p4))))
+			_vbo.data(struct.pack('ffff' * 4, *(_expand_color(p1) + _expand_color(p2) + _expand_color(p3) + _expand_color(p4))), (4 * 2) * 4)
 
 def texcoord(p1 = (0, 0), p2 = (0, 0), p3 = (0, 0), p4 = (0, 0)):
-	_vbo.data((4 * 2 + 4 * 4) * 4, struct.pack('ff' * 4, *(p1 + p2 + p3 + p4)))
+	_vbo.data(struct.pack('ff' * 4, *(p1 + p2 + p3 + p4)), (4 * 2 + 4 * 4) * 4)
 
 def quad(x, y, x2, y2):
-	_vbo.data(0, struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y))
+	_vbo.data(struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y), 0)
 	scge.draw('triangle fan', 4)
 
 def triangle(x, y, x2, y2, x3, y3):
-	_vbo.data(0, struct.pack('ff' * 3, x, y, x2, y2, x3, y3))
+	_vbo.data(struct.pack('ff' * 3, x, y, x2, y2, x3, y3), 0)
 	scge.draw('triangle', 3)
 
 def line(x, y, x2, y2):
-	_vbo.data(0, struct.pack('ff' * 2, x, y, x2, y2))
+	_vbo.data(struct.pack('ff' * 2, x, y, x2, y2), 0)
 	scge.draw('line', 2)
 
 def point(x, y):
-	_vbo.data(0, struct.pack('ff' * 1, x, y))
+	_vbo.data(struct.pack('ff' * 1, x, y), 0)
 	scge.draw('point', 1)
 
 def image(img = None):
@@ -200,8 +192,8 @@ def image(img = None):
 def draw(x = 0, y = 0, s = 1):
 	x2 = x + _img.width * s
 	y2 = y + _img.height * s
-	_vbo.data((4 * 2 + 4 * 4) * 4, struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0))
-	_vbo.data(0, struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y))
+	_vbo.data(struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0), (4 * 2 + 4 * 4) * 4)
+	_vbo.data(struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y), 0)
 	scge.draw('triangle fan', 4)
 
 _saved_font_strings = {}

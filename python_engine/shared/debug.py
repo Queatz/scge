@@ -128,6 +128,7 @@ def begin(defaultProgram = True):
 	if defaultProgram:
 		scge.use_program(_program)
 		_program.uniform('matrix', _matrix)
+		_program.uniform('tex', _img)
 
 def end():
 	if _usingDefaultProgram:

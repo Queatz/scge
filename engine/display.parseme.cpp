@@ -626,6 +626,7 @@ Enable or disable different things:
 "polygon depth offset" - offsetting the depth values of polygons
 "line depth offset" - offsetting the depth values of lines
 "point depth offset" - offsetting the depth values of points
+"program point size" - determine point size from programs
 
 C++
 enable("scissor");
@@ -660,6 +661,8 @@ void enable(const char* a, bool b) {
 		c = GL_POLYGON_OFFSET_POINT;
 	else if (!strcmp(a, "cull"))
 		c = GL_CULL_FACE;
+	else if (!strcmp(a, "program point size"))
+		c = GL_PROGRAM_POINT_SIZE;
 	
 	if(c > -1) {
 		if(b) glEnable(c);
@@ -2237,7 +2240,7 @@ pixelcache::pixelcache(int w, int h, bool a) {
 	width = w;
 	height = h;
 	colors = a ? 4 : 3;
-	data = new GLubyte[height*width*3];
+	data = new GLubyte[height*width*colors];
 }
 
 pixelcache::~pixelcache() {

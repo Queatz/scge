@@ -95,6 +95,7 @@ const char* event::data() {
 peer* event::who() {
 	if(evt.peer)
 		return (peer*)evt.peer->data;
+	return NULL;
 }
 
 void event::resolve() {

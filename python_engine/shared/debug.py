@@ -8,14 +8,14 @@ import numbers
 _initstate = 0
 
 def _setup():
-	global _program, _font_program, _vao, _font_vao, _vbo, _initstate, _matrix, _white, _img
+	global _program, _font_program, _vao, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
 	
 	_font_vshader = scge.shader('vertex', '''#version 330 core
 	in vec2 coords;
 	in vec2 texcoords;
 
 	uniform mat4 matrix;
-
+	
 	out vec2 texcoord;
 
 	void main() {
@@ -26,15 +26,15 @@ def _setup():
 	''')
 	
 	_font_fshader = scge.shader('fragment', '''#version 330 core
-	in vec4 color;
 	in vec2 texcoord;
 	
 	uniform sampler2D tex;
+	uniform vec4 color;
 
 	out vec4 frag;
 
 	void main() {
-		frag = vec4(.25, 0., 1., texture2D(tex, texcoord));
+		frag = color * texture2D(tex, texcoord).r;
 	}
 	''')
 
@@ -43,6 +43,7 @@ def _setup():
 	_font_program.attach(_font_fshader)
 	_font_program.attribute(0, 'coords')
 	_font_program.attribute(1, 'texcoords')
+	_font_program.attribute(2, 'ink')
 	_font_program.link()
 	
 	_vshader = scge.shader('vertex', '''#version 330 core
@@ -152,15 +153,24 @@ def _expand_color(c):
 	return (1, 1, 1, 1)
 
 def color(p1 = None, p2 = None, p3 = None, p4 = None):
+	global _color
 	if isinstance(p1, glm.Vector):
-		_vbo.data(struct.pack('ffff' * 4, *_expand_color(p1) * 4), (4 * 2) * 4)
+		c = _expand_color(p1)
+		_color = glm.vec4(*c)
+		_vbo.data(struct.pack('ffff' * 4, *(c * 4)), (4 * 2) * 4)
 	elif isinstance(p1, numbers.Number):
-		_vbo.data(struct.pack('ffff' * 4, *_expand_color(((p1,) + ((p2,) + ((p3,) + ((p4,) if p4 is not None else ()) if p3 is not None else ()) if p2 is not None else ()) if p1 is not None else ())) * 4), (4 * 2) * 4)
+		c = _expand_color(((p1,) + ((p2,) + ((p3,) + ((p4,) if p4 is not None else ()) if p3 is not None else ()) if p2 is not None else ()) if p1 is not None else ()))
+		_color = glm.vec4(*c)
+		_vbo.data(struct.pack('ffff' * 4, *(c * 4)), (4 * 2) * 4)
 	else:
 		if p1 is None:
-			_vbo.data(struct.pack('ffff' * 4, (1,) * 4), (4 * 2) * 4)
+			c = (1,) * 4
+			_color = glm.vec4(*c)
+			_vbo.data(struct.pack('ffff' * 4, c), (4 * 2) * 4)
 		elif p2 is None:
-			_vbo.data(struct.pack('ffff' * 4, *(_expand_color(p1) * 4)), (4 * 2) * 4)
+			c = _expand_color(p1)
+			_color = glm.vec4(*c)
+			_vbo.data(struct.pack('ffff' * 4, *(c * 4)), (4 * 2) * 4)
 		elif p3 is None or p4 is None:
 			print('Color must specify 1 point or all four.')
 		else:
@@ -206,6 +216,7 @@ def write(fnt, sttr, x = 0, y = 0):
 	
 	scge.use_program(_font_program)
 	_font_program.uniform('matrix', _matrix.translate(glm.vec3(x, y, 0)))
+	_font_program.uniform('color', _color)
 	scge.use_vao(_font_vao)
 	_saved_font_strings[T].draw(0, 1)
 	scge.use_vao(_vao)

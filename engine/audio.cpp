@@ -160,6 +160,7 @@ const char * alErrorString(ALenum code) {
 		return "invalid operation";
 	if(code == AL_OUT_OF_MEMORY)
 		return "out of memory";
+	return "unknown error";
 }
 
 const char * alcErrorString(ALenum code) {
@@ -169,6 +170,7 @@ const char * alcErrorString(ALenum code) {
 		return "invalid value";
 	if(code == ALC_OUT_OF_MEMORY)
 		return "out of memory";
+	return "unknown error";
 }
 
 #define CAPTURE_FREQ 44100

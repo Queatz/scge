@@ -112,10 +112,10 @@ struct sound {
 	void font(const char*);
 	
 	buffer* data;
-	ALuint bufs[NUM_BUFS];
-	ALuint source;
 	bool is_stream, looping;
 	unsigned int pending;
+	ALuint source;//x
+	ALuint bufs[NUM_BUFS];//x
 	alureStream* stream;//x
 };
 
@@ -173,6 +173,7 @@ struct fontface {
 
 struct font {
 	font(fontface*, float = 12.0);
+	font(fontface*, image*, float = 12.0);
 	~font();
 	
 	float height();
@@ -183,6 +184,8 @@ struct font {
 	//float width_of(const char*);
 	//float height_of(const char*);
 	
+	image* buffer;
+	bool buffer_is_mine;//x
 	Shikoba::Font* data;//x
 };
 
@@ -418,9 +421,9 @@ bool connection();
 void connection_off();
 
 struct peer {
-	ENetPeer* who;
-	
 	int id;
+	
+	ENetPeer* who;
 };
 
 struct event {

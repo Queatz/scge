@@ -34,7 +34,8 @@ def _setup():
 	out vec4 frag;
 
 	void main() {
-		frag = color * texture2D(tex, texcoord).r;
+		frag = color;
+		frag.a *= texture2D(tex, texcoord).r;
 	}
 	''')
 

@@ -62,13 +62,13 @@ void buffer_loaded(ALuint a) {
 }
 
 void buffer_unloaded(ALuint a) {
-/*	for(std::vector<ALuint>::iterator i = loaded_buffers.begin(); i != loaded_buffers.end();)
+	for(std::vector<ALuint>::iterator i = loaded_buffers.begin(); i != loaded_buffers.end();)
 		if(*i == a) {
 			i = loaded_buffers.erase(i);
 			break;
 		}
 		else
-			i++;*/
+			i++;
 }
 void sound_loaded(ALuint a) {
 	loaded_sounds.push_back(a);
@@ -431,7 +431,6 @@ void buffer::data(const void* bufdata, const char* fmt, unsigned int bytes, unsi
 	}
 	
 	alBufferData(buf, al_format_from_string(fmt), bufdata, bytes, freq);
-
 }
 
 /* *
@@ -504,7 +503,7 @@ inline void reset_sound(sound* a) {
 	
 	int i;
 	for(i = 0; i < NUM_BUFS; i++)
-		a->bufs[i] = NULL;
+		a->bufs[i] = 0;
 }
 
 sound::sound() {
@@ -552,7 +551,7 @@ sound::sound(const char* a, bool b) {
 	sound_loaded(source);
 	
 	//alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
-	// TODO is3D
+	// TODO is3D (really just positioned)
 	
 	if(!is_stream)
 		alSourcei(source, AL_BUFFER, bufs[0]);

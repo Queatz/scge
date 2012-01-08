@@ -225,8 +225,6 @@ int default_from_fif(FREE_IMAGE_FORMAT a) {
 		return 0;
 }
 
-
-
 /* *
 key_repeat(bool)
 Sets whether or not to repeat key presses.  Normally they do not.
@@ -1896,10 +1894,24 @@ font::font(fontface* a, float b) {
 	if(glfw_state == 0)
 		graphics();
 	
-	data = new Shikoba::Font(a->data, b);
+	buffer = new image(16 * ((int)b + 1), 16 * ((int)b + 1));
+	buffer_is_mine = true;
+	data = new Shikoba::Font(a->data, buffer->id, b);
+}
+
+font::font(fontface* a, image* i, float b) {
+	if(glfw_state == 0)
+		graphics();
+	
+	buffer = i;
+	buffer_is_mine = false;
+	data = new Shikoba::Font(a->data, buffer->id, b);
 }
 
 font::~font() {
+	if(buffer_is_mine)
+		delete buffer;
+	
 	delete data;
 }
 

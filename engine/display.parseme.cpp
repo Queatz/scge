@@ -1626,14 +1626,12 @@ image::image(const char* a, bool m) {
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
 	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_BGRA : GL_BGR), GL_UNSIGNED_BYTE, bits);
+	
 	if(m)
 		glGenerateMipmap(GL_TEXTURE_2D);
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FreeImage_GetWidth(bm), FreeImage_GetHeight(bm), 0, (has_alpha ? GL_BGRA : GL_BGR), GL_UNSIGNED_BYTE, bits);
-	
 	FreeImage_Unload(bm);
-	
-	//id = SOIL_load_OGL_texture(a, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | (m ? SOIL_FLAG_MIPMAPS : 0)); //NULL
 	
 	external_cache = false;
 	cache = NULL;

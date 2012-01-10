@@ -36,6 +36,8 @@ def _setup():
 	void main() {
 		frag = color;
 		frag.a *= texture2D(tex, texcoord).r;
+		if(frag.a == 0.)
+			discard;
 	}
 	''')
 
@@ -75,6 +77,8 @@ def _setup():
 
 	void main() {
 		frag = texture2D(tex, texcoord) * color;
+		if(frag.a == 0.)
+			discard;
 	}
 	''')
 	

@@ -164,27 +164,22 @@ host::~host() {
 }
 
 event host::service(int a) {
+	peer* p;
 	event e;
 	int h;
-	peer* p;
 	
 	h = enet_host_service(me, &e.evt, a);
 	
 	if(h > 0) {
-		if(e.evt.peer) {
-			switch(e.evt.type){
-			case ENET_EVENT_TYPE_CONNECT:
-					peercount++;
-					p = new peer;
-					p->id = peercount;
-					p->who = e.evt.peer;
-					e.evt.peer->data = p;
-				break;
-			}
+		if(e.evt.peer->data == NULL && e.evt.type != ENET_EVENT_TYPE_NONE) {
+			peercount++;
+			p = new peer;
+			p->id = peercount;
+			p->who = e.evt.peer;
+			e.evt.peer->data = p;
 		}
 	}
-	
-	if(h < 0) {
+	if(h <= 0) {
 		e.evt.type = ENET_EVENT_TYPE_NONE;
 		if(e.evt.peer)
 			e.evt.peer->data = NULL;
@@ -229,6 +224,7 @@ peer* host::connect(const char* a, int b, int c, unsigned int z) {
 	n = new peer;
 	n->who = p;
 	n->id = peercount;
+	p->data = (void*) n;
 	
 	return n;
 }

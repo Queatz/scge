@@ -494,7 +494,10 @@ class Element:
 	
 	def redraw(self, bc = False):
 		"Mark for redraw.  The parameter is to specify if the bounds have changed."
-		self._redraw(None, None, bc)
+		if bc:
+			self._boundschanged(True)
+		else:
+			self._redraw(None, None, False)
 	
 	# General
 	

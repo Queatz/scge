@@ -222,6 +222,7 @@ struct program {
 	void uniform(const char*, float);
 /*$ PROGRAM::UNIFORM $*/
 	void uniform(const char*, glm::${p}${type}${n});
+}
 /*$ $*/
 	void uniform(const char*, image*, int = 0);
 	
@@ -423,7 +424,7 @@ void connection_off();
 struct peer {
 	int id;
 	
-	ENetPeer* who;
+	ENetPeer* who;//x
 };
 
 struct event {

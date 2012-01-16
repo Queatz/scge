@@ -1,9 +1,6 @@
 GLFWwindow glfw_window = NULL;
-
+int glfw_state = 0;
 Shikoba::Library * font_library = NULL;
-
-int width = 0, height = 0, glfw_state = 0;
-bool fullscreened;
 
 void setdown_font() {
 	delete font_library;
@@ -15,11 +12,6 @@ void setup_font() {
 }
 
 void glfw_error(int code, const char* string) {
-}
-
-void _size_callback_default(GLFWwindow w, int x, int y) {
-	width = x;
-	height = y;
 }
 
 char key_int_to_char(int a) {
@@ -264,10 +256,16 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 		graphics();
 	
 	if(!x || !y) {
-		GLFWvidmode d;
-		glfwGetDesktopMode(&d);
-		x = d.width;
-		y = d.height;
+		if(fullscreen) {
+			GLFWvidmode d;
+			glfwGetDesktopMode(&d);
+			x = d.width;
+			y = d.height;
+		}
+		else {
+			x = 320;
+			y = 240;
+		}
 	}
 	
 	if(fsaa)
@@ -300,12 +298,6 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 	
 	glfwSwapInterval(0);
 	
-	//glfwGetWindowSize(glfw_window, &width, &height);
-	width = x;
-	height = y;
-	
-	glfwSetWindowSizeCallback(_size_callback_default);
-	
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
 	
@@ -313,9 +305,10 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	glViewport(0, 0, width, height);
+	int w, h;
+	glfwGetWindowSize(glfw_window, &w, &h);
+	glViewport(0, 0, w, h);
 	
-	fullscreened = fullscreen;
 	return true;
 }
 
@@ -451,6 +444,20 @@ glm::ivec2 window_dimensions() {
 }
 
 /* *
+window_size()
+Set the size of the window.
+
+C++
+window_size(640, 480);
+
+Python
+window_size(640, 480)
+* */
+void window_size(int w, int h) {
+	glfwSetWindowSize(glfw_window, w, h);
+}
+
+/* *
 position_window(int x, int y)
 Move the window around.
 
@@ -539,9 +546,13 @@ Python
 screenshot('outcome.png')
 * */
 bool screenshot(const char* a, const char* b) {
-	pixelcache p(width, height);
+	int w, h;
+	glfwGetWindowSize(glfw_window, &w, &h);
+
 	
-	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, p.data);
+	pixelcache p(w, h);
+	
+	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.data);
 	
 	if (p.save(a, b))
 		return true;
@@ -1042,15 +1053,18 @@ a = pixel(0, 0);
 Python
 a = pixel(0, 0)
 * */
-glm::vec4 pixel(int x, int y, const char* w) {
-	if(x < 0 || x >= width || y < 0 || y >= height)
+glm::vec4 pixel(int x, int y, const char* f) {
+	int w, h;
+	glfwGetWindowSize(glfw_window, &w, &h);
+	
+	if(x < 0 || x >= w || y < 0 || y >= h)
 		return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	
 	GLenum fmt = GL_RGB;
 	if(w) {
-		if(!strcmp(w, "depth"))
+		if(!strcmp(f, "depth"))
 			fmt = GL_DEPTH_COMPONENT;
-		else if(!strcmp(w, "stencil"))
+		else if(!strcmp(f, "stencil"))
 			fmt = GL_STENCIL_INDEX;
 	}
 	
@@ -1141,13 +1155,14 @@ a = mouse_position()
 
 see:move_mouse
 * */
-glm::vec2 mouse_position(bool topdown) {
+glm::vec2 mouse_position() {
+	int w, h;
+	glfwGetWindowSize(glfw_window, &w, &h);
+	
 	int x, y;
 	glm::vec2 r;
 	glfwGetMousePos(glfw_window, &x, &y);
-	if(!topdown)
-		y = height - y;
-	r = glm::vec2(x, y);
+	r = glm::vec2(x, h - y);
 	return r;
 }
 
@@ -1194,7 +1209,6 @@ Check if a mouse button is pressed.
 "middle"
 "right"
 
-
 C++
 button("left");
 
@@ -1238,10 +1252,11 @@ move_mouse(160, 120);
 Python
 move_mouse(160, 120)
 * */
-void move_mouse(int a, int b, bool topdown) {
-	if(!topdown)
-		b = height - b;
-	glfwSetMousePos(glfw_window, a, b);
+void move_mouse(int a, int b) {
+	int w, h;
+	glfwGetWindowSize(glfw_window, &w, &h);
+	
+	glfwSetMousePos(glfw_window, a, h - b);
 }
 
 int keyboard_key_string_to_int(const char* a) {

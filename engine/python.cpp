@@ -10,7 +10,6 @@ PyObject* _mousemove_callback = NULL;
 PyObject* _string_callback = NULL;
 
 void _size_callback_wrap(GLFWwindow w, int x, int y) {
-	_size_callback_default(w, x, y);
 	PyObject* args;
 	args = Py_BuildValue("(ii)", x, y);
 	PyEval_CallObject(_size_callback, args);
@@ -24,9 +23,9 @@ int _close_callback_wrap(GLFWwindow w) {
 	int ret;
 	result = PyEval_CallObject(_close_callback, (PyObject *)NULL);
 	ret = PyObject_IsTrue(result) ? 1 : 0;
-	return ret;
 	if(PyErr_Occurred())
 		PyErr_Print();
+	return ret;
 }
 
 void _dirty_callback_wrap(GLFWwindow w) {
@@ -81,8 +80,11 @@ void _scroll_callback_wrap(GLFWwindow w, int x, int y) {
 }
 
 void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
+	int u, h;
+	glfwGetWindowSize(glfw_window, &u, &h);
+	
 	PyObject* args;
-	args = Py_BuildValue("(ii)", x, height - y);
+	args = Py_BuildValue("(ii)", x, h - y);
 	PyEval_CallObject(_mousemove_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -126,7 +128,7 @@ void set_callback(const char* e, PyObject* o) {
 			Py_DECREF(_size_callback);
 		_size_callback = o;
 		Py_INCREF(o);
-		glfwSetWindowSizeCallback(o == Py_None ? _size_callback_default : _size_callback_wrap);
+		glfwSetWindowSizeCallback(o == Py_None ? NULL : _size_callback_wrap);
 	}
 	else if(!strcmp(e, "close")) {
 		if(_close_callback)

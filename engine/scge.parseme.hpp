@@ -222,7 +222,6 @@ struct program {
 	void uniform(const char*, float);
 /*$ PROGRAM::UNIFORM $*/
 	void uniform(const char*, glm::${p}${type}${n});
-}
 /*$ $*/
 	void uniform(const char*, image*, int = 0);
 	
@@ -300,7 +299,7 @@ typedef void (* _string_callback_function)(const char*);
 
 void key_repeat(bool = true);
 
-bool window(const char* = "scge test", int = 320, int = 240, bool = false, bool = false, int = 0);
+bool window(const char* = "scge test", int = 0, int = 0, bool = false, bool = false, int = 0);
 void close_window();
 
 void window_title(const char*);
@@ -310,6 +309,7 @@ bool window_active();
 std::string display_modes();
 glm::ivec2 display_dimensions();
 glm::ivec2 window_dimensions();
+void window_size(int, int);
 void position_window(int, int);
 glm::ivec2 window_position();
 
@@ -365,13 +365,13 @@ void stencil_clear(int = 0);
 void stencil_test(const char* = "always", int = 0);
 void stencil_op(const char* = "keep");
 
-glm::vec2 mouse_position(bool = false);
+glm::vec2 mouse_position();
 
 void mouse(const char* = "show");
 bool button(short);
 bool button(const char*);
 int wheel();
-void move_mouse(int, int, bool = false);
+void move_mouse(int, int);
 
 bool key(const char*);
 bool key_state(const char*);

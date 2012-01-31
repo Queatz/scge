@@ -40,7 +40,34 @@ peer
 A connected peer.
 	id int
 		an integer assigned to this peer
+	state()
+		"connecting"
+		"connected"
+		"disconnecting"
+		"disconnected"
 * */
+const char* peer::state() {
+	if(!who)
+		return "disconnected";
+	
+	switch(who->state) {
+	case ENET_PEER_STATE_CONNECTION_SUCCEEDED:
+	case ENET_PEER_STATE_CONNECTED:
+		return "connected";
+	case ENET_PEER_STATE_CONNECTING:
+	case ENET_PEER_STATE_ACKNOWLEDGING_CONNECT:
+	case ENET_PEER_STATE_CONNECTION_PENDING:
+		return "connecting";
+	case ENET_PEER_STATE_DISCONNECT_LATER:
+	case ENET_PEER_STATE_DISCONNECTING:
+	case ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT:
+		return "disconnecting";
+	case ENET_PEER_STATE_DISCONNECTED:
+	case ENET_PEER_STATE_ZOMBIE:
+	default:
+		return "disconnected";
+	}
+}
 
 /* * Network Types
 event

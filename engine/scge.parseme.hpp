@@ -423,6 +423,7 @@ void connection_off();
 
 struct peer {
 	int id;
+	const char* state();
 	
 	ENetPeer* who;//x
 };

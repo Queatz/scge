@@ -5,7 +5,7 @@ int main(int argc, char** argv) {
 	window("Hello World", 320, 240);
 
 	//here is our main loop
-	while(!key("esc") && window_opened()) {
+	while(!key("escape") && window_opened()) {
 		//check for key presses and other events
 		poll();
 	}

@@ -273,7 +273,7 @@ function add_code_chapters() {
 }
 
 function parse_common_types($str) {
-	return preg_replace('/(\W|^)(float|bool|int|string|GLubyte|pixelcache)(\W|$)/', '$1<span class="type">$2</span>$3', $str);
+	return preg_replace('/(\W|^)(float|bytes|bool|int|unsigned|string|GLubyte|pixelcache)(\W|$)/', '$1<span class="type">$2</span>$3', $str);
 }
 
 function parse_links($str) {

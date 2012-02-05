@@ -1,6 +1,7 @@
 bool connected = false;
 /* * Network
 connection()
+#Automatic.  Call it maybe for debugging but you don't have to.
 Enable networking.  Returns true if it succeeded in doing so.
 
 C++
@@ -20,6 +21,7 @@ bool connection() {
 
 /* *
 connection_off()
+#Automatic.  Only call if you want to completely shutdown networking during runtime.
 Disable networking.
 
 C++
@@ -143,7 +145,7 @@ void event::resolve() {
 /* * Network Types
 host
 A networkable host.
-	service(int)
+	service(int = 0)
 		returns events from peers, optionally waiting some milliseconds
 	commune()
 		send all the queued messages

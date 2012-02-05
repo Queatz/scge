@@ -143,7 +143,7 @@ const char* int_to_key_name(int a) {
 /* * General Functions
 graphics()
 Initiate the context.  Returns true if it could happen, otherwise false.
-#window calls this function if you have not.  It is mainly used when you need preperations before opening the window.
+#Automatic. No need to call it.
 
 C++
 graphics();
@@ -170,6 +170,7 @@ bool graphics() {
 
 /* *
 graphics_off()
+#Automatic.  No need to call this unless you want to shutdown graphics during runtime.
 Ends graphic abilities.
 
 C++
@@ -245,9 +246,9 @@ window("Window", 320, 240);
 window("Window", 320, 240, true); //fullscreen
 
 Python
-window("Window", 320, 240)
+window('Window', 320, 240)
 
-window("Window", 320, 240, True) //fullscreen
+window('Window', 320, 240, True) #fullscreen
 
 see:swap, poll
 * */
@@ -411,10 +412,10 @@ display_dimensions()
 Returns an ivec2 filled out with the resolution of the display.
 
 C++
-glm::ivec2 a = display_dimentions();
+glm::ivec2 a = display_dimensions();
 
 Python
-a = display_dimentions()
+a = display_dimensions()
 * */
 glm::ivec2 display_dimensions() {
 	if(glfw_state == 0)
@@ -431,10 +432,10 @@ window_dimensions()
 Returns an ivec2 filled out with the resolution of the window.
 
 C++
-glm::ivec2 a = window_dimentions();
+glm::ivec2 a = window_dimensions();
 
 Python
-a = window_dimentions()
+a = window_dimensions()
 * */
 glm::ivec2 window_dimensions() {
 	int w, h;
@@ -698,10 +699,10 @@ clear_color(float, float, float, float = 1.0)
 Set the color used by clear().
 
 C++
-clear_color(1.0, 1.0, 1.0);
+clear_color(0.0, 0.0, 0.0);
 
 Python
-clear_color(1.0, 1.0, 1.0)
+clear_color(0, 0, 0)
 
 see: clear
 * */
@@ -800,7 +801,7 @@ C++
 point_size(2.0);
 
 Python
-point_size(2.0)
+point_size(2)
 
 see:point
 * */
@@ -829,7 +830,7 @@ polygon_depth_offset(float = 0.0, float = 0.0)
 Set a offset in the depth buffer to be used for polygons.
 
 C++
-polygon_depth_offset()
+polygon_depth_offset();
 
 Python
 polygon_depth_offset()
@@ -844,12 +845,13 @@ void polygon_depth_offset(float a, float b) {
 blend_color(float, float, float, float = 1.0)
 Set the blending color.
 !The only use for this is with "alpha" texture environment.
+!To be demolished.
 
 C++
 blend_color(1.0, 1.0, 1.0);
 
 Python
-blend_color(1.0, 1.0, 1.0)
+blend_color(1, 1, 1)
 
 see:blend_mode
 * */
@@ -1411,6 +1413,7 @@ bool key(const char* a) {
 /* *
 key_state(string)
 Check if a key is locked.
+!Needs a patched GLFW.  Don't use this yet.
 
 C++
 bool a = key_state("caps lock");
@@ -1606,7 +1609,7 @@ a = image('tux.png')
 a.set('linear')
 b = a.pixel(0, 0)
 
-c = image(64, 64, true, False); #creates a blank image sized 64 by 64, with alpha and not high quality
+c = image(64, 64, True, False); #creates a blank image sized 64 by 64, with alpha and not high quality
 
 see:use_image
 * */
@@ -1956,12 +1959,12 @@ A string of text.
 		write the text using the given attributes for vertex positions and texture coordinates.
 
 C++
-// Write "Hello World." with 1.0 character spacing, 1.5 line spacing, centered, wrap at 100.0, and tabs will be 4 spaces.
+//write "Hello World." with 1.0 character spacing, 1.5 line spacing, centered, wrap at 100.0, and tabs will be 4 spaces.
 text a(&font, "Hello World.", 1.0, 1.5, "center", 100.0, 4);
 
 Python
-// Write 'Hello World.' with 1 character spacing, 1.5 line spacing, centered, wrap at 100, and tabs will be 4 spaces.
-a = text(font, 'Hello World.', 1, 1.5, 'center', 100, 4);
+1#write 'Hello World.' with 1 character spacing, 1.5 line spacing, centered, wrap at 100, and tabs will be 4 spaces.
+a = text(font, 'Hello World.', 1, 1.5, 'center', 100, 4)
 
 see: font
 * */
@@ -2161,7 +2164,7 @@ fbo b(320, 240, true, true, true); //with alpha, high quality, and with depth an
 Python
 a = fbo(320, 240)
 
-b = fbo(320, 240, true, true, true) #with alpha, high quality, and with depth and stencil testing
+b = fbo(320, 240, True, True, True) #with alpha, high quality, and with depth and stencil testing
 
 see: use_fbo
 * */

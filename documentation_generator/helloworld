@@ -6,11 +6,10 @@ int main(int argc, char** argv) {
 	scge::window("Hello World", 320, 240);
 
 	//here is our main loop
-	while(!scge::key("esc") && scge::window_opened()) {
+	while(!scge::key("escape") && scge::window_opened()) {
 		//check for key presses and other events
 		scge::poll();
 	}
-
 }
 [~c++]
 [note]See the game/ folder for a template.
@@ -22,7 +21,7 @@ import scge
 scge.window('Hello World', 320, 240)
 
 #here is our main loop
-while not scge.key('esc') and scge.window_opened():
+while not scge.key('escape') and scge.window_opened():
 	#check for key presses and other events
 	scge.poll()
 [~python]

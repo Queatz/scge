@@ -36,7 +36,15 @@ $_chapters = array();
 			
 			$jump = new_chapter('Jump!');
 			
-			parse_code(glob('../engine/*.cpp'));
+			parse_code(array(
+				'../engine/audio.cpp',
+				'../engine/display.parseme.cpp',
+				'../engine/engine.cpp',
+				'../engine/extra.cpp',
+				'../engine/midi.cpp',
+				'../engine/network.cpp',
+				'../engine/python.cpp'
+			));
 			
 			add_code_chapters();
 			

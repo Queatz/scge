@@ -10,6 +10,7 @@ soundbyte capture_soundbyte;
 
 /* * Audio Functions
 audio()
+#Automatic.  You don't need to call it.
 Turn on audio dealings and returns true if it could.
 
 C++
@@ -49,6 +50,7 @@ bool audio() {
 
 /* *
 audio_off()
+#Automatic.  You don't have to call it unless you want to shutdown audio.
 Turn off audio dealings.
 
 C++
@@ -109,7 +111,7 @@ C++
 audio_gain(1.0);
 
 Python
-audio_gain(0)
+audio_gain(1)
 * */
 void audio_gain(float a) {
 	alListenerf(AL_GAIN, a);
@@ -371,7 +373,7 @@ A sound buffer.
 		"mono 16"
 		"stereo 8"
 		"stereo 16"
-		!the buffer must not be in use
+		!the buffer must not be in use when changing the data
 C++
 buffer a("powerup.ogg");
 

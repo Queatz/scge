@@ -22,6 +22,7 @@ function parse_code($files) {
 		$codeblock = false;
 		$absorbed = false;
 		$blanks = 0;
+		$nindent = 0;
 		while($l = fgets($f)) {
 			$linen++;
 			$line = trim($l);

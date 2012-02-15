@@ -1699,6 +1699,110 @@ image::image(int a, int b, bool alpha, bool quality) {
 	glBindTexture(GL_TEXTURE_2D, last);
 }
 
+image::image(int a, int b, int colors, bool quality) {
+	if(glfw_state == 0)
+		graphics();
+	
+	cache = NULL;
+	mipmaps = false;
+	external_cache = false;
+	
+	width = a;
+	height = b;
+	
+	GLint last;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
+	
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	
+	GLenum fmt, ifmt;
+	if(colors == 1) {
+		ifmt = quality ? GL_R16 : GL_R8;
+		fmt = GL_RED;
+	}
+	else if(colors == 2) {
+		ifmt = quality ? GL_RG16 : GL_RG8;
+		fmt = GL_RG;
+	}
+	else if(colors == 3) {
+		ifmt = quality ? GL_RGB12 : GL_RGB8;
+		fmt = GL_RGB;
+	}
+	else if(colors == 4) {
+		ifmt = quality ? GL_RGBA12 : GL_RGBA8;
+		fmt = GL_RGBA;
+	}
+	else {
+		err("image", "invalid color count");
+		ifmt = quality ? GL_RGBA12 : GL_RGBA8;
+		fmt = GL_RGBA;
+	}
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, a, b, 0, fmt, GL_UNSIGNED_BYTE, NULL);
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	
+	glBindTexture(GL_TEXTURE_2D, last);
+}
+
+image::image(int a, int b, const char* f) {
+	if(glfw_state == 0)
+		graphics();
+	
+	cache = NULL;
+	mipmaps = false;
+	external_cache = false;
+	
+	width = a;
+	height = b;
+	
+	GLint last;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
+	
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	
+	GLenum fmt, ifmt;
+	if(!strcmp(f, "r")) {
+		fmt = GL_RED;
+		ifmt = GL_R8;
+	}
+	else if(!strcmp(f, "rg")) {
+		fmt = GL_RG;
+		ifmt = GL_RG8;
+	}
+	else if(!strcmp(f, "rgb")) {
+		fmt = GL_RGB;
+		ifmt = GL_RGB8;
+	}
+	else if(!strcmp(f, "rgba")) {
+		fmt = GL_RGBA;
+		ifmt = GL_RGBA8;
+	}
+	else if(!strcmp(f, "depth")) {
+		fmt = GL_DEPTH_COMPONENT;
+		ifmt = GL_DEPTH_COMPONENT24;
+	}
+	else if(!strcmp(f, "depth stencil")) {
+		fmt = GL_DEPTH_STENCIL;
+		ifmt = GL_DEPTH24_STENCIL8;
+	}
+	else {
+		err("image", "invalid format");
+		fmt = GL_RED;
+		ifmt = GL_R8;
+	}
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, a, b, 0, fmt, GL_UNSIGNED_BYTE, NULL);
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	
+	glBindTexture(GL_TEXTURE_2D, last);
+}
+
 image::image(pixelcache* p) {
 	if(glfw_state == 0)
 		graphics();
@@ -2172,20 +2276,23 @@ fbo::fbo(image* a) {
 	if(glfw_state == 0)
 		graphics();
 	
-	GLint last;
+	GLint last, lastt;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &last);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &lastt);
 	
 	glGenFramebuffers(1, &id);
 	
+	depth = NULL;
 	buffer = a;
 	buffer_is_mine = false;
-	depth_stencil = false;
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, id);
 	
+	glBindTexture(GL_TEXTURE_2D, buffer->id);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->id, 0);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	
+	glBindTexture(GL_TEXTURE_2D, lastt);
 	glBindFramebuffer(GL_FRAMEBUFFER, last);
 }
 
@@ -2195,32 +2302,29 @@ fbo::fbo(int b, int c, bool alpha, bool quality, bool ds, int multisample) {
 	
 	glGenFramebuffers(1, &id);
 	
-	GLint last, lastr;
+	GLint last, lastt;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &last);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &lastt);
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, id);
-	buffer = new image(b, c, alpha, quality);
-	buffer_is_mine = true;
 	
+	buffer_is_mine = true;
+	buffer = new image(b, c, alpha, quality);
+	
+	glBindTexture(GL_TEXTURE_2D, buffer->id);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->id, 0);
-	glGenerateMipmap(GL_TEXTURE_2D);
 	
 	if(ds) {
-		depth_stencil = true;
-		glGenRenderbuffers(1, &depth_stencil_id);
-		
-		glGetIntegerv(GL_RENDERBUFFER_BINDING, &lastr);
-		
-		glBindRenderbuffer(GL_RENDERBUFFER, depth_stencil_id);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, multisample, GL_DEPTH24_STENCIL8, b, c);
-		
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_stencil_id);
-		
-		glBindRenderbuffer(GL_RENDERBUFFER, lastr);
-	}
-	else
-		depth_stencil = false;
+		depth = new image(b, c, "depth");
 	
+		glBindTexture(GL_TEXTURE_2D, depth->id);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth->id, 0);
+	}
+	else {
+		depth = NULL;
+	}
+	
+	glBindTexture(GL_TEXTURE_2D, lastt);
 	glBindFramebuffer(GL_FRAMEBUFFER, last);
 }
 

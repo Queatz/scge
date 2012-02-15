@@ -140,6 +140,8 @@ struct pixelcache {
 struct image {
 	image(const char*, bool = false);
 	image(int, int, bool = false, bool = false);
+	image(int, int, int, bool = false);
+	image(int, int, const char*);
 	image(pixelcache*);
 	~image();
 	
@@ -232,6 +234,7 @@ struct program {
 
 struct fbo {
 	image* buffer;
+	image* depth;
 	GLuint depth_stencil_id;
 
 	fbo(int, int, bool = false, bool = false, bool = false, int = 0);
@@ -239,7 +242,7 @@ struct fbo {
 	~fbo();
 	
 	GLuint id;
-	bool buffer_is_mine, depth_stencil;
+	bool buffer_is_mine;
 };
 
 struct vbo {

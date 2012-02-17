@@ -1,0 +1,100 @@
+There should probably be a bug and feature tracker set up, but for now this will do.
+
+The end-all goal is to create an engine that is extremely easy to make games with.
+scge should be the only library one has to install to make a complete game.
+
+Main Todos:
+
+* (ext.) Complete 3D model export / loading (NetBlend)
+	Rather than having built-in support for hundreds of model formats,
+	I decided to make a game-spcific model format.
+	
+	NetBlends are compact bytes that can store any type of data.
+	What needs to be done is complete the feature set which is
+	basically writing exporters for everything in Blender.
+	
+	They should support everything useful, including animation.
+	Right now there are exporters for scenes, objects, and partial meshes.
+
+* (ext.) Advanced 3D specific subengine
+	scge doesn't advocate one type of game over another,
+	that's where extensions come in.  This 3D game kit should make it
+	dead simple to make a character walk around in a 3D world.
+	The goal is to handle these:
+		* Scene graph
+		* Camera
+		* Lights
+		* Materials
+			* Textures
+			* Normals
+			* Specular
+			* Tangent
+		* Physics
+		* Deffered lighting
+		* Frustum and Occlusion Culling
+		* Shadows
+		* Transparency
+		* Motion blur
+		* Reflections
+		* Particles and Hair
+		* Effectors (wind)
+		* Distant objects and LOD
+		* Animation blending
+		* Particles
+		* Composite effects
+		* Plenty more
+	
+	All these should be able to be subclassed customly.
+	It will build shaders and take a trmendous load off making 3D games.
+
+* (ext.) 2D MMORPG specific subengine
+	* Everything to make a 2D MMORPG
+
+* (ext.) Make a complete set of ui elements
+	* The core is done but there needs to be many more standard elements
+	  and things like padding and margins need to be standardized
+	* Many Layouts, tables, buttons, dropdown, list, and so on...
+
+* (core) Figure out the best way to implement Bullet Physics.
+	* As with everything in scge, it should try to closely
+	  follow Bullet's own api.
+
+* Verify best practices everywhere
+	* With no testers there will obviously be things that could be done better.
+	  Let's find 'em and fix 'em.
+
+* Make a flagship game!
+	* scge's been quite stable lately,
+	  time to show off what it can do in one enthralling game!
+
+Small Todos:
+
+* There is a random segfault that has something to do with networking.
+* Exiting while audio is playing is not completely smooth.
+* Fix multiple windows opening when calling window(), it should close the current one.
+* allow Python bytes() to be sent over the network.
+
+Have to be done some time:
+
+* Rich text fonts
+	Possibly through callbacks per character
+	Only font face and size is dealt with,
+	user deals with color and anything else 
+* Complete implementation of GLM Python
+	* I think we can use Clang to write a function wrapper
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

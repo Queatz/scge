@@ -54,7 +54,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 
 namespace scge {
 
@@ -140,7 +139,6 @@ struct pixelcache {
 struct image {
 	image(const char*, bool = false);
 	image(int, int, bool = false, bool = false);
-	image(int, int, int, bool = false);
 	image(int, int, const char*);
 	image(pixelcache*);
 	~image();
@@ -235,14 +233,13 @@ struct program {
 struct fbo {
 	image* buffer;
 	image* depth;
-	GLuint depth_stencil_id;
 
 	fbo(int, int, bool = false, bool = false, bool = false, int = 0);
 	fbo(image*);
 	~fbo();
 	
 	GLuint id;
-	bool buffer_is_mine;
+	bool buffer_is_mine; //x
 };
 
 struct vbo {

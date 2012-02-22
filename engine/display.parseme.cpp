@@ -1696,54 +1696,6 @@ image::image(int a, int b, bool alpha, bool quality) {
 	glBindTexture(GL_TEXTURE_2D, last);
 }
 
-image::image(int a, int b, int colors, bool quality) {
-	if(glfw_state == 0)
-		graphics();
-	
-	cache = NULL;
-	mipmaps = false;
-	external_cache = false;
-	
-	width = a;
-	height = b;
-	
-	GLint last;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
-	
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_2D, id);
-	
-	GLenum fmt, ifmt;
-	if(colors == 1) {
-		ifmt = quality ? GL_R16 : GL_R8;
-		fmt = GL_RED;
-	}
-	else if(colors == 2) {
-		ifmt = quality ? GL_RG16 : GL_RG8;
-		fmt = GL_RG;
-	}
-	else if(colors == 3) {
-		ifmt = quality ? GL_RGB12 : GL_RGB8;
-		fmt = GL_RGB;
-	}
-	else if(colors == 4) {
-		ifmt = quality ? GL_RGBA12 : GL_RGBA8;
-		fmt = GL_RGBA;
-	}
-	else {
-		err("image", "invalid color count");
-		ifmt = quality ? GL_RGBA12 : GL_RGBA8;
-		fmt = GL_RGBA;
-	}
-	
-	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, a, b, 0, fmt, GL_UNSIGNED_BYTE, NULL);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
-	glBindTexture(GL_TEXTURE_2D, last);
-}
-
 image::image(int a, int b, const char* f) {
 	if(glfw_state == 0)
 		graphics();
@@ -2328,8 +2280,8 @@ fbo::fbo(int b, int c, bool alpha, bool quality, bool ds, int multisample) {
 fbo::~fbo() {
 	if(buffer_is_mine)
 		delete buffer;
-	if(depth_stencil_id)
-		glDeleteRenderbuffers(1, &depth_stencil_id);
+	if(depth)
+		delete depth;
 	glDeleteFramebuffers(1, &id);
 }
 

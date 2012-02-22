@@ -53,4 +53,7 @@ OTHER
 		Can be loaded from anywhere
 		Using PhysFX?
 
+	Midi on windows needs to be verified.
+	aubio/pitch needs to be verified on windows.
+
 WORLD AND 3D

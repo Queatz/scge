@@ -229,10 +229,7 @@ Python
 key_repeat()
 * */
 void key_repeat(bool a) {
-	if(a)
-		glfwEnable(glfw_window, GLFW_KEY_REPEAT);
-	else
-		glfwDisable(glfw_window, GLFW_KEY_REPEAT);
+	glfwSetInputMode(glfw_window, GLFW_KEY_REPEAT, a ? GL_TRUE : GL_FALSE);
 }
 
 /* *
@@ -1183,11 +1180,11 @@ mouse('hide') #hide the pointer
 * */
 void mouse(const char* a) {
 	if(!strcmp(a, "show"))
-		glfwSetCursorMode(glfw_window, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(glfw_window, GLFW_CURSOR_MODE, GLFW_CURSOR_NORMAL);
 	else if(!strcmp(a, "hide"))
-		glfwSetCursorMode(glfw_window, GLFW_CURSOR_HIDDEN);
+		glfwSetInputMode(glfw_window, GLFW_CURSOR_MODE, GLFW_CURSOR_HIDDEN);
 	else if(!strcmp(a, "capture"))
-		glfwSetCursorMode(glfw_window, GLFW_CURSOR_CAPTURED);
+		glfwSetInputMode(glfw_window, GLFW_CURSOR_MODE, GLFW_CURSOR_CAPTURED);
 	else
 		err("mouse", "invalid option");
 }

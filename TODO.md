@@ -4,6 +4,54 @@ The end-all goal is to create an engine that is extremely easy to make games wit
 scge should be the only library one has to install to make a complete game.
 
 
+shared.ui ENHANCEMENTS
+===============
+
+* (ext.) Make a complete set of ui elements
+	* The core is done but there needs to be many more standard elements
+	  and things like padding and margins need to be standardized
+	* Many Layouts, tables, buttons, dropdown, list, and so on...
+
+PHYSICS
+=======
+
+* (core) Figure out the best way to implement Bullet Physics.
+	* As with everything in scge, it should try to closely
+	  follow Bullet's own api.
+
+
+STABILITY
+=========
+
+* Verify best practices everywhere
+	* With no testers there will obviously be things that could be done better.
+	  Let's find 'em and fix 'em.
+
+
+ERROR HANDLING
+==============
+
+* Right now errors are printed and life goes on.
+  Unfortunately life is then destined to end in a segfault.
+  Error checking needs to be uniformly implemented everywhere
+  and follow a standard.
+  This may mean images and things need some "validness."
+
+
+POPULARITY
+==========
+
+* Make a flagship game!
+	* scge's been quite stable lately,
+	  time to show off what it can do in one enthralling game!
+
+
+DOCUMENTATION
+==================
+
+The current documentation is generated from the source, however it's just one big page.  Great documentation is needed asap.
+
+
 3D MODELS
 =========
 
@@ -59,48 +107,6 @@ scge should be the only library one has to install to make a complete game.
 
 * (ext.) 2D MMORPG specific subengine
 	* Everything to make a 2D MMORPG
-
-
-shared.ui ENHANCEMENTS
-===============
-
-* (ext.) Make a complete set of ui elements
-	* The core is done but there needs to be many more standard elements
-	  and things like padding and margins need to be standardized
-	* Many Layouts, tables, buttons, dropdown, list, and so on...
-
-PHYSICS
-=======
-
-* (core) Figure out the best way to implement Bullet Physics.
-	* As with everything in scge, it should try to closely
-	  follow Bullet's own api.
-
-
-STABILITY
-=========
-
-* Verify best practices everywhere
-	* With no testers there will obviously be things that could be done better.
-	  Let's find 'em and fix 'em.
-
-
-ERROR HANDLING
-==============
-
-* Right now errors are printed and life goes on.
-  Unfortunately life is then destined to end in a segfault.
-  Error checking needs to be uniformly implemented everywhere
-  and follow a standard.
-  This may mean images and things need some "validness."
-
-
-POPULARITY
-==========
-
-* Make a flagship game!
-	* scge's been quite stable lately,
-	  time to show off what it can do in one enthralling game!
 
 
 IBO CHECKUP

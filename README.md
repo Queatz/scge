@@ -1,7 +1,17 @@
-DOCUMENTATION
+scge
+====
+
+scge is a base-level game engine for C++ and/or Python.
+
+http://queatz.com/scge/
+
+Documentation
+-------------
+
 http://queatz.com/scge/documentation.html
 
-INSTALLING
+Installing
+----------
 
 Install all the requirements:
 python (>=3)

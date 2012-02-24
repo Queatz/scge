@@ -616,6 +616,7 @@ Enable or disable different things:
 "line depth offset" - offsetting the depth values of lines
 "point depth offset" - offsetting the depth values of points
 "program point size" - determine point size from programs
+"multisample" - multisample
 
 C++
 enable("scissor");
@@ -652,6 +653,8 @@ void enable(const char* a, bool b) {
 		c = GL_CULL_FACE;
 	else if (!strcmp(a, "program point size"))
 		c = GL_PROGRAM_POINT_SIZE;
+	else if (!strcmp(a, "multisample"))
+		c = GL_MULTISAMPLE;
 	
 	if(c > -1) {
 		if(b) glEnable(c);

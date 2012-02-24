@@ -109,6 +109,10 @@ The current documentation is generated from the source, however it's just one bi
 	* Everything to make a 2D MMORPG
 
 
+VBO VERIFYING
+============
+VBOs need to have some checking for 0 size.  This has caused many hideous segfaults.  Perhaps this needs to be part of an error checking modal.
+
 IBO CHECKUP
 ===========
 *	Figure out if ibo's need to be different from vbo's

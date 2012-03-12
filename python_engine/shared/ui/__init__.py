@@ -382,8 +382,10 @@ class Element:
 		parent_draw = self.dirty == True
 		
 		if not self.imaginary or isinstance(self.dirty, tuple):
+			b = Bounds(_offset, self.style.size)
+
 			if not self.imaginary:
-				_clip.overlap(Bounds(_offset, self.style.size))
+				_clip.overlap(b)
 			
 			if isinstance(self.dirty, tuple):
 				_clip.overlap(self.dirty[1] + _offset)
@@ -391,8 +393,10 @@ class Element:
 				self.dirty = False
 				return
 			
+			scge.viewport(*b)
 			scge.scissor(*_clip)
 			self.interface._clip = _clip
+			self.interface._viewport = b
 		
 		if isinstance(self.dirty, tuple):
 			drawc = True
@@ -404,18 +408,12 @@ class Element:
 		self.dirty = False
 		
 		if drawc:
-			l = Offset()
 			if startfrom:
 				for e in self.children[startfrom:]:
-					self.interface.matrix = InterfaceMatrix(self.interface.matrix.translate(glm.vec2(e.style.offset.x - l.x, e.style.offset.y - l.y)))
 					e._draw(Bounds(_clip), Offset(_offset + e.style.offset), parent_draw)
-					l = e.style.offset
 			else:
 				for e in self.children:
-					self.interface.matrix = InterfaceMatrix(self.interface.matrix.translate(glm.vec2(e.style.offset.x - l.x, e.style.offset.y - l.y)))
 					e._draw(Bounds(_clip), Offset(_offset + e.style.offset), parent_draw)
-					l = e.style.offset
-			self.interface.matrix = InterfaceMatrix(self.interface.matrix.translate(glm.vec2(-l.x, -l.y)))
 	
 	def _boundschanged(self, resized = True):
 		self._changed = True
@@ -597,12 +595,6 @@ class Element:
 
 # # # INTERFACE # # #
 
-class InterfaceMatrix(glm.mat4):
-	def translate(self, vec):
-		if isinstance(vec, glm.vec2):
-			return glm.mat4.translate(self, glm.vec3(vec, 0))
-		return glm.mat4.translate(self, vec)
-
 class Interface:
 	def __init__(self, e = None):
 		# List of callbacks that will be handled
@@ -633,8 +625,6 @@ class Interface:
 		self.scroll_element = None
 		self.scroll_time = 0
 		self.scroll_timeout = 1
-		
-		self.matrix = None
 		
 		self._refitting_state = False
 		self.mess = set()
@@ -979,23 +969,15 @@ class Interface:
 			self.body.dirty = True
 		
 		if self.body.dirty:
-			self.matrix = InterfaceMatrix(glm.ortho(self.body.style.offset.x, self.body.style.offset.x + self.body.style.size.x, self.body.style.offset.y, self.body.style.offset.y + self.body.style.size.y, -1, 1))
-			self._viewport = (self.body.style.offset.x, self.body.style.offset.y, self.body.style.size.x, self.body.style.size.y)
-			scge.viewport(*self._viewport)
-			
 			scge.enable('scissor')
-			
-			self.matrix = InterfaceMatrix(self.matrix.translate(glm.vec2(self.body.style.offset)))
 			self.body._draw(Bounds(self.body.style.offset, self.body.style.size), Offset(self.body.style.offset))
-			self.matrix = InterfaceMatrix(self.matrix.translate(-glm.vec2(self.body.style.offset)))
 			self.body.dirty = False
-		
 			scge.enable('scissor', False)
 		
+			scge.viewport(*Bounds(self.body.style.offset, self.body.style.size))
+			
 			if self.dragging:
-				self.matrix = InterfaceMatrix(self.matrix.translate(glm.vec2(self.mouse_global)))
 				self.dragging.drag.draw()
-				self.matrix = InterfaceMatrix(self.matrix.translate(-glm.vec2(self.mouse_global)))
 		
 			return True
 		return False

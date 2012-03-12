@@ -16,7 +16,7 @@ void glfw_error(int code, const char* string) {
 
 char key_int_to_char(int a) {
 	if(a < 256) return (char) a;
-	return NULL;
+	return 0;
 }
 
 const char* int_to_button_name(int a) {
@@ -388,7 +388,7 @@ std::string display_modes() {
 	if(glfw_state == 0)
 		graphics();
 	
-	GLFWvidmode m[128] = {NULL};
+	GLFWvidmode m[128] = {0};
 	std::ostringstream s;
 	std::string l;
 	int i, c;
@@ -760,7 +760,7 @@ GLenum comparison_string_to_gl(const char* a) {
 	else if(!strcmp(a, "never"))
 		return GL_NEVER;
 	
-	return NULL;
+	return 0;
 }
 
 /* *
@@ -1038,7 +1038,7 @@ GLenum primitive_from_string(const char* a) {
 			return GL_POINTS;
 		else
 			err("primitive", "unknown type");
-		return NULL;
+		return 0;
 }
 
 /* *
@@ -2521,7 +2521,7 @@ void ibo::data(ibo* o, int offset, int copy_offset, int l) {
 }
 
 void ibo::draw(const char* a, unsigned int count, unsigned int first) {
-	glDrawElements(primitive_from_string(a), count, storage, (const GLvoid*) first);
+	glDrawElements(primitive_from_string(a), (GLsizei)count, storage, reinterpret_cast<const GLvoid*>(first));
 }
 
 /* *
@@ -2608,9 +2608,9 @@ void vao::attribute(unsigned int index, vbo* v, const char* type, int size, int 
 		glBindBuffer(GL_ARRAY_BUFFER, v->id);
 	
 	if(integers)
-		glVertexAttribIPointer(index, size, common_type_from_string(type), stride, (const GLvoid*) offset);
+		glVertexAttribIPointer(index, size, common_type_from_string(type), (GLsizei)stride, reinterpret_cast<const GLvoid*>(offset));
 	else
-		glVertexAttribPointer(index, size, common_type_from_string(type), normalized, stride, (const GLvoid*) offset);
+		glVertexAttribPointer(index, size, common_type_from_string(type), normalized, (GLsizei)stride, reinterpret_cast<const GLvoid*>(offset));
 	
 	if(lastb != v->id)
 		glBindBuffer(GL_ARRAY_BUFFER, lastb);

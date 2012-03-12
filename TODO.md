@@ -122,6 +122,7 @@ OF RANDOM LURE
 ==================
 
 * There is a random segfault that has something to do with networking.
+	* It seems to be when a client times out
 * Exiting while audio is playing is not completely smooth.
 * Fix multiple windows opening when calling window(), it should close the current one.
 * allow Python bytes() to be sent over the network.

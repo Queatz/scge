@@ -92,7 +92,7 @@ void audio_off() {
 	
 	if(!loaded_sounds.empty())
 		for(std::vector<ALuint>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end();i++) {
-			alSourcei(*i, AL_BUFFER, NULL);
+			alSourcei(*i, AL_BUFFER, 0);
 			alDeleteSources(1, &(*i));
 		}
 	
@@ -570,7 +570,7 @@ void sound::clear() {
 		alureDestroyStream(stream, NUM_BUFS, bufs);
 	
 	if(source) {
-		alSourcei(source, AL_BUFFER, NULL);
+		alSourcei(source, AL_BUFFER, 0);
 		alDeleteSources(1, &source);
 		sound_unloaded(source);
 	}

@@ -842,24 +842,6 @@ void polygon_depth_offset(float a, float b) {
 }
 
 /* *
-blend_color(float, float, float, float = 1.0)
-Set the blending color.
-!The only use for this is with "alpha" texture environment.
-!To be demolished.
-
-C++
-blend_color(1.0, 1.0, 1.0);
-
-Python
-blend_color(1, 1, 1)
-
-see:blend_mode
-* */
-void blend_color(float r, float g, float b, float a) {
-	glBlendColor(r, g, b, a);
-}
-
-/* *
 color_mask(bool r, bool g, bool b, bool a)
 Disable or enable colors.
 

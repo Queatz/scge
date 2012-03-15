@@ -334,8 +334,6 @@ void point_size(float);
 void line_width(float);
 void polygon_depth_offset(float = 0.0, float = 0.0);
 
-void blend_color(float, float, float, float = 1.0);
-
 void color_mask(bool, bool, bool, bool = true);
 void color_mask(bool);
 

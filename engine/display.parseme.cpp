@@ -7,6 +7,8 @@ void setdown_font() {
 }
 
 void setup_font() {
+	if(glfw_state == 0)
+		graphics();
 	font_library = new Shikoba::Library();
 	atexit(setdown_font);
 }
@@ -1922,128 +1924,65 @@ fontface::~fontface() {
 	delete data;
 }
 
-/* *
-font
-A font.
+void font_face(fontface* f) {
+	if(font_library == NULL)
+		setup_font();
 
-	height()
-		get the line height
-	ascent()
-		get the ascent of the font
-	descent()
-		get the decent of the font
-	advance(string)
-		get the advance of the string, where the next character would be placed
-
-C++
-fontface f("sans.ttf");
-font b(&f, 16.0);
-
-Python
-f = fontface('sans.ttf')
-a = font(f, 16)
-
-* */
-font::font(fontface* a, float b) {
-	if(glfw_state == 0)
-		graphics();
-	
-	buffer = new image(16 * ((int)b + 1), 16 * ((int)b + 1));
-	buffer_is_mine = true;
-	data = new Shikoba::Font(a->data, buffer->id, b);
+	font_library->setFace(f->data);
 }
 
-font::font(fontface* a, image* i, float b) {
-	if(glfw_state == 0)
-		graphics();
-	
-	buffer = i;
-	buffer_is_mine = false;
-	data = new Shikoba::Font(a->data, buffer->id, b);
+void font_size(unsigned int s) {
+	if(font_library == NULL)
+		setup_font();
+
+	font_library->setSize(s);
 }
 
-font::~font() {
-	if(buffer_is_mine)
-		delete buffer;
-	
-	delete data;
+float line_height() {
+	if(font_library == NULL)
+		setup_font();
+
+	return font_library->height();
 }
 
-float font::height() {
-	return data->height();
+float ascent() {
+	if(font_library == NULL)
+		setup_font();
+
+	return font_library->ascender();
 }
 
-float font::ascent() {
-	return data->ascender();
+float descent() {
+	if(font_library == NULL)
+		setup_font();
+
+	return font_library->descender();
 }
 
-float font::descent() {
-	return data->descender();
+float advance(const char* a, const char* b) {
+	if(font_library == NULL)
+		setup_font();
+
+	return font_library->advance(utf8::unchecked::next(a), utf8::unchecked::next(b));
 }
 
-float font::advance(const char* a) {
-	return data->advance((const unsigned char*)a);
-}
+glyphmetrics glyph(const char* a) {
+	if(font_library == NULL)
+		setup_font();
 
-/* *
-text
-A string of text.
+	glyphmetrics g;
+	const Shikoba::Glyph * s = font_library->glyph(utf8::unchecked::next(a));
 
-	lines()
-		get number of lines
-	advance()
-		returns a float representing maximum advance of the lines
-	draw(int, int)
-		write the text using the given attributes for vertex positions and texture coordinates.
+	g.vertices.x1 = s->vertices.x1;
+	g.vertices.x2 = s->vertices.x2;
+	g.vertices.y1 = s->vertices.y1;
+	g.vertices.y2 = s->vertices.y2;
+	g.texcoords.x1 = s->texcoords.x1;
+	g.texcoords.x2 = s->texcoords.x2;
+	g.texcoords.y1 = s->texcoords.y1;
+	g.texcoords.y2 = s->texcoords.y2;
 
-C++
-//write "Hello World." with 1.0 character spacing, 1.5 line spacing, centered, wrap at 100.0, and tabs will be 4 spaces.
-text a(&font, "Hello World.", 1.0, 1.5, "center", 100.0, 4);
-
-Python
-1#write 'Hello World.' with 1 character spacing, 1.5 line spacing, centered, wrap at 100, and tabs will be 4 spaces.
-a = text(font, 'Hello World.', 1, 1.5, 'center', 100, 4)
-
-see: font
-* */
-int text_align_from_string(const char* a) {
-	if(!strcmp("left", a))
-		return Shikoba::LEFT;
-	if(!strcmp("center", a))
-		return Shikoba::CENTER;
-	if(!strcmp("right", a))
-		return Shikoba::RIGHT;
-	if(!strcmp("justify", a))
-		return Shikoba::JUSTIFY;
-	if(!strcmp("justify left", a))
-		return Shikoba::LEFT | Shikoba::JUSTIFY;
-	if(!strcmp("justify center", a))
-		return Shikoba::CENTER | Shikoba::JUSTIFY;
-	if(!strcmp("justify right", a))
-		return Shikoba::RIGHT | Shikoba::JUSTIFY;
-	
-	err("text", "align", "unknown method");
-	return Shikoba::LEFT;
-}
-
-text::text(font* f, const char * s, float cw, float lh, const char* a, float mw, int tw) {
-	data = new Shikoba::Text(f->data, (const unsigned char*)s, cw, lh, text_align_from_string(a), mw, tw);
-}
-
-text::~text() {
-	delete data;
-}
-
-int text::lines() {
-	return data->lines();
-}
-
-float text::advance() {
-	return data->advance();
-}
-
-void text::draw(int a, int b) {
-	data->draw(a, b);
+	return g;
 }
 
 /* *
@@ -2124,6 +2063,8 @@ A program that processes draw operations.
 		links and completes the program, making it ready for use
 	uniform(string, int|float|vec|mat|image)
 		set a uniform on the program
+	bind_font(string, int)
+		set a uniform for the font texture
 	attribute(string, int)
 		set a name for an attribute
 
@@ -2171,7 +2112,22 @@ void program::uniform(const char* a, image* c, int b) {
 	
 	uniform(a, b);
 	
-	// Reset to the original texture
+	// Reset to the original texture XXX FIXME don't have to?
+	if(act != GL_TEXTURE0 + b) glActiveTexture(act);
+}
+
+void program::bind_font(const char* a, int b) {
+	if(!font_library)
+		setup_font();
+
+	GLint act;
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &act);
+	glActiveTexture(GL_TEXTURE0 + b);
+	glBindTexture(GL_TEXTURE_2D, font_library->texture());
+	
+	uniform(a, b);
+	
+	// Reset to the original texture XXX FIXME don't have to?
 	if(act != GL_TEXTURE0 + b) glActiveTexture(act);
 }
 

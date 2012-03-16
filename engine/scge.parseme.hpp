@@ -18,6 +18,8 @@
 #include <cstdarg>
 #include <ctype.h> // toupper()
 
+#include <utf8.h>
+
 #ifdef WITH_NETWORK
 #include <enet/enet.h> // Networking
 #endif
@@ -171,38 +173,22 @@ struct fontface {
 	Shikoba::Face* data;//x
 };
 
-struct font {
-	font(fontface*, float = 12.0);
-	font(fontface*, image*, float = 12.0);
-	~font();
-	
-	float height();
-	float ascent();
-	float descent();
-	float advance(const char*);
-	
-	//float width_of(const char*);
-	//float height_of(const char*);
-	
-	image* buffer;
-	bool buffer_is_mine;//x
-	Shikoba::Font* data;//x
+struct boxy {
+	float x1, y1, x2, y2;
 };
 
-struct text {
-	text(font*, const char *, float = 1.0, float = 1.0, const char* = "left", float = 0.0, int = 4);
-	~text();
-	
-	int lines();
-	float advance();
-	
-	//float width_of(const char*);
-	//float height_of(const char*);
-	
-	void draw(int, int);
-	
-	Shikoba::Text* data;//x
+struct glyphmetrics {
+	boxy vertices;
+	boxy texcoords;
 };
+
+void font_face(fontface*);
+void font_size(unsigned int);
+glyphmetrics glyph(const char*);
+float line_height();
+float ascent();
+float descent();
+float advance(const char*, const char* = NULL);
 
 struct shader {
 	shader(const char*, const char*, bool = false);
@@ -224,6 +210,7 @@ struct program {
 	void uniform(const char*, glm::${p}${type}${n});
 /*$ $*/
 	void uniform(const char*, image*, int = 0);
+	void bind_font(const char*, int = 0);
 	
 	void attribute(int, const char*);
 	

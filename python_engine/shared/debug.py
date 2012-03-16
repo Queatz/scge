@@ -8,7 +8,7 @@ import numbers
 _initstate = 0
 
 def _setup():
-	global _program, _font_program, _vao, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
+	global _program, _font_program, _vao, _font_vbo, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
 	
 	_font_vshader = scge.shader('vertex', '''#version 330 core
 	in vec2 coords;
@@ -101,10 +101,14 @@ def _setup():
 	_vao.attribute(1, _vbo, 'float', 4, (4 * 2) * 4)
 	_vao.attribute(2, _vbo, 'float', 2, (4 * 2 + 4 * 4) * 4)
 	
+	_font_vbo = scge.vbo((4 * 2 + 4 * 2) * 4, 'stream draw')
+	
 	_font_vao = scge.vao()
 	scge.use_vao(_font_vao)
 	_font_vao.enable(0)
 	_font_vao.enable(1)
+	_font_vao.attribute(0, _font_vbo, 'float', 2, 0, 4 * 4)
+	_font_vao.attribute(1, _font_vbo, 'float', 4, 2 * 4, 4 * 4)
 
 	scge.use_vao()
 	
@@ -212,17 +216,67 @@ def draw(x = 0, y = 0, s = 1):
 	_vbo.data(struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y), 0)
 	scge.draw('triangle fan', 4)
 
-_saved_font_strings = {}
-
-def write(fnt, sttr, x = 0, y = 0):
-	T = (id(fnt), sttr)
-	if T not in _saved_font_strings:
-		_saved_font_strings[T] = scge.text(fnt, sttr)
-	
+def write(fnt, sze, sttr, x = 0, y = 0):
+	scge.font_size(sze)
+	scge.font_face(fnt)
 	scge.use_program(_font_program)
-	_font_program.uniform('matrix', _matrix.translate(glm.vec3(x, y, 0)))
+	_font_program.uniform('matrix', _matrix)#.translate(glm.vec3(x, y, 0)))
 	_font_program.uniform('color', _color)
 	scge.use_vao(_font_vao)
-	_saved_font_strings[T].draw(0, 1)
+
+	_program.bind_font('tex')
+	lc = None
+	for c in sttr:
+		g = scge.glyph(c)
+		if lc:
+			x += scge.advance(lc, c)
+		print(c)
+		print(
+			g.vertices.x1 + x,
+			g.vertices.y1 + y,
+			g.texcoords.x1,
+			g.texcoords.y1,
+
+			g.vertices.x1 + x,
+			g.vertices.y2 + y,
+			g.texcoords.x1,
+			g.texcoords.y2,
+
+			g.vertices.x2 + x,
+			g.vertices.y2 + y,
+			g.texcoords.x2,
+			g.texcoords.y2,
+
+			g.vertices.x2 + x,
+			g.vertices.y1 + y,
+			g.texcoords.x2,
+			g.texcoords.y1,)
+
+		_font_vbo.data(struct.pack('16f',
+			g.vertices.x1 + x,
+			g.vertices.y1 + y,
+			g.texcoords.x1,
+			g.texcoords.y1,
+
+			g.vertices.x1 + x,
+			g.vertices.y2 + y,
+			g.texcoords.x1,
+			g.texcoords.y2,
+
+			g.vertices.x2 + x,
+			g.vertices.y2 + y,
+			g.texcoords.x2,
+			g.texcoords.y2,
+
+			g.vertices.x2 + x,
+			g.vertices.y1 + y,
+			g.texcoords.x2,
+			g.texcoords.y1,
+		), 0)
+
+		scge.draw('triangle fan', 4)
+		
+		lc = c
+
 	scge.use_vao(_vao)
 	scge.use_program(_program)

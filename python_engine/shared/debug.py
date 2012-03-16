@@ -230,27 +230,6 @@ def write(fnt, sze, sttr, x = 0, y = 0):
 		g = scge.glyph(c)
 		if lc:
 			x += scge.advance(lc, c)
-		print(c)
-		print(
-			g.vertices.x1 + x,
-			g.vertices.y1 + y,
-			g.texcoords.x1,
-			g.texcoords.y1,
-
-			g.vertices.x1 + x,
-			g.vertices.y2 + y,
-			g.texcoords.x1,
-			g.texcoords.y2,
-
-			g.vertices.x2 + x,
-			g.vertices.y2 + y,
-			g.texcoords.x2,
-			g.texcoords.y2,
-
-			g.vertices.x2 + x,
-			g.vertices.y1 + y,
-			g.texcoords.x2,
-			g.texcoords.y1,)
 
 		_font_vbo.data(struct.pack('16f',
 			g.vertices.x1 + x,

@@ -1931,6 +1931,16 @@ void font_face(fontface* f) {
 	font_library->setFace(f->data);
 }
 
+/* *
+font_size(int)
+Set the font size.
+
+C++
+font_size(12);
+
+Python
+font_size(12)
+* */
 void font_size(unsigned int s) {
 	if(font_library == NULL)
 		setup_font();
@@ -1938,6 +1948,16 @@ void font_size(unsigned int s) {
 	font_library->setSize(s);
 }
 
+/* *
+line_height()
+Get the line height.
+
+C++
+float a = line_height();
+
+Python
+a = line_height()
+* */
 float line_height() {
 	if(font_library == NULL)
 		setup_font();
@@ -1945,6 +1965,16 @@ float line_height() {
 	return font_library->height();
 }
 
+/* *
+ascent()
+Get the ascent.
+
+C++
+float a = ascent();
+
+Python
+a = ascent()
+* */
 float ascent() {
 	if(font_library == NULL)
 		setup_font();
@@ -1952,6 +1982,16 @@ float ascent() {
 	return font_library->ascender();
 }
 
+/* *
+descent()
+Get the descent.
+
+C++
+float a = descent();
+
+Python
+a = descent()
+* */
 float descent() {
 	if(font_library == NULL)
 		setup_font();
@@ -1959,6 +1999,16 @@ float descent() {
 	return font_library->descender();
 }
 
+/* *
+advance(char, char)
+Get the advance of a glyph, kerned with the previous.
+
+C++
+float a = advance('a', 'b');
+
+Python
+a = advance('a', 'b')
+* */
 float advance(const char* a, const char* b) {
 	if(font_library == NULL)
 		setup_font();
@@ -1966,6 +2016,16 @@ float advance(const char* a, const char* b) {
 	return font_library->advance(utf8::unchecked::next(a), utf8::unchecked::next(b));
 }
 
+/* *
+glyph(int)
+Get a glyph.
+
+C++
+glyphmetrics a = glyph('a');
+
+Python
+a = glyph('a')
+* */
 glyphmetrics glyph(const char* a) {
 	if(font_library == NULL)
 		setup_font();
@@ -1984,6 +2044,30 @@ glyphmetrics glyph(const char* a) {
 
 	return g;
 }
+
+/* *
+glyphmetrics
+A glyph.
+
+	boxy vertices
+	boxy texcoords
+
+* */
+
+/* *
+boxy
+A boxy.
+
+	x1
+		left
+	y1
+		bottom
+	x2
+		right
+	y2
+		top
+
+* */
 
 /* *
 shader

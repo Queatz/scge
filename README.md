@@ -29,6 +29,8 @@ Install all the requirements:
 * openal 1.1  
 * enet (>=1.3.1)  
     * Need latest: http://enet.bespin.org/SourceDistro.html  
+* utf8-cpp (>=2.3.1)  
+    * Get here: http://utfcpp.sourceforge.net/  
 
 To compile and install, open terminal from this directory and run:
 

@@ -4,6 +4,11 @@ import numbers
 
 class Style:
 	_callback_ = None
+
+	# Refit property
+	# 0 = No bounds changed by this style
+	# 1 = Moves, but no resize
+	# 2 = Resizes and moves
 	refitting = 0
 	
 	def _addcallback_(self, c):
@@ -22,20 +27,12 @@ class Style:
 			for c in self._callback_:
 				c()
 
-class StyleDef:
-	def __init__(self, fit_callback, draw_callback):
-		
-		# Standard
-		o = Offset()
-		o.refitting = 1
-		s = Offset()
-		s.refitting = 2
-		self.offset = o
-		self.size = s
-		
-		# Mechanics
-		object.__setattr__(self, '_fit_callback', fit_callback)
-		object.__setattr__(self, '_draw_callback', draw_callback)
+class StyleSheet:
+	def __init__(self, interface = None):
+		object.__setattr__(self, 'inherit', StyleInherit())
+		if interface:
+			object.__setattr__(self, '_fit_callback', interface.redraw)
+			object.__setattr__(self, '_draw_callback', interface.redraw)
 	
 	def __getattribute__(self, a):
 		try:
@@ -44,7 +41,11 @@ class StyleDef:
 				return a.__get__(self)
 			return a
 		except AttributeError:
-			return None
+			i = object.__getattribute__(self, 'inherit').__get__()
+			if i:
+				return getattr(i, a)
+			else:
+				return None
 	
 	def __setattr__(self, a, v):
 		if getattr(self, a) is not None:
@@ -70,7 +71,7 @@ class StyleDef:
 			self._draw_callback()
 		if hasattr(v, '_callback_'):
 			v._discardcallback_(self._offset_ if v.refitting == 1 else self._sized_ if v.refitting == 2 else self._dirty_)
-	
+
 	def _dirty_(self):
 		if self._draw_callback:
 			self._draw_callback()
@@ -83,6 +84,21 @@ class StyleDef:
 		if self._fit_callback:
 			self._fit_callback()
 
+class StyleDef(StyleSheet):
+	"A single element's style."
+	def __init__(self, fit_callback, draw_callback):
+		StyleSheet.__init__(self)
+
+		object.__setattr__(self, '_fit_callback', fit_callback)
+		object.__setattr__(self, '_draw_callback', draw_callback)
+
+		# Standard
+		o = Offset()
+		o.refitting = 1
+		s = Offset()
+		s.refitting = 2
+		self.offset = o
+		self.size = s
 
 
 # # # COMMON # # #
@@ -167,91 +183,14 @@ class Offset(Style):
 			self.x = 0
 			self.y = 0
 
+class StyleInherit(Style):
+	refitting = 2
+	
+	def __init__(self, ss = None):
+		self._ss = ss
 
-class Size(Style):
-	def __init__(self, *a):
-		self.fromIter(a)
-	
-	def __repr__(self):
-		return str(tuple(self))
-	
-	def __iter__(self):
-		yield self.x
-		yield self.y
-	
-	def __len__(self):
-		return 2
-	
-	def __set__(self, obj, v):
-		if hasattr(v, '__iter__'):
-			self.fromIter(v)
-		else:
-			self.x = v
-			self.y = v
-	
-	def fromIter(self, i):
-		i = tuple(i)
-		if len(i) == 1:
-			self.x = i[0]
-			self.y = i[0]
-		elif len(i) == 2:
-			self.x = i[0]
-			self.y = i[1]
-		else:
-			self.x = 0
-			self.y = 0
+	def __set__(self, ss):
+		self._ss = ss
 
-class Margin(Style):
-	refitting = True
-	
-	def __init__(self, *a):
-		self.fromIter(a)
-	
-	def __repr__(self):
-		return str(tuple(self))
-	
-	def __iter__(self):
-		yield self.left
-		yield self.top
-		yield self.right
-		yield self.bottom
-	
-	def __len__(self):
-		return 4
-	
-	def __set__(self, obj, v):
-		if hasattr(v, '__getattr__'):
-			self.fromIter(v)
-		else:
-			self.left = v
-			self.top = v
-			self.right = v
-			self.bottom = v
-	
-	def fromIter(self, i):
-		i = tuple(i)
-		if len(i) == 1:
-			self.left = i[0]
-			self.top = i[0]
-			self.right = i[0]
-			self.bottom = i[0]
-		elif len(i) == 2:
-			self.left = i[0]
-			self.top = i[1]
-			self.right = i[0]
-			self.bottom = i[1]
-		elif len(i) == 3:
-			self.left = i[0]
-			self.top = i[1]
-			self.right = i[2]
-			self.bottom = i[1]
-		elif len(i) == 4:
-			self.left = i[0]
-			self.top = i[1]
-			self.right = i[2]
-			self.bottom = i[3]
-		else:
-			self.left = 0
-			self.top = 0
-			self.right = 0
-			self.bottom = 0
+	def __get__(self):
+		return self._ss

@@ -245,7 +245,7 @@ class Element:
 	focusable = False
 	imaginary = False
 	soliddraw = False
-	def __init__(self, i = None):
+	def __init__(self, i, args = ()):
 		# Mechanics
 		self.interface = i
 		self.parent = None
@@ -257,7 +257,7 @@ class Element:
 		# Standard
 		self.style = styleTypes.StyleDef(self._boundschanged, self.redraw)
 		
-		self.init()
+		self.init(*args)
 	
 	# Mechanics
 	
@@ -915,9 +915,9 @@ class Interface:
 	
 	# Game Functions
 	
-	def new(self, t):
+	def new(self, t, *args):
 		"Returns a new element of given type in this interface."
-		return t(self)
+		return t(self, args)
 	
 	def update(self):
 		"Update timeouts."

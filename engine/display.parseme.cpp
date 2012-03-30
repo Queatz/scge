@@ -979,8 +979,6 @@ blend_mode("mix");
 
 Python
 blend_mode('mix')
-
-see:blend_color
 * */
 void blend_mode(const char* a) {
 	display_set_blend_mode_from_string(a);

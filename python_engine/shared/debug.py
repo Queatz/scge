@@ -119,7 +119,8 @@ def _setup():
 	_program.uniform('tex', _white)
 	_img = _white
 	
-	_matrix = glm.mat4()
+	wd = scge.window_dimensions()
+	_matrix = glm.ortho(0, wd.x, 0, wd.y, -1, 1)
 	
 	_initstate = 1
 	

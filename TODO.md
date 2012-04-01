@@ -75,6 +75,7 @@ The current documentation is generated from the source, however it's just one bi
 	that's where extensions come in.  This 3D game kit should make it
 	dead simple to make a character walk around in a 3D world.
 	The goal is to handle these:
+
 		* Scene graph
 		* Camera
 		* Lights
@@ -146,8 +147,10 @@ EVENTUALLY
 *	aubio/pitch needs to be verified on windows.
 *	Joystick support
 
+SUPPORT FOR OLDER HARDWARE
+==================
 
-
+scge only works with OpenGL 3+ at the moment.  Support for OpenGL 2.1 with extensions should be considered.
 
 
 

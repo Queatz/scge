@@ -28,8 +28,8 @@ $_chapters = array();
 		<?php
 			wip();
 			
-			$c = new_chapter('Preperations');
-			section_from_file($c, 'preperations');
+			$c = new_chapter('Preparations');
+			section_from_file($c, 'preparations');
 			
 			$c = new_chapter('Hello World');
 			section_from_file($c, 'helloworld');

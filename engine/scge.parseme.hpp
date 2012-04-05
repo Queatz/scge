@@ -280,7 +280,7 @@ typedef void (* _focus_callback_function)(int);
 typedef void (* _iconify_callback_function)(int);
 typedef void (* _button_callback_function)(const char*, int);
 typedef void (* _mousemove_callback_function)(int, int);
-typedef void (* _scroll_callback_function)(int);
+typedef void (* _scroll_callback_function)(double);
 typedef void (* _key_callback_function)(const char*, int);
 typedef void (* _string_callback_function)(const char*);
 
@@ -355,7 +355,7 @@ glm::vec2 mouse_position();
 void mouse(const char* = "show");
 bool button(short);
 bool button(const char*);
-int wheel();
+float wheel();
 void move_mouse(int, int);
 
 bool key(const char*);

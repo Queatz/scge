@@ -1220,8 +1220,8 @@ int a = wheel();
 Python
 a = wheel()
 * */
-int wheel() {
-	int x, y;
+float wheel() {
+	double x, y;
 	glfwGetScrollOffset(glfw_window, &x, &y);
 	return y;
 }

@@ -70,7 +70,7 @@ void _key_callback_wrap(GLFWwindow w, int x, int y) {
 		PyErr_Print();
 }
 
-void _scroll_callback_wrap(GLFWwindow w, int x, int y) {
+void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 	PyObject* args;
 	args = Py_BuildValue("(i)", y);
 	PyEval_CallObject(_scroll_callback, args);

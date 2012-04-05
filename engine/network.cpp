@@ -1,15 +1,5 @@
 bool connected = false;
-/* * Network
-connection()
-#Automatic.  Call it maybe for debugging but you don't have to.
-Enable networking.  Returns true if it succeeded in doing so.
 
-C++
-connection();
-
-Python
-connection()
-* */
 bool connection() {
 	if(enet_initialize() >= 0) {
 		atexit(connection_off);
@@ -19,17 +9,6 @@ bool connection() {
 	return false;
 }
 
-/* *
-connection_off()
-#Automatic.  Only call if you want to completely shutdown networking during runtime.
-Disable networking.
-
-C++
-connection_off();
-
-Python
-connection_off()
-* */
 void connection_off() {
 	if(connected) {
 		enet_deinitialize();
@@ -37,17 +16,6 @@ void connection_off() {
 	}
 }
 
-/* * Network Types
-peer
-A connected peer.
-	id int
-		an integer assigned to this peer
-	state()
-		"connecting"
-		"connected"
-		"disconnecting"
-		"disconnected"
-* */
 const char* peer::state() {
 	if(!who)
 		return "disconnected";
@@ -71,31 +39,6 @@ const char* peer::state() {
 	}
 }
 
-/* * Network Types
-event
-A network event.
-	channel()
-		get the channel
-	type()
-		get the type of the event
-		'connect'
-		'disconnect'
-		'receive'
-		'none'
-	data()
-		get the data, if any
-	who()
-		who made this event as a peer
-	resolve()
-		optionally call this after done inspecting the event
-		it will delete the peer and clear any packet
-
-C++
-event a;
-
-Python
-a = event()
-* */
 int peercount = 0;
 
 int event::channel() {
@@ -142,35 +85,6 @@ void event::resolve() {
 	}
 }
 
-/* * Network Types
-host
-A networkable host.
-	service(int = 0)
-		returns events from peers, optionally waiting some milliseconds
-	commune()
-		send all the queued messages
-		#no need to call this if you service() regularly
-	connect(string = "localhost", int = 2000, int = 1)
-		connect to a server, on a port, with max channels of and return a new peer
-	disconnect(peer, unsigned int = 0)
-		disconnect from a peer, optionally with some unusable data
-	send(peer, string = "", int = 0, bool reliable = true, bool sequenced = true)
-		queue a message for a peer on a channel
-	broadcast(string = "", int = 0, bool reliable = true, bool sequenced = true)
-		queue a message to all connected peers on a channel
-
-C++
-host client();
-client.connect();
-
-host server(2000, 32, 1, 128, 256); //server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit
-
-Python
-client = host()
-client.connect()
-
-server = host(2000, 32, 1, 128, 256) #server on port 2000, max 32 connected clients, 1 channel, 128 downstream limit, and 256 upstream limit
-* */
 host::host(int a, int b, int c, int d, int e) {
 	if(!connected)
 		connection();

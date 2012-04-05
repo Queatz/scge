@@ -142,20 +142,6 @@ const char* int_to_key_name(int a) {
 	return "unknown";
 }
 
-/* * General Functions
-graphics()
-Initiate the context.  Returns true if it could happen, otherwise false.
-#Automatic. No need to call it.
-
-C++
-graphics();
-
-Python
-graphics()
-
-see:window, key, button
-* */
-
 bool graphics() {
 	glfwSetErrorCallback(glfw_error);
 	
@@ -170,23 +156,10 @@ bool graphics() {
 	return true;
 }
 
-/* *
-graphics_off()
-#Automatic.  No need to call this unless you want to shutdown graphics during runtime.
-Ends graphic abilities.
-
-C++
-graphics_off();
-
-Python
-graphics_off()
-* */
 void graphics_off() {
 	FreeImage_DeInitialise();
 	glfwTerminate();
 }
-
-
 
 FREE_IMAGE_FORMAT fif_from_string(const char* a = NULL, const char* b = NULL) {
 	if(b) {
@@ -220,37 +193,10 @@ int default_from_fif(FREE_IMAGE_FORMAT a) {
 		return 0;
 }
 
-/* *
-key_repeat(bool)
-Sets whether or not to repeat key presses.  Normally they do not.
-
-C++
-key_repeat();
-
-Python
-key_repeat()
-* */
 void key_repeat(bool a) {
 	glfwSetInputMode(glfw_window, GLFW_KEY_REPEAT, a ? GL_TRUE : GL_FALSE);
 }
 
-/* *
-window(string "title", int w, int h, bool fullscreen = false, bool resizable = False, int fsaa = 0)
-Open a window, optionally fullscreen. Returns true if the window was able to be opened, else false.
-#window sets up a default matrix with 0, 0 in the bottom-left.  If you want a different one you can call reset_matrix first.
-
-C++
-window("Window", 320, 240);
-
-window("Window", 320, 240, true); //fullscreen
-
-Python
-window('Window', 320, 240)
-
-window('Window', 320, 240, True) #fullscreen
-
-see:swap, poll
-* */
 bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, int fsaa) {
 	if(glfw_state == 0)
 		graphics();
@@ -312,80 +258,27 @@ bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, i
 	return true;
 }
 
-/* *
-close_window()
-Close the window.
-
-C++
-close_window();
-
-Python
-close_window()
-
-see:window
-* */
 void close_window() {
 	glfwCloseWindow(glfw_window);
 	glfw_state = 1;
 }
 
-/* *
-window_title(string)
-Set the title of the window.
-
-C++
-window_title("Hello World");
-
-Python
-window_title('Hello World')
-* */
 void window_title(const char* a) {
 	glfwSetWindowTitle(glfw_window, a);
 }
 
-/* *
-window_opened()
-Returns true if the window is still open.
-
-C++
-bool a = window_opened();
-
-Python
-a = window_opened()
-* */
 bool window_opened() {
 	if(glfwIsWindow(glfw_window))
 		return true;
 	return false;
 }
 
-/* *
-window_active()
-Returns true if the window has focus.
-
-C++
-bool a = window_active();
-
-Python
-a = window_active()
-* */
 bool window_active() {
 	if(glfwGetWindowParam(glfw_window, GLFW_ACTIVE))
 		return true;
 	return false;
 }
 
-/* *
-display_modes()
-!- return type to be changed -
-Returns a space-seperated string of possible video modes for the display, in the format: WxH.
-
-C++
-std::string s = display_modes();
-
-Python
-s = display_modes()
-* */
 std::string display_modes() {
 	if(glfw_state == 0)
 		graphics();
@@ -406,16 +299,6 @@ std::string display_modes() {
 	return l;
 }
 
-/* *
-display_dimensions()
-Returns an ivec2 filled out with the resolution of the display.
-
-C++
-glm::ivec2 a = display_dimensions();
-
-Python
-a = display_dimensions()
-* */
 glm::ivec2 display_dimensions() {
 	if(glfw_state == 0)
 		graphics();
@@ -426,16 +309,6 @@ glm::ivec2 display_dimensions() {
 	return glm::ivec2(a.width, a.height);
 }
 
-/* *
-window_dimensions()
-Returns an ivec2 filled out with the resolution of the window.
-
-C++
-glm::ivec2 a = window_dimensions();
-
-Python
-a = window_dimensions()
-* */
 glm::ivec2 window_dimensions() {
 	int w, h;
 	glfwGetWindowSize(glfw_window, &w, &h);
@@ -443,108 +316,32 @@ glm::ivec2 window_dimensions() {
 	return glm::ivec2(w, h);
 }
 
-/* *
-window_size()
-Set the size of the window.
-
-C++
-window_size(640, 480);
-
-Python
-window_size(640, 480)
-* */
 void window_size(int w, int h) {
 	glfwSetWindowSize(glfw_window, w, h);
 }
 
-/* *
-position_window(int x, int y)
-Move the window around.
-
-C++
-position_window(12, 12);
-
-Python
-position_window(12, 12)
-* */
 void position_window(int x, int y) {
 	glfwSetWindowPos(glfw_window, x, y);
 }
 
-/* *
-window_position()
-Get the position of the window as an ivec2.
-
-C++
-glm::ivec2 a = window_position();
-
-Python
-a = window_position()
-* */
 glm::ivec2 window_position() {
 	glm::ivec2 w;
 	glfwGetWindowPos(glfw_window, &w.x, &w.y);
 	return w;
 }
 
-/* *
-vsync(bool)
-Sync the display refresh to the monitor refresh rate, which is usually around 60, or not.
-
-C++
-vsync(false); //framerate unlimited
-vsync(); //framerate 60
-
-Python
-vsync(False) #framerate unlimited
-vsync(); #framerate 60
-* */
 void vsync(bool a) {	
 	glfwSwapInterval(a ? 1 : 0);
 }
 
-/* *
-swap()
-Show all the drawn things on the screen.
-
-C++
-swap();
-
-Python
-swap()
-
-see:poll
-* */
 void swap() {
 	glfwSwapBuffers();
 }
 
-/* *
-poll()
-Update the state of the keyboard, mouse, and window.
-
-C++
-poll();
-
-Python
-poll()
-
-see:swap
-* */
 void poll() {
 	glfwPollEvents();
 }
 
-/* *
-screenshot(string, type)
-Save a screenshot.
-
-C++
-screenshot("outcome.png");
-
-Python
-screenshot('outcome.png')
-* */
 bool screenshot(const char* a, const char* b) {
 	int w, h;
 	glfwGetWindowSize(glfw_window, &w, &h);
@@ -561,33 +358,10 @@ bool screenshot(const char* a, const char* b) {
 
 }
 
-/* *
-viewport(int x, int y, int w, int h)
-Set the screen viewport size.
-
-C++
-viewport(0, 0, 320, 240);
-
-Python
-viewport(0, 0, 320, 240)
-* */
 void viewport(int x, int y, int w, int h) {
 	glViewport(x, y, w, h);
 }
 
-/* *
-polygon_mode(string)
-Set the draw type of polygons; either
-"dot",
-"outline", or
-"fill", the default.
-
-C++
-polygon_mode("outline");
-
-Python
-polygon_mode('outline')
-* */
 void polygon_mode(const char* a) {
 	int c = -1;
 	
@@ -604,32 +378,6 @@ void polygon_mode(const char* a) {
 		err("polygon_mode", "invalid option");
 }
 
-/* *
-enable(string, bool = true)
-Enable or disable different things:
-"scissor" - scissor testing
-"polygon smooth" - draw polygons smoothly
-"line smooth" - draw lines smoothly
-"blend" - blending, such as with alpha
-"depth" - depth testing
-"cull" - cull
-"stencil" - stencil testing
-"polygon depth offset" - offsetting the depth values of polygons
-"line depth offset" - offsetting the depth values of lines
-"point depth offset" - offsetting the depth values of points
-"program point size" - determine point size from programs
-"multisample" - multisample
-
-C++
-enable("scissor");
-
-enable("scissor", false);
-
-Python
-enable('scissor')
-
-enable('scissor', False)
-* */
 void enable(const char* a, bool b) {
 	GLint c = -1;
 	
@@ -666,20 +414,6 @@ void enable(const char* a, bool b) {
 		err("enable", "invalid option");
 }
 
-/* *
-cull(string)
-Set the faces to cull:
-"back" - cull faces that face away
-"front" - cull faces that face the camera
-"all" - cull all faces
-
-C++
-cull("back");
-
-Python
-cull('back')
-
-* */
 void cull(const char* a) {
 	GLint c = -1;
 	
@@ -696,50 +430,14 @@ void cull(const char* a) {
 		err("cull", "invalid option");
 }
 
-/* *
-clear_color(float, float, float, float = 1.0)
-Set the color used by clear().
-
-C++
-clear_color(0.0, 0.0, 0.0);
-
-Python
-clear_color(0, 0, 0)
-
-see: clear
-* */
 void clear_color(float a, float b, float c, float d) {
 	glClearColor(a, b, c, d);
 }
 
-/* *
-clear()
-Clear the window.
-
-C++
-clear();
-
-Python
-clear()
-
-see: clear_color
-* */
 void clear() {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-/* *
-depth_clear()
-Clear the depth buffer.
-
-C++
-depth_clear();
-
-Python
-depth_clear()
-
-see: enable
-* */
 void depth_clear() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
@@ -765,96 +463,26 @@ GLenum comparison_string_to_gl(const char* a) {
 	return 0;
 }
 
-/* *
-depth_test(const char* = "<")
-How to compare depth values to decide if the fragment should be discarded.
-
-C++
-depth_test();
-
-Python
-depth_test()
-
-see: enable
-* */
 void depth_test(const char* a) {
 	glDepthFunc(comparison_string_to_gl(a));
 }
 
-/* *
-depth_op(bool)
-Disable or enable writing to the depth buffer.
-
-C++
-depth_op(false);
-
-Python
-depth_op(False) 
-* */
 void depth_op(bool a) {
 	glDepthMask(a ? GL_TRUE : GL_FALSE);
 }
 
-/* *
-point_size(float)
-Set the size of points are to be drawn with.
-
-C++
-point_size(2.0);
-
-Python
-point_size(2)
-
-see:point
-* */
 void  point_size(float a) {
 	glPointSize(a);
 }
 
-/* *
-line_width(float)
-Set the width lines ought to be drawn with.
-
-C++
-line_width(0.5);
-
-Python
-line_width(.5)
-
-see:line
-* */
 void  line_width(float a) {
 	glLineWidth(a);
 }
 
-/* *
-polygon_depth_offset(float = 0.0, float = 0.0)
-Set a offset in the depth buffer to be used for polygons.
-
-C++
-polygon_depth_offset();
-
-Python
-polygon_depth_offset()
-
-see: depth_test
-* */
 void polygon_depth_offset(float a, float b) {
 	glPolygonOffset(a, b);
 }
 
-/* *
-color_mask(bool r, bool g, bool b, bool a)
-Disable or enable colors.
-
-C++
-color_mask(false); // Disable color rendering
-
-Python
-color_mask(False) # Disable color rendering
-
-see:blend_mode
-* */
 void color_mask(bool r, bool g, bool b, bool a) {
 	glColorMask(r, g, b, a);
 }
@@ -871,16 +499,6 @@ void use_fbo() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-/* *
-use_vbo(vbo)
-Use a vbo.
-
-C++
-use_vbo(); //use no vbo
-
-Python
-use_vbo() #use no vbo
-* */
 void use_vbo(vbo* a) {
 	glBindBuffer(GL_ARRAY_BUFFER, a->id);
 }
@@ -889,16 +507,6 @@ void use_vbo() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-/* *
-use_vao(vao)
-Use a vao.
-
-C++
-use_vao(); //use no vao
-
-Python
-use_vao() #use no vao
-* */
 void use_vao(vao* a) {
 	glBindVertexArray(a->id);
 }
@@ -907,16 +515,6 @@ void use_vao() {
 	glBindVertexArray(0);
 }
 
-/* *
-use_ibo(ibo)
-Use an ibo.
-
-C++
-use_ibo(); //use no ibo
-
-Python
-use_ibo() #use no ibo
-* */
 void use_ibo(ibo* a) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, a->id);
 }
@@ -925,16 +523,6 @@ void use_ibo() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-/* *
-scissor(int, int, int, int)
-Crop drawing to a portion of the window, or not.
-
-C++
-scissor(0, 0, 10, 10);
-
-Python
-scissor(0, 0, 10, 10)
-* */
 void scissor(int a, int b, int c, int d) {
 	glScissor(a, b, c, d);
 }
@@ -964,37 +552,10 @@ void display_set_blend_mode_from_string(const char* a) {
 	}
 }
 
-/* *
-blend_mode(string)
-Set how you want to blend the images onto the window.
-"color" - color blending without alpha
-"mix" - normal alpha blending
-"multipy" - multiplicative blending
-"add" - additive blending
-"subtract" - subtractive blending
-"saturate"
-
-C++
-blend_mode("mix");
-
-Python
-blend_mode('mix')
-* */
 void blend_mode(const char* a) {
 	display_set_blend_mode_from_string(a);
 }
 
-/* *
-use_program(program)
-Draw using a program, or not.
-When using a program, color and texturing and some other factors do not apply as they are definable in the shader.
-
-C++
-use_program(); //use no program
-
-Python
-use_program() #use no program
-* */
 void use_program(program* a) {
 	glUseProgram(a->id);
 }
@@ -1023,20 +584,6 @@ GLenum primitive_from_string(const char* a) {
 		return 0;
 }
 
-/* *
-pixel(int x, int y, string = "")
-Returns a vec4 containing the pixel information on the screen or as specified by the string.
-"depth"
-"stencil"
-"color"
-
-C++
-glm::vec4 a();
-a = pixel(0, 0);
-
-Python
-a = pixel(0, 0)
-* */
 glm::vec4 pixel(int x, int y, const char* f) {
 	int w, h;
 	glfwGetWindowSize(glfw_window, &w, &h);
@@ -1057,59 +604,15 @@ glm::vec4 pixel(int x, int y, const char* f) {
 	return glm::vec4(c[0], c[1], c[2], 1.0);
 }
 
-/* *
-stencil_clear(int)
-Clears the stencil buffer.
-
-C++
-stencil_clear();
-
-Python
-stencil_clear()
-* */
 void stencil_clear(int a) {
 	glClearStencil(a);
 	glClear(GL_STENCIL_BUFFER_BIT);
 }
 
-/* *
-stencil_test(string = "==", int = 1)
-How to test if the stencil test passes or fails in relation to the reference value.
-"=="
-"!="
-"<"
-">"
-"<="
-">="
-"always"
-"never"
-
-C++
-stencil_test();
-
-Python
-stencil_test()
-* */
-
 void stencil_test(const char* a, int b) {
 	glStencilFunc(comparison_string_to_gl(a), b, 1);
 }
 
-/* *
-stencil_op(string = "keep")
-How to change the stencil buffer during draw operations.
-"keep"
-"zero"
-"replace"
-"increment"
-"decrement"
-
-C++
-stencil_op();
-
-Python
-stencil_op()
-* */
 void stencil_op(const char* a) {
 	GLenum f;
 	if(!strcmp(a, "keep"))
@@ -1126,19 +629,6 @@ void stencil_op(const char* a) {
 	glStencilOp(f, f, f);
 }
 
-/* *
-mouse_position(bool topdown = false)
-Returns a vec2 with the mouse position.
-
-C++
-glm::vec2 a();
-a = mouse_position();
-
-Python
-a = mouse_position()
-
-see:move_mouse
-* */
 glm::vec2 mouse_position() {
 	int w, h;
 	glfwGetWindowSize(glfw_window, &w, &h);
@@ -1150,19 +640,6 @@ glm::vec2 mouse_position() {
 	return r;
 }
 
-/* *
-mouse(string = "show")
-Set the state of the mouse.
-"show"
-"hide"
-"capture"
-
-C++
-mouse("hide"); //hide the pointer
-
-Python
-mouse('hide') #hide the pointer
-* */
 void mouse(const char* a) {
 	if(!strcmp(a, "show"))
 		glfwSetInputMode(glfw_window, GLFW_CURSOR_MODE, GLFW_CURSOR_NORMAL);
@@ -1185,20 +662,6 @@ int mouse_button_string_to_int(const char* a) {
 	return -1;
 }
 
-/* *
-button(string); button(short)
-Check if a mouse button is pressed.
-1-8
-"left"
-"middle"
-"right"
-
-C++
-button("left");
-
-Python
-button('left')
-* */
 bool button(const char* a) {
 	return button(mouse_button_string_to_int(a));
 }
@@ -1210,32 +673,12 @@ bool button(short a) {
 	return glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_1 + a - 1) == GLFW_PRESS;
 }
 
-/* *
-wheel()
-Get the wheel offset.
-
-C++
-int a = wheel();
-
-Python
-a = wheel()
-* */
 float wheel() {
 	double x, y;
 	glfwGetScrollOffset(glfw_window, &x, &y);
 	return y;
 }
 
-/* *
-move_mouse(int x, int y, bool topdown = false)
-Move the mouse to some position.
-
-C++
-move_mouse(160, 120);
-
-Python
-move_mouse(160, 120)
-* */
 void move_mouse(int a, int b) {
 	int w, h;
 	glfwGetWindowSize(glfw_window, &w, &h);
@@ -1355,16 +798,6 @@ int keyboard_key_string_to_int(const char* a) {
 	return -1;
 }
 
-/* *
-key(string)
-Check if a key is pressed.
-
-C++
-bool a = key("left shift");
-
-Python
-a = key('left shift')
-* */
 bool key(const char* a) {
 	if(!strcmp(a, "shift")) {
 		if(glfwGetKey(glfw_window, keyboard_key_string_to_int("left shift")) || glfwGetKey(glfw_window, keyboard_key_string_to_int("right shift")))
@@ -1392,51 +825,12 @@ bool key(const char* a) {
 	return false;
 }
 
-/* *
-key_state(string)
-Check if a key is locked.
-!Needs a patched GLFW.  Don't use this yet.
-
-C++
-bool a = key_state("caps lock");
-
-Python
-a = key_state('caps lock')
-* */
 bool key_state(const char* a) {
 	//if(glfwGetKeyState(glfw_window, keyboard_key_string_to_int(a)))
 	//	return true;
 	return false;
 }
 
-/* * Resources
-pixelcache
-A cache of pixels.
-
-	width int
-		the width of the cache
-	height int
-		the height of the cache
-	pixel(int x, int y)
-		get a pixel as a vec4
-	set_pixel(int, int, vec4)
-		set a pixel in the cache
-	save(string filename, [string type])
-	data GLubyte
-		the cache data
-
-C++
-pixelcache a(24, 24);
-
-pixelcache b(a); //copy a
-
-Python
-a = pixelcache(24, 24)
-
-b = pixelcache(a) #copy a
-
-see:image.cache
-* */
 pixelcache::pixelcache(const char* a) {
 	FIBITMAP* bm = FreeImage_Load(fif_from_string(a), a, 0);
 	
@@ -1541,60 +935,6 @@ bool pixelcache::save(const char* a, const char* b) {
 	FreeImage_Unload(c);
 }
 
-/* *
-image
-An image.
-
-	width float
-		the width of the image
-	height float
-		the height of the image
-	cache pixelcache
-		the image's cache
-	set(string)
-		set options on the image:
-		"linear" - draw the image smoothly
-		"nearest" - draw the image pixelated
-		"mirrored repeat" - repeat the image coordinates, mirrored
-		"repeat" - repeat the image coordinates
-		"clamp to edge" - clamp min/max texel
-	from_pixelcache()
-		restore the image to it's cached state
-	from_pixelcache(pixelcache)
-		overwrites pixels with data from a pixelcache
-	from_pixelcache(int x, int y, int w, int h)
-		restore a portion of the image to it's cached state
-	from_pixelcache(pixelcache, int x, int y, int w, int h)
-		overwrites a portion of pixels with data from a pixelcache
-	refresh_pixel_cache()
-		caches the image's current state
-	discard_pixel_cache()
-		discards the image's pixelcache
-	pixel(int x, int y)
-		returns a vec4 containing the pixel color of x and y
-	save(string name, string format)
-		save the images pixelcache to disk.  If format is omitted it is guessed from the filename.
-		"png"
-		"jpg"
-		"bmp"
-
-C++
-image a("tux.png");
-a.set("linear");
-glm::vec4 b();
-b = a.pixel(0, 0);
-
-image c(64, 64, true, false); //creates a blank image sized 64 by 64, with alpha and not high quality
-
-Python
-a = image('tux.png')
-a.set('linear')
-b = a.pixel(0, 0)
-
-c = image(64, 64, True, False); #creates a blank image sized 64 by 64, with alpha and not high quality
-
-see:use_image
-* */
 image::image(const char* a, bool m) {
 	if(glfw_state == 0)
 		graphics();
@@ -1901,16 +1241,6 @@ bool image::save(const char* a, const char* b) {
 	return cache->save(a, b);
 }
 
-/* *
-fontface
-A font face.
-
-C++
-fontface f("sans.ttf");
-
-Python
-f = fontface('sans.ttf')
-* */
 fontface::fontface(const char* a) {
 	if(font_library == NULL)
 		setup_font();
@@ -1929,16 +1259,6 @@ void font_face(fontface* f) {
 	font_library->setFace(f->data);
 }
 
-/* *
-font_size(int)
-Set the font size.
-
-C++
-font_size(12);
-
-Python
-font_size(12)
-* */
 void font_size(unsigned int s) {
 	if(font_library == NULL)
 		setup_font();
@@ -1946,16 +1266,6 @@ void font_size(unsigned int s) {
 	font_library->setSize(s);
 }
 
-/* *
-line_height()
-Get the line height.
-
-C++
-float a = line_height();
-
-Python
-a = line_height()
-* */
 float line_height() {
 	if(font_library == NULL)
 		setup_font();
@@ -1963,16 +1273,6 @@ float line_height() {
 	return font_library->height();
 }
 
-/* *
-ascent()
-Get the ascent.
-
-C++
-float a = ascent();
-
-Python
-a = ascent()
-* */
 float ascent() {
 	if(font_library == NULL)
 		setup_font();
@@ -1980,16 +1280,6 @@ float ascent() {
 	return font_library->ascender();
 }
 
-/* *
-descent()
-Get the descent.
-
-C++
-float a = descent();
-
-Python
-a = descent()
-* */
 float descent() {
 	if(font_library == NULL)
 		setup_font();
@@ -1997,16 +1287,6 @@ float descent() {
 	return font_library->descender();
 }
 
-/* *
-advance(char, char)
-Get the advance of a glyph, kerned with the previous.
-
-C++
-float a = advance('a', 'b');
-
-Python
-a = advance('a', 'b')
-* */
 float advance(const char* a, const char* b) {
 	if(font_library == NULL)
 		setup_font();
@@ -2014,16 +1294,6 @@ float advance(const char* a, const char* b) {
 	return font_library->advance(utf8::unchecked::next(a), utf8::unchecked::next(b));
 }
 
-/* *
-glyph(int)
-Get a glyph.
-
-C++
-glyphmetrics a = glyph('a');
-
-Python
-a = glyph('a')
-* */
 glyphmetrics glyph(const char* a) {
 	if(font_library == NULL)
 		setup_font();
@@ -2043,44 +1313,6 @@ glyphmetrics glyph(const char* a) {
 	return g;
 }
 
-/* *
-glyphmetrics
-A glyph.
-
-	boxy vertices
-	boxy texcoords
-
-* */
-
-/* *
-boxy
-A boxy.
-
-	x1
-		left
-	y1
-		bottom
-	x2
-		right
-	y2
-		top
-
-* */
-
-/* *
-shader
-A shader object.
-
-C++
-shader a("fragment", "burgundy.frag", true); //create a fragment shader from a file
-
-shader b("vertex", "jitter.vert", true);
-
-Python
-a = shader('fragment', 'burgundy.frag', True) #create a fragment shader from a file
-
-b = shader('vertex', 'jitter.vert', True)
-* */
 shader::shader(const char* a, const char* b, bool isfile) {
 	if(glfw_state < 2) {
 		id = 0;
@@ -2135,29 +1367,6 @@ shader::~shader() {
 		glDeleteShader(id);
 }
 
-/* *
-program
-A program that processes draw operations.
-
-	attach(shader)
-		attaches a shader to this program
-	link()
-		links and completes the program, making it ready for use
-	uniform(string, int|float|vec|mat|image)
-		set a uniform on the program
-	bind_font(string, int)
-		set a uniform for the font texture
-	attribute(string, int)
-		set a name for an attribute
-
-C++
-program a();
-
-Python
-a = program()
-
-see: use_program
-* */
 program::program() {
 	if(glfw_state < 2) {
 		id = 0;
@@ -2228,22 +1437,6 @@ void program::link() {
 		glLinkProgram(id);
 }
 
-/* *
-fbo
-A frame buffer object.
-
-C++
-fbo a(320, 240);
-
-fbo b(320, 240, true, true, true); //with alpha, high quality, and with depth and stencil testing
-
-Python
-a = fbo(320, 240)
-
-b = fbo(320, 240, True, True, True) #with alpha, high quality, and with depth and stencil testing
-
-see: use_fbo
-* */
 fbo::fbo(image* a) {
 	if(glfw_state == 0)
 		graphics();
@@ -2308,20 +1501,6 @@ fbo::~fbo() {
 	glDeleteFramebuffers(1, &id);
 }
 
-/* *
-vbo
-A buffer on the graphics.
-	data(ptr, offset, size)
-	data(vbo, offset, copy_offset, size = -1)
-	data(bytes(), offset)
-
-C++
-vbo a(256, "static draw");
-
-Python
-a = vbo(256, 'static draw')
-b = vbo(bytes(1024))
-* */
 GLenum buffer_usage_from_string(const char* t) {
 	if(!strcmp(t, "static draw"))
 		return GL_STATIC_DRAW;
@@ -2434,43 +1613,10 @@ vbo::~vbo() {
 	glDeleteBuffers(1, &id);
 }
 
-/* *
-draw(what, count, first = 0)
-Draws from the currently bound vao.
-
-what is one of:
-"triangle"
-"triangle strip"
-"triangle fan"
-"line"
-"line strip"
-"line loop"
-"point"
-* */
 void draw(const char* a, unsigned int count, unsigned int first) {
 	glDrawArrays(primitive_from_string(a), first, count);
 }
 
-/* *
-ibo
-An index buffer.
-	data(ptr, offset, size)
-	data(vbo, offset, copy_offset, size = -1)
-	data(bytes(), offset)
-	draw(string, first, count)
-		"triangle"
-		"triangle strip"
-		"triangle fan"
-		"line"
-		"line strip"
-		"line loop"
-		"point"
-C++
-ibo a(256, "static draw");
-
-Python
-a = ibo(256, 'static draw')
-* */
 ibo::ibo(int l, const char* s, const char* t) {
 	GLint last;
 	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last);
@@ -2544,37 +1690,6 @@ void ibo::draw(const char* a, unsigned int count, unsigned int first) {
 	glDrawElements(primitive_from_string(a), (GLsizei)count, storage, reinterpret_cast<const GLvoid*>(first));
 }
 
-/* *
-vao
-A vao.
-	.attribute(int, vbo*, string type, int size, int offset, int stride, bool normalized, bool integers)
-		size is the number of components per attribute.
-		normalized specifies whether values should be normalized.
-		
-		stride is the byte offset between adjacent attributes.
-		offset is the offset to the first attribute.
-		integers specifies if the data is read as integers or not.
-		
-		type can be one of:
-		"float"
-		"byte"
-		"unsigned byte"
-		"short"
-		"unsigned short"
-		"int"
-		"unsigned int"
-		"double"
-	.enable(int, bool = true)
-		enables an attribute
-	.divisor(int[, step])
-		sets the number of instances the attribute advances over.
-
-C++
-vao a();
-
-Python
-a = vao()
-* */
 vao::vao() {
 	GLint last;
 	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last);

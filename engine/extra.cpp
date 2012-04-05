@@ -203,22 +203,6 @@ float mix_corners(float a, float b, float c, float d, float x, float y) {
 	return a * (1.0-x) * (1.0-y) + b * (1.0-x) * y + c * x * y + d * x * (1.0-y);
 }
 
-/* * Extra
-noise
-!- the 'scale' element is to be removed -
-A noise generator.
-"simple"
-"net"
-
-sample(x, y)
-	sample the noise at this position
-
-C++
-noise a("simple", 112, 64.0); //set seed to 112 and scale to 64
-
-Python
-a = noise('simple', 112, 64) #set seed to 112 and scale to 64
-* */
 noise::noise(const char* t, float u, float s) : seed(u), scale(s) {
 	if(!strcmp(t, "simple"))
 		type = 1;

@@ -8,18 +8,6 @@ unsigned int capture_samples_length = 0;
 ALshort* capture_samples = NULL;
 soundbyte capture_soundbyte;
 
-/* * Audio Functions
-audio()
-#Automatic.  You don't need to call it.
-Turn on audio dealings and returns true if it could.
-
-C++
-audio();
-
-Python
-audio()
-* */
-
 #ifndef _WIN32
 FLUIDSYNTH_API void dumberror(int level, char *message, void *data) {
 	;
@@ -48,17 +36,6 @@ bool audio() {
 	return true;
 }
 
-/* *
-audio_off()
-#Automatic.  You don't have to call it unless you want to shutdown audio.
-Turn off audio dealings.
-
-C++
-audio_off();
-
-Python
-audio_off()
-* */
 void buffer_loaded(ALuint a) {
 	loaded_buffers.push_back(a);
 }
@@ -103,44 +80,14 @@ void audio_off() {
 	alureShutdownDevice();
 }
 
-/* *
-audio_gain(float)
-Set the overall volume of sound.
-
-C++
-audio_gain(1.0);
-
-Python
-audio_gain(1)
-* */
 void audio_gain(float a) {
 	alListenerf(AL_GAIN, a);
 }
 
-/* *
-audio_pan(float)
-Set the overall pan of sound.
-
-C++
-audio_pan();
-
-Python
-audio_pan()
-* */
 void audio_pan(float a) {
 	alListener3f(AL_POSITION, -a, 0.0, 0.0);
 }
 
-/* *
-audio_soundfont(string)
-Set the soundfont to be used for midi streams.
-
-C++
-audio_soundfont();
-
-Python
-audio_soundfont()
-* */
 void audio_soundfont(const char* a) {
 #ifndef _WIN32
 	setenv("FLUID_SOUNDFONT", a, 1);
@@ -178,17 +125,6 @@ const char * alcErrorString(ALenum code) {
 #define CAPTURE_FREQ 44100
 #define CAPTURE_BUF_SIZE 22050
 
-
-/* * Microphone
-microphone_on()
-Turn on microphone capturing.
-
-C++
-microphone_on();
-
-Python
-microphone_on()
-* */
 void microphone_on() {
 	if(alure_state == 0)
 		audio();
@@ -212,16 +148,6 @@ void microphone_on() {
 	alcCaptureStart(capture_device);
 }
 
-/* *
-microphone_off()
-Turn off microphone capturing.
-
-C++
-microphone_off();
-
-Python
-microphone_off()
-* */
 void microphone_off() {
 	if(!capture_device)
 		return;
@@ -232,16 +158,6 @@ void microphone_off() {
 	capture_device = NULL;
 }
 
-/* *
-microphone_update()
-Refresh the microphone soundbyte with the latest captured samples.
-
-C++
-microphone_update();
-
-Python
-microphone_update()
-* */
 void microphone_update() {
 	if(!capture_device)
 		return;
@@ -268,16 +184,6 @@ void microphone_update() {
 	alcCaptureSamples(capture_device, capture_samples, samps);
 }
 
-/* *
-microphone_buffer()
-Get the soundbyte associated with the microphone.
-
-C++
-microphone_buffer();
-
-Python
-microphone_buffer()
-* */
 soundbyte* microphone_buffer() {
 	capture_soundbyte.data = capture_samples;
 	capture_soundbyte.length = capture_samples_length;
@@ -285,25 +191,6 @@ soundbyte* microphone_buffer() {
 	return &capture_soundbyte;
 }
 
-/* * Resources
-soundbyte
-Bytes of sound.
-
-	get(sample)
-		Get a sample as a float
-	calculate_pitch(max_samples = 0, resolution = 8, method = "schmitt")
-		tries to find a pitch in this soundbyte and returns the frequency
-		"mcomb"
-		"fcomb"
-		"schmitt"
-		"yin"
-		"yinfft"
-C++
-soundbyte a();
-
-Python
-a = soundbyte()
-* */
 soundbyte::soundbyte() : data(NULL), length(0) {
 }
 
@@ -364,25 +251,6 @@ float soundbyte::get(unsigned int i) {
 	return (float) data[i] / 32768;
 }
 
-/* *
-buffer
-A sound buffer.
-	data(bytes data, string, unsigned int bytes, unsigned int frequency)
-		set the data of the buffer, as a certain type, with a length in bytes, and a frequency
-		"mono 8"
-		"mono 16"
-		"stereo 8"
-		"stereo 16"
-		!the buffer must not be in use when changing the data
-C++
-buffer a("powerup.ogg");
-
-Python
-a = buffer('powerup.ogg')
-
-see:sound
-* */
-
 buffer::buffer() {
 	alGenBuffers(1, &buf);
 	buffer_loaded(buf);
@@ -434,67 +302,6 @@ void buffer::data(const void* bufdata, const char* fmt, unsigned int bytes, unsi
 	
 	alBufferData(buf, al_format_from_string(fmt), bufdata, bytes, freq);
 }
-
-/* *
-sound
-A sound.
-
-	play(sound, unsigned int repeats = 0, bool wait = false, bool dont = false)
-		play the sound, optionally waiting until it's finished, or just don't play it if it's already playing
-	stop()
-		stop it
-	pause()
-		pause the sound
-	resume()
-		resume the sound
-	gain(float)
-		set the gain of the sound
-	maximum_gain(float)
-		set the maximum gain allowed for the sound
-	minimum_gain(float)
-		set the minimum gain allowed for the sound
-	pitch(float)
-		set the pitch of the sound
-	pan(float)
-		set the pan of the sound
-	repeat(bool)
-		turn on and off repeating of the sound
-	seek(float = NULL, string specifier = "")
-		set the offset at which to play the sound. The specifier can be:
-		"second" (default)
-		"byte"
-		"sample"
-	playing()
-		returns true if the sound is currently being played
-	get(string)
-		returns an int relating to:
-		"frequency"
-		"channels"
-		"bytes"
-	get_offset(string) as:
-		returns a float of:
-		"second"
-		"byte"
-		"sample"
-	font(string)
-		set the soundfont used for this sound if it is a midi file
-
-C++
-sound a("click.ogg");
-a.pan(-1.0); //pan fully to the left
-
-sound b("music.ogg", true);
-b.repeat(true); //set the music to repeat itself
-
-Python
-a = sound('click.ogg')
-a.pan(-1.0) #pan fully to the left
-
-b = sound('music.ogg', True)
-b.repeat(True) #set the music to repeat itself
-
-see:buffer
-* */
 
 inline void reset_sound(sound* a) {
 	a->is_stream = false;

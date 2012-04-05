@@ -102,26 +102,6 @@ void _string_callback_wrap(GLFWwindow w, int x) {
 
 // set_callback
 
-/* * Python
-set_callback(string, function)
-Registers a python object as a callback.
-'size' (int, int)
-'close' () - return True to allow close, False to disallow
-'dirty' ()
-'focus' (int)
-'iconify' (int)
-'button' (string, int)
-'key' (string, int)
-'string' (string)
-'mousemove' (int, int)
-
-Python
-def dirty(): pass
-	
-set_callback('dirty', dirty)
-
-* */
-
 void set_callback(const char* e, PyObject* o) {
 	if(!strcmp(e, "size")) {
 		if(_size_callback)

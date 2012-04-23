@@ -271,6 +271,27 @@ struct vao {
 	GLuint id;
 };
 
+struct window {
+	window(const char* = "scge test", int = 0, int = 0, bool = false, bool = false, int = 0);
+	~window();
+	
+	void close();
+
+	void title(const char*);
+	void iconify(bool);
+	
+	bool opened();
+	bool active();
+	bool iconified();
+
+	void size(int, int);
+	glm::ivec2 size();
+	void position(int, int);
+	glm::ivec2 position();
+	
+	GLFWwindow win; //x
+};
+
 bool graphics();
 void graphics_off();
 
@@ -286,19 +307,10 @@ typedef void (* _string_callback_function)(const char*);
 
 void key_repeat(bool = true);
 
-bool window(const char* = "scge test", int = 0, int = 0, bool = false, bool = false, int = 0);
-void close_window();
-
-void window_title(const char*);
-bool window_opened();
-bool window_active();
+void use(window*);
 
 std::string display_modes();
 glm::ivec2 display_dimensions();
-glm::ivec2 window_dimensions();
-void window_size(int, int);
-void position_window(int, int);
-glm::ivec2 window_position();
 
 void vsync(bool = true);
 void swap();

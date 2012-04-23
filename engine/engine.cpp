@@ -10,6 +10,7 @@ namespace scge {
 
 #ifdef WITH_GRAPHICS
 #include "display.cpp"
+#include "window.cpp"
 #endif
 
 #ifdef WITH_SOUND

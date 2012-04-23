@@ -197,88 +197,6 @@ void key_repeat(bool a) {
 	glfwSetInputMode(glfw_window, GLFW_KEY_REPEAT, a ? GL_TRUE : GL_FALSE);
 }
 
-bool window(const char* title, int x, int y, bool fullscreen, bool resizeable, int fsaa) {
-	if(glfw_state == 0)
-		graphics();
-	
-	if(!x || !y) {
-		if(fullscreen) {
-			GLFWvidmode d;
-			glfwGetDesktopMode(&d);
-			x = d.width;
-			y = d.height;
-		}
-		else {
-			x = 320;
-			y = 240;
-		}
-	}
-	
-	if(fsaa)
-		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
-	
-	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
-
-#ifdef _WIN32
-	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
-	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
-#else
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
-	glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
-
-	glfw_window = glfwOpenWindow(x, y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
-	if(!glfw_window) {
-		err("window", "could not initiate window");
-		return false;
-	}
-
-#ifdef _WIN32
-	if(glewInit() != GLEW_OK)
-		err("window", "(windows) extensions unsupported");
-#endif
-
-	glfw_state = 2;
-	
-	glfwSwapInterval(0);
-	
-	glEnable(GL_PROGRAM_POINT_SIZE);
-	glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
-	
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	int w, h;
-	glfwGetWindowSize(glfw_window, &w, &h);
-	glViewport(0, 0, w, h);
-	
-	return true;
-}
-
-void close_window() {
-	glfwCloseWindow(glfw_window);
-	glfw_state = 1;
-}
-
-void window_title(const char* a) {
-	glfwSetWindowTitle(glfw_window, a);
-}
-
-bool window_opened() {
-	if(glfwIsWindow(glfw_window))
-		return true;
-	return false;
-}
-
-bool window_active() {
-	if(glfwGetWindowParam(glfw_window, GLFW_ACTIVE))
-		return true;
-	return false;
-}
-
 std::string display_modes() {
 	if(glfw_state == 0)
 		graphics();
@@ -309,25 +227,11 @@ glm::ivec2 display_dimensions() {
 	return glm::ivec2(a.width, a.height);
 }
 
-glm::ivec2 window_dimensions() {
-	int w, h;
-	glfwGetWindowSize(glfw_window, &w, &h);
-	
-	return glm::ivec2(w, h);
-}
-
-void window_size(int w, int h) {
-	glfwSetWindowSize(glfw_window, w, h);
-}
-
-void position_window(int x, int y) {
-	glfwSetWindowPos(glfw_window, x, y);
-}
-
-glm::ivec2 window_position() {
-	glm::ivec2 w;
-	glfwGetWindowPos(glfw_window, &w.x, &w.y);
-	return w;
+void use(window* w) {
+	if(w->win) {
+		glfw_window = w->win;
+		glfwMakeContextCurrent(w->win);
+	}
 }
 
 void vsync(bool a) {	

@@ -1,4 +1,3 @@
-GLFWwindow glfw_window = NULL;
 int glfw_state = 0;
 Shikoba::Library * font_library = NULL;
 
@@ -98,10 +97,8 @@ glm::ivec2 display_dimensions() {
 }
 
 void use(window* w) {
-	if(w->win) {
-		glfw_window = w->win;
+	if(w->win)
 		glfwMakeContextCurrent(w->win);
-	}
 }
 
 void vsync(bool a) {	
@@ -114,22 +111,6 @@ void swap() {
 
 void poll() {
 	glfwPollEvents();
-}
-
-bool screenshot(const char* a, const char* b) {
-	int w, h;
-	glfwGetWindowSize(glfw_window, &w, &h);
-
-	
-	pixelcache p(w, h);
-	
-	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.data);
-	
-	if (p.save(a, b))
-		return true;
-	err("screenshot", "could not save");
-	return false;
-
 }
 
 void viewport(int x, int y, int w, int h) {
@@ -330,26 +311,6 @@ GLenum primitive_from_string(const char* a) {
 		else if (!strcmp(a, "point"))
 			return GL_POINTS;
 		return 0;
-}
-
-glm::vec4 pixel(int x, int y, const char* f) {
-	int w, h;
-	glfwGetWindowSize(glfw_window, &w, &h);
-	
-	if(x < 0 || x >= w || y < 0 || y >= h)
-		return glm::vec4(0.0, 0.0, 0.0, 1.0);
-	
-	GLenum fmt = GL_RGB;
-	if(w) {
-		if(!strcmp(f, "depth"))
-			fmt = GL_DEPTH_COMPONENT;
-		else if(!strcmp(f, "stencil"))
-			fmt = GL_STENCIL_INDEX;
-	}
-	
-	GLfloat c[3];
-	glReadPixels(x, y, 1, 1, fmt, GL_FLOAT, c);
-	return glm::vec4(c[0], c[1], c[2], 1.0);
 }
 
 void stencil() {

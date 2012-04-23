@@ -299,6 +299,9 @@ struct window {
 
 	bool key(const char*);
 	bool key_state(const char*);
+
+	bool screenshot(const char*, const char* = NULL);
+	glm::vec4 pixel(int, int, const char* = NULL);
 	
 	GLFWwindow win; //x
 };
@@ -324,9 +327,6 @@ glm::ivec2 display_dimensions();
 void vsync(bool = true);
 void swap();
 void poll();
-bool screenshot(const char*, const char* = NULL);
-
-glm::vec4 pixel(int, int, const char* = NULL);
 
 void polygon_mode(const char*);
 void enable(const char*, bool = true);

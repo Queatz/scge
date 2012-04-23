@@ -288,8 +288,8 @@ window::window(const char* title, int x, int y, bool fullscreen, bool resizeable
 		return;
 	}
 	
-	glfw_window = win;
-
+	glfwSetWindowUserPointer(win, this);
+	
 #ifdef _WIN32
 	if(glewInit() != GLEW_OK)
 		err("window", "(windows) extensions unsupported");
@@ -448,4 +448,43 @@ bool window::key_state(const char* a) {
 	//if(glfwGetKeyState(win, keyboard_key_string_to_int(a)))
 	//	return true;
 	return false;
+}
+
+glm::vec4 window::pixel(int x, int y, const char* f) {
+	glfwMakeContextCurrent(win);
+	
+	int w, h;
+	glfwGetWindowSize(win, &w, &h);
+	
+	if(x < 0 || x >= w || y < 0 || y >= h)
+		return glm::vec4(0.0, 0.0, 0.0, 1.0);
+	
+	GLenum fmt = GL_RGB;
+	if(w) {
+		if(!strcmp(f, "depth"))
+			fmt = GL_DEPTH_COMPONENT;
+		else if(!strcmp(f, "stencil"))
+			fmt = GL_STENCIL_INDEX;
+	}
+	
+	GLfloat c[3];
+	glReadPixels(x, y, 1, 1, fmt, GL_FLOAT, c);
+	return glm::vec4(c[0], c[1], c[2], 1.0);
+}
+
+bool window::screenshot(const char* a, const char* b) {
+	glfwMakeContextCurrent(win);
+	
+	int w, h;
+	glfwGetWindowSize(win, &w, &h);
+	
+	pixelcache p(w, h);
+	
+	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.data);
+	
+	if (p.save(a, b))
+		return true;
+	err("screenshot", "could not save");
+	return false;
+
 }

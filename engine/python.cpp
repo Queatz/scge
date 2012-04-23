@@ -81,7 +81,7 @@ void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 
 void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 	int u, h;
-	glfwGetWindowSize(glfw_window, &u, &h);
+	glfwGetWindowSize(w, &u, &h);
 	
 	PyObject* args;
 	args = Py_BuildValue("(ii)", x, h - y);

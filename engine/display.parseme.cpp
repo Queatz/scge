@@ -353,8 +353,6 @@ GLenum primitive_from_string(const char* a) {
 			return GL_LINE_LOOP;
 		else if (!strcmp(a, "point"))
 			return GL_POINTS;
-		else
-			err("primitive", "unknown type");
 		return 0;
 }
 
@@ -378,29 +376,48 @@ glm::vec4 pixel(int x, int y, const char* f) {
 	return glm::vec4(c[0], c[1], c[2], 1.0);
 }
 
-void stencil_clear(int a) {
+void stencil() {
+	glClear(GL_STENCIL_BUFFER_BIT);
+}
+
+void stencil(int a) {
 	glClearStencil(a);
 	glClear(GL_STENCIL_BUFFER_BIT);
 }
 
-void stencil_test(const char* a, int b) {
-	glStencilFunc(comparison_string_to_gl(a), b, 1);
+void stencil(const char* a, int b) {
+	GLenum e = comparison_string_to_gl(a);
+
+	if(e)
+		glStencilFunc(e, b, 1);
+	else {
+		GLenum f;
+		if(!strcmp(a, "keep"))
+			f = GL_KEEP;
+		else if(!strcmp(a, "zero"))
+			f = GL_ZERO;
+		else if(!strcmp(a, "replace"))
+			f = GL_REPLACE;
+		else if(!strcmp(a, "increment"))
+			f = GL_INCR;
+		else if(!strcmp(a, "decrement"))
+			f = GL_DECR;
+		else if(!strcmp(a, "invert"))
+			f = GL_INVERT;
+		else if(!strcmp(a, "increment wrap"))
+			f = GL_INCR_WRAP;
+		else if(!strcmp(a, "decrement wrap"))
+			f = GL_DECR_WRAP;
+		else {
+			err("stencil", "unknown");
+			return;
+		}
+	
+		glStencilOp(f, f, f);
+	}
 }
 
 void stencil_op(const char* a) {
-	GLenum f;
-	if(!strcmp(a, "keep"))
-		f = GL_KEEP;
-	else if(!strcmp(a, "zero"))
-		f = GL_ZERO;
-	else if(!strcmp(a, "replace"))
-		f = GL_REPLACE;
-	else if(!strcmp(a, "increment"))
-		f = GL_INCR;
-	else if(!strcmp(a, "decrement"))
-		f = GL_DECR;
-	
-	glStencilOp(f, f, f);
 }
 
 pixelcache::pixelcache(const char* a) {

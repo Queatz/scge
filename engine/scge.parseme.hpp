@@ -367,9 +367,9 @@ void use_program();
 
 void draw(const char*, unsigned int, unsigned int = 0);
 
-void stencil_clear(int = 0);
-void stencil_test(const char* = "always", int = 0);
-void stencil_op(const char* = "keep");
+void stencil();
+void stencil(int);
+void stencil(const char*, int = 0);
 
 #endif
 

@@ -333,13 +333,8 @@ void enable(const char*, bool = true);
 
 void cull(const char* a);
 
-void clear_color(float, float, float, float = 1.0);
-void clear();
 void point_size(float);
 void line_width(float);
-
-void color_mask(bool, bool, bool, bool = true);
-void color_mask(bool);
 
 void use_fbo(fbo*);
 void use_fbo();
@@ -356,12 +351,16 @@ void use_vao();
 void viewport(int, int, int, int);
 void scissor(int, int, int, int);
 
-void blend_mode(const char*);
-
 void use_program(program*);
 void use_program();
 
 void draw(const char*, unsigned int, unsigned int = 0);
+
+void color(glm::vec4);
+void color();
+void color(const char*);
+void color(bool, bool, bool, bool = true);
+void color(bool);
 
 void depth();
 void depth(const char*);

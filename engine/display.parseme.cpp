@@ -204,14 +204,6 @@ void cull(const char* a) {
 		err("cull", "invalid option");
 }
 
-void clear_color(float a, float b, float c, float d) {
-	glClearColor(a, b, c, d);
-}
-
-void clear() {
-	glClear(GL_COLOR_BUFFER_BIT);
-}
-
 GLenum comparison_string_to_gl(const char* a) {
 	if(!strcmp(a, "=="))
 		return GL_EQUAL;
@@ -231,6 +223,51 @@ GLenum comparison_string_to_gl(const char* a) {
 		return GL_NEVER;
 	
 	return 0;
+}
+
+void display_set_blend_mode_from_string(const char* a) {
+	if(!strcmp(a, "subtract")) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	}
+	else {
+		glBlendEquation(GL_FUNC_ADD);
+
+		if(!strcmp(a, "add"))
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		else if (!strcmp(a, "color"))
+			glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+		else if (!strcmp(a, "multiply"))
+			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+		else if(!strcmp(a, "mix"))
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		else if(!strcmp(a, "color"))
+			glBlendFunc(GL_ONE, GL_ZERO);
+		else if(!strcmp(a, "saturate"))
+			glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA_SATURATE);
+		else
+			err("blend_mode", "invalid value");
+	}
+}
+
+void color() {
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void color(glm::vec4 a) {
+	glClearColor(a.r, a.g, a.b, a.a);
+}
+
+void color(const char* a) {
+	display_set_blend_mode_from_string(a);
+}
+
+void color(bool r, bool g, bool b, bool a) {
+	glColorMask(r, g, b, a);
+}
+
+void color(bool a) {
+	glColorMask(a, a, a, a);
 }
 
 void depth() {
@@ -255,14 +292,6 @@ void  point_size(float a) {
 
 void  line_width(float a) {
 	glLineWidth(a);
-}
-
-void color_mask(bool r, bool g, bool b, bool a) {
-	glColorMask(r, g, b, a);
-}
-
-void color_mask(bool a) {
-	glColorMask(a, a, a, a);
 }
 
 void use_fbo(fbo* a) {
@@ -299,35 +328,6 @@ void use_ibo() {
 
 void scissor(int a, int b, int c, int d) {
 	glScissor(a, b, c, d);
-}
-
-void display_set_blend_mode_from_string(const char* a) {
-	if(!strcmp(a, "subtract")) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-	}
-	else {
-		glBlendEquation(GL_FUNC_ADD);
-
-		if(!strcmp(a, "add"))
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		else if (!strcmp(a, "color"))
-			glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
-		else if (!strcmp(a, "multiply"))
-			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-		else if(!strcmp(a, "mix"))
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if(!strcmp(a, "color"))
-			glBlendFunc(GL_ONE, GL_ZERO);
-		else if(!strcmp(a, "saturate"))
-			glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA_SATURATE);
-		else
-			err("blend_mode", "invalid value");
-	}
-}
-
-void blend_mode(const char* a) {
-	display_set_blend_mode_from_string(a);
 }
 
 void use_program(program* a) {

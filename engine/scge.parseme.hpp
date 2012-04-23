@@ -309,15 +309,15 @@ struct window {
 bool graphics();
 void graphics_off();
 
-typedef void (* _resize_callback_function)(int, int);
-typedef int (* _close_callback_function)();
-typedef void (* _focus_callback_function)(int);
-typedef void (* _iconify_callback_function)(int);
-typedef void (* _button_callback_function)(const char*, int);
-typedef void (* _mousemove_callback_function)(int, int);
-typedef void (* _scroll_callback_function)(double);
-typedef void (* _key_callback_function)(const char*, int);
-typedef void (* _string_callback_function)(const char*);
+typedef void (* _resize_callback_function)(window*, int, int);
+typedef int (* _close_callback_function)(window*);
+typedef void (* _focus_callback_function)(window*, int);
+typedef void (* _iconify_callback_function)(window*, int);
+typedef void (* _button_callback_function)(window*, const char*, int);
+typedef void (* _mousemove_callback_function)(window*, int, int);
+typedef void (* _scroll_callback_function)(window*, glm::vec2);
+typedef void (* _key_callback_function)(window*, const char*, int);
+typedef void (* _string_callback_function)(window*, const char*);
 
 void use(window*);
 

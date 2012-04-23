@@ -11,7 +11,7 @@ PyObject* _string_callback = NULL;
 
 void _size_callback_wrap(GLFWwindow w, int x, int y) {
 	PyObject* args;
-	args = Py_BuildValue("(ii)", x, y);
+	args = Py_BuildValue("(Oii)", (window*) glfwGetWindowUserPointer(w), x, y);
 	PyEval_CallObject(_size_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -21,7 +21,9 @@ void _size_callback_wrap(GLFWwindow w, int x, int y) {
 int _close_callback_wrap(GLFWwindow w) {
 	PyObject* result;
 	int ret;
-	result = PyEval_CallObject(_close_callback, (PyObject *)NULL);
+	PyObject* args = Py_BuildValue("(O)", (window*) glfwGetWindowUserPointer(w));
+	result = PyEval_CallObject(_close_callback, args);
+	Py_DECREF(args);
 	ret = PyObject_IsTrue(result) ? 1 : 0;
 	if(PyErr_Occurred())
 		PyErr_Print();
@@ -29,14 +31,16 @@ int _close_callback_wrap(GLFWwindow w) {
 }
 
 void _dirty_callback_wrap(GLFWwindow w) {
-	PyEval_CallObject(_dirty_callback, (PyObject *)NULL);
+	PyObject* args = Py_BuildValue("(O)", (window*) glfwGetWindowUserPointer(w));
+	PyEval_CallObject(_dirty_callback, args);
+	Py_DECREF(args);
 	if(PyErr_Occurred())
 		PyErr_Print();
 }
 
 void _focus_callback_wrap(GLFWwindow w, int x) {
 	PyObject* args;
-	args = Py_BuildValue("(i)", x);
+	args = Py_BuildValue("(Oi)", (window*) glfwGetWindowUserPointer(w), x);
 	PyEval_CallObject(_focus_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -45,7 +49,7 @@ void _focus_callback_wrap(GLFWwindow w, int x) {
 
 void _iconify_callback_wrap(GLFWwindow w, int x) {
 	PyObject* args;
-	args = Py_BuildValue("(i)", x);
+	args = Py_BuildValue("(Oi)", (window*) glfwGetWindowUserPointer(w), x);
 	PyEval_CallObject(_iconify_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -54,7 +58,7 @@ void _iconify_callback_wrap(GLFWwindow w, int x) {
 
 void _button_callback_wrap(GLFWwindow w, int x, int y) {
 	PyObject* args;
-	args = Py_BuildValue("(si)", int_to_button_name(x), y);
+	args = Py_BuildValue("(Osi)", (window*) glfwGetWindowUserPointer(w), int_to_button_name(x), y);
 	PyEval_CallObject(_button_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -63,7 +67,7 @@ void _button_callback_wrap(GLFWwindow w, int x, int y) {
 
 void _key_callback_wrap(GLFWwindow w, int x, int y) {
 	PyObject* args;
-	args = Py_BuildValue("(si)", int_to_key_name(x), y);
+	args = Py_BuildValue("(Osi)", (window*) glfwGetWindowUserPointer(w), int_to_key_name(x), y);
 	PyEval_CallObject(_key_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -72,7 +76,7 @@ void _key_callback_wrap(GLFWwindow w, int x, int y) {
 
 void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 	PyObject* args;
-	args = Py_BuildValue("(i)", y);
+	args = Py_BuildValue("(Oii)", (window*) glfwGetWindowUserPointer(w), (float) x, (float) y);
 	PyEval_CallObject(_scroll_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -84,7 +88,7 @@ void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 	glfwGetWindowSize(w, &u, &h);
 	
 	PyObject* args;
-	args = Py_BuildValue("(ii)", x, h - y);
+	args = Py_BuildValue("(Oii)", (window*) glfwGetWindowUserPointer(w), x, h - y);
 	PyEval_CallObject(_mousemove_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -93,16 +97,16 @@ void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 
 void _string_callback_wrap(GLFWwindow w, int x) {
 	PyObject* args;
-	args = Py_BuildValue("(C)", x);
+	args = Py_BuildValue("(OC)", (window*) glfwGetWindowUserPointer(w), x);
 	PyEval_CallObject(_string_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
 		PyErr_Print();
 }
 
-// set_callback
+// set callback
 
-void set_callback(const char* e, PyObject* o) {
+void callback(const char* e, PyObject* o) {
 	if(!strcmp(e, "size")) {
 		if(_size_callback)
 			Py_DECREF(_size_callback);

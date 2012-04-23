@@ -392,10 +392,8 @@ void midi_stop(int = 0, int = 60);
 void midi_pan(int = 0, int = 63);
 #endif
 
-void microphone_on();
-void microphone_off();
-soundbyte* microphone_update();
-
+void microphone(bool);
+soundbyte* microphone();
 
 #endif
 

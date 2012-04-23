@@ -150,7 +150,14 @@ void microphone_off() {
 	capture_device = NULL;
 }
 
-soundbyte* microphone_update() {
+void microphone(bool a) {
+	if(a)
+		microphone_on();
+	else
+		microphone_off();
+}
+
+soundbyte* microphone() {
 	if(!capture_device)
 		return NULL;
 	

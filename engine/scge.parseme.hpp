@@ -336,23 +336,13 @@ void cull(const char* a);
 void point_size(float);
 void line_width(float);
 
-void use_fbo(fbo*);
-void use_fbo();
-
-void use_vbo(vbo*);
-void use_vbo();
-
-void use_ibo(ibo*);
-void use_ibo();
-
-void use_vao(vao*);
-void use_vao();
+void use(fbo*);
+void use(vao*);
+void use(program*);
+void use();
 
 void viewport(int, int, int, int);
 void scissor(int, int, int, int);
-
-void use_program(program*);
-void use_program();
 
 void draw(const char*, unsigned int, unsigned int = 0);
 

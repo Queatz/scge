@@ -294,48 +294,24 @@ void  line_width(float a) {
 	glLineWidth(a);
 }
 
-void use_fbo(fbo* a) {
+void use(fbo* a) {
 	glBindFramebuffer(GL_FRAMEBUFFER, a->id);
 }
 
-void use_fbo() {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void use_vbo(vbo* a) {
-	glBindBuffer(GL_ARRAY_BUFFER, a->id);
-}
-
-void use_vbo() {
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void use_vao(vao* a) {
+void use(vao* a) {
 	glBindVertexArray(a->id);
 }
 
-void use_vao() {
-	glBindVertexArray(0);
+void use(program* a) {
+	glUseProgram(a->id);
 }
 
-void use_ibo(ibo* a) {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, a->id);
-}
-
-void use_ibo() {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+void use() {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void scissor(int a, int b, int c, int d) {
 	glScissor(a, b, c, d);
-}
-
-void use_program(program* a) {
-	glUseProgram(a->id);
-}
-
-void use_program() {
-	glUseProgram(0);
 }
 
 GLenum primitive_from_string(const char* a) {

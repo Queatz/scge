@@ -182,7 +182,7 @@ struct glyphmetrics {
 	boxy texcoords;
 };
 
-void font_face(fontface*);
+void use(fontface*);
 void font_size(unsigned int);
 glyphmetrics glyph(const char*);
 float line_height();

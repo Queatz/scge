@@ -778,7 +778,7 @@ fontface::~fontface() {
 	delete data;
 }
 
-void font_face(fontface* f) {
+void use(fontface* f) {
 	if(font_library == NULL)
 		setup_font();
 

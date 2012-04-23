@@ -383,12 +383,18 @@ struct soundfont {
 	unsigned int id;
 };
 
-void midi_preset(soundfont*, int = 0, unsigned int = 0, unsigned int = 0);
-void midi_soundfont(soundfont*, int = 0);
-void midi_bank(int = 0, unsigned int = 0);
-void midi_play(int = 0, int = 60, int = 100);
-void midi_stop(int = 0, int = 60);
-void midi_pan(int = 0, int = 63);
+struct midi {
+	midi(int);
+	
+	void preset(soundfont*, unsigned int = 0, unsigned int = 0);
+	void font(soundfont*);
+	void bank(unsigned int = 0);
+	void play(int = 60, int = 100);
+	void stop(int = 60);
+	void pan(int = 63);
+	
+	int _channel;//x
+};
 #endif
 
 void microphone(bool);

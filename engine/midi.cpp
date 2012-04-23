@@ -64,50 +64,31 @@ std::string soundfont::get_presets() {
 	return t;
 }
 
-/*const char* soundfont::instrument(unsigned int bank, unsigned int preset) {
-	fluid_preset_t* p;
-	fluid_sfont_t* f;
-	f = fluid_synth_get_sfont(midi_synth, id); 
-	p = f->get_preset(bank, preset);
-	
-	if(p)
-		return p->get_name(p);
-	return NULL;
-}*/
-
-/** *
-instrument
-An instrument.
-
-C++
-instrument a();
-
-Python
-a = instrument()
-***/
 #define RED //what?
 
-void midi_soundfont(soundfont* f, int channel) {
-	fluid_synth_sfont_select(midi_synth, channel, (unsigned int)f->id);
+midi::midi(int c) : _channel(c) {}
+
+void midi::font(soundfont* f) {
+	fluid_synth_sfont_select(midi_synth, _channel, (unsigned int)f->id);
 }
 
-void midi_preset(soundfont* sf, int channel, unsigned int bank, unsigned int preset) {
-	fluid_synth_program_select(midi_synth, channel, sf->id, bank, preset);
+void midi::preset(soundfont* sf, unsigned int bank, unsigned int preset) {
+	fluid_synth_program_select(midi_synth, _channel, sf->id, bank, preset);
 }
 
-void midi_bank(int channel, unsigned int bank) {
-	fluid_synth_bank_select(midi_synth, channel, bank);
+void midi::bank(unsigned int bank) {
+	fluid_synth_bank_select(midi_synth, _channel, bank);
 }
 
-void midi_play(int channel, int key, int velocity) {
-	fluid_synth_noteon(midi_synth, channel, key, velocity);
+void midi::play(int key, int velocity) {
+	fluid_synth_noteon(midi_synth, _channel, key, velocity);
 }
 
-void midi_stop(int channel, int key) {
-	fluid_synth_noteoff(midi_synth, channel, key);
+void midi::stop(int key) {
+	fluid_synth_noteoff(midi_synth, _channel, key);
 }
 
-void midi_pan(int channel, int a) {
-	fluid_synth_cc(midi_synth, channel, 10, a);
+void midi::pan(int a) {
+	fluid_synth_cc(midi_synth, _channel, 10, a);
 }
 #endif

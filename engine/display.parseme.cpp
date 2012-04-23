@@ -212,10 +212,6 @@ void clear() {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void depth_clear() {
-	glClear(GL_DEPTH_BUFFER_BIT);
-}
-
 GLenum comparison_string_to_gl(const char* a) {
 	if(!strcmp(a, "=="))
 		return GL_EQUAL;
@@ -237,12 +233,20 @@ GLenum comparison_string_to_gl(const char* a) {
 	return 0;
 }
 
-void depth_test(const char* a) {
+void depth() {
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void depth(const char* a) {
 	glDepthFunc(comparison_string_to_gl(a));
 }
 
-void depth_op(bool a) {
+void depth(bool a) {
 	glDepthMask(a ? GL_TRUE : GL_FALSE);
+}
+
+void depth_offset(float a, float b) {
+	glPolygonOffset(a, b);
 }
 
 void  point_size(float a) {
@@ -251,10 +255,6 @@ void  point_size(float a) {
 
 void  line_width(float a) {
 	glLineWidth(a);
-}
-
-void polygon_depth_offset(float a, float b) {
-	glPolygonOffset(a, b);
 }
 
 void color_mask(bool r, bool g, bool b, bool a) {

@@ -335,12 +335,8 @@ void cull(const char* a);
 
 void clear_color(float, float, float, float = 1.0);
 void clear();
-void depth_clear();
-void depth_test(const char*);
-void depth_op(bool);
 void point_size(float);
 void line_width(float);
-void polygon_depth_offset(float = 0.0, float = 0.0);
 
 void color_mask(bool, bool, bool, bool = true);
 void color_mask(bool);
@@ -366,6 +362,11 @@ void use_program(program*);
 void use_program();
 
 void draw(const char*, unsigned int, unsigned int = 0);
+
+void depth();
+void depth(const char*);
+void depth(bool);
+void depth_offset(float, float = 0.0);
 
 void stencil();
 void stencil(int);

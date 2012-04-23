@@ -95,32 +95,6 @@ void audio_soundfont(const char* a) {
 
 /* Microphone */
 
-const char * alErrorString(ALenum code) {
-	if(code == AL_NO_ERROR)
-		return "no error";
-	if(code == AL_INVALID_NAME)
-		return "invalid name";
-	if(code == AL_INVALID_ENUM)
-		return "invalid enum";
-	if(code == AL_INVALID_VALUE)
-		return "invalid value";
-	if(code == AL_INVALID_OPERATION)
-		return "invalid operation";
-	if(code == AL_OUT_OF_MEMORY)
-		return "out of memory";
-	return "unknown error";
-}
-
-const char * alcErrorString(ALenum code) {
-	if(code == AL_NO_ERROR)
-		return "not an error";
-	if(code == ALC_INVALID_VALUE)
-		return "invalid value";
-	if(code == ALC_OUT_OF_MEMORY)
-		return "out of memory";
-	return "unknown error";
-}
-
 #define CAPTURE_FREQ 44100
 #define CAPTURE_BUF_SIZE 22050
 
@@ -278,19 +252,6 @@ void buffer::clear() {
 		buffer_unloaded(buf);
 	}
 	buf = 0;
-}
-
-ALint al_format_from_string(const char* a) {
-	if(!strcmp(a, "mono 8"))
-		return AL_FORMAT_MONO8;
-	else if(!strcmp(a, "mono 16"))
-		return AL_FORMAT_MONO16;
-	else if(!strcmp(a, "stereo 8"))
-		return AL_FORMAT_STEREO8;
-	else if(!strcmp(a, "stereo 16"))
-		return AL_FORMAT_STEREO16;
-	
-	return AL_FORMAT_MONO8;
 }
 
 void buffer::data(const void* bufdata, const char* fmt, unsigned int bytes, unsigned int freq) {

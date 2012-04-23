@@ -34,38 +34,6 @@ void graphics_off() {
 	glfwTerminate();
 }
 
-FREE_IMAGE_FORMAT fif_from_string(const char* a = NULL, const char* b = NULL) {
-	if(b) {
-		if(!strcmp(b, "png"))
-			return FIF_PNG;
-		else if(!strcmp(b, "jpg"))
-			return FIF_JPEG;
-		else if(!strcmp(b, "bmp"))
-			return FIF_BMP;
-	}
-	
-	if(a) {
-		FREE_IMAGE_FORMAT t = FreeImage_GetFileType(a, 0);
-	
-		if(t == FIF_UNKNOWN)
-			t = FreeImage_GetFIFFromFilename(a);
-		return t;
-	}
-	
-	return FIF_UNKNOWN;
-}
-
-int default_from_fif(FREE_IMAGE_FORMAT a) {
-	if(a == FIF_PNG)
-		return PNG_DEFAULT;
-	else if(a == FIF_JPEG)
-		return JPEG_QUALITYSUPERB;
-	else if(a == FIF_BMP)
-		return BMP_DEFAULT;
-	else
-		return 0;
-}
-
 std::string display_modes() {
 	if(glfw_state == 0)
 		graphics();
@@ -185,27 +153,6 @@ void cull(const char* a) {
 		err("cull", "invalid option");
 }
 
-GLenum comparison_string_to_gl(const char* a) {
-	if(!strcmp(a, "=="))
-		return GL_EQUAL;
-	else if(!strcmp(a, "!="))
-		return GL_NOTEQUAL;
-	else if(!strcmp(a, "<"))
-		return GL_LESS;
-	else if(!strcmp(a, ">"))
-		return GL_GREATER;
-	else if(!strcmp(a, "<="))
-		return GL_LEQUAL;
-	else if(!strcmp(a, ">="))
-		return GL_GEQUAL;
-	else if(!strcmp(a, "always"))
-		return GL_ALWAYS;
-	else if(!strcmp(a, "never"))
-		return GL_NEVER;
-	
-	return 0;
-}
-
 void display_set_blend_mode_from_string(const char* a) {
 	if(!strcmp(a, "subtract")) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -293,24 +240,6 @@ void use() {
 
 void scissor(int a, int b, int c, int d) {
 	glScissor(a, b, c, d);
-}
-
-GLenum primitive_from_string(const char* a) {
-		if (!strcmp(a, "triangle"))
-			return GL_TRIANGLES;
-		else if (!strcmp(a, "triangle strip"))
-			return GL_TRIANGLE_STRIP;
-		else if (!strcmp(a, "triangle fan"))
-			return GL_TRIANGLE_FAN;
-		else if (!strcmp(a, "line"))
-			return GL_LINES;
-		else if (!strcmp(a, "line strip"))
-			return GL_LINE_STRIP;
-		else if (!strcmp(a, "line loop"))
-			return GL_LINE_LOOP;
-		else if (!strcmp(a, "point"))
-			return GL_POINTS;
-		return 0;
 }
 
 void stencil() {
@@ -1025,51 +954,6 @@ fbo::~fbo() {
 	if(depth)
 		delete depth;
 	glDeleteFramebuffers(1, &id);
-}
-
-GLenum buffer_usage_from_string(const char* t) {
-	if(!strcmp(t, "static draw"))
-		return GL_STATIC_DRAW;
-	else if(!strcmp(t, "static read"))
-		return GL_STATIC_READ;
-	else if(!strcmp(t, "static copy"))
-		return GL_STATIC_COPY;
-	else if(!strcmp(t, "stream draw"))
-		return GL_STREAM_DRAW;
-	else if(!strcmp(t, "stream read"))
-		return GL_STREAM_READ;
-	else if(!strcmp(t, "stream copy"))
-		return GL_STREAM_COPY;
-	else if(!strcmp(t, "dynamic draw"))
-		return GL_DYNAMIC_DRAW;
-	else if(!strcmp(t, "dynamic read"))
-		return GL_DYNAMIC_READ;
-	else if(!strcmp(t, "dynamic copy"))
-		return GL_DYNAMIC_COPY;
-	return GL_STATIC_DRAW;
-}
-
-GLenum common_type_from_string(const char* a) {
-	if(!strcmp(a, "float"))
-		return GL_FLOAT;
-	else if(!strcmp(a, "byte"))
-		return GL_BYTE;
-	else if(!strcmp(a, "unsigned byte"))
-		return GL_UNSIGNED_BYTE;
-	else if(!strcmp(a, "short"))
-		return GL_SHORT;
-	else if(!strcmp(a, "unsigned short"))
-		return GL_UNSIGNED_SHORT;
-	else if(!strcmp(a, "int"))
-		return GL_INT;
-	else if(!strcmp(a, "unsigned int"))
-		return GL_UNSIGNED_INT;
-	else if(!strcmp(a, "double"))
-		return GL_DOUBLE;
-	else {
-		err("type", "invalid");
-		return -1;
-	}
 }
 
 vbo::vbo(int l, const char* t) {

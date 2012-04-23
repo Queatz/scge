@@ -235,7 +235,6 @@ void stencil() {
 
 void stencil(int a) {
 	glClearStencil(a);
-	glClear(GL_STENCIL_BUFFER_BIT);
 }
 
 void stencil(const char* a, int b) {

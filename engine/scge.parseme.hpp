@@ -384,7 +384,7 @@ struct soundfont {
 };
 
 struct midi {
-	midi(int);
+	midi(int = 0);
 	
 	void preset(soundfont*, unsigned int = 0, unsigned int = 0);
 	void font(soundfont*);

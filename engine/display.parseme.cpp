@@ -55,10 +55,6 @@ void use(window* w) {
 		glfwMakeContextCurrent(w->win);
 }
 
-void vsync(bool a) {	
-	glfwSwapInterval(a ? 1 : 0);
-}
-
 void swap() {
 	glfwSwapBuffers();
 }
@@ -88,6 +84,11 @@ void polygon_mode(const char* a) {
 }
 
 void enable(const char* a, bool b) {
+	if(!strcmp(a, "vsync")) {
+		glfwSwapInterval(b ? 1 : 0);
+		return;
+	}
+	
 	GLint c = -1;
 	
 	if (!strcmp(a, "scissor"))

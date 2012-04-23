@@ -324,7 +324,6 @@ void use(window*);
 std::string display_modes();
 glm::ivec2 display_dimensions();
 
-void vsync(bool = true);
 void swap();
 void poll();
 

@@ -455,7 +455,7 @@ struct noise {
 
 // Python
 #ifdef WITH_PYTHON
-void set_callback(const char*, PyObject*);
+void callback(const char*, PyObject*);
 #endif
 
 } // namespace scge

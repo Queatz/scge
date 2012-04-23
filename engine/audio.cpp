@@ -124,14 +124,14 @@ void microphone_on() {
 		capture_device = alcCaptureOpenDevice(NULL, CAPTURE_FREQ, AL_FORMAT_MONO16, CAPTURE_BUF_SIZE);
 	
 		if(!capture_device) {
-			err("microphone_on", alErrorString(alGetError()));
+			err("microphone", alErrorString(alGetError()));
 			return;
 		}
 		
 		ALenum e;
 		e = alcGetError(capture_device);
 		if(e != AL_NO_ERROR)
-			err("microphone_on", alcErrorString(e));
+			err("microphone", alcErrorString(e));
 	}
 
 	capture_soundbyte.data = NULL;
@@ -166,7 +166,7 @@ soundbyte* microphone() {
 	
 	ALenum e = alcGetError(capture_device);
 	if(e) {
-		err("microphone_update", alcErrorString(e));
+		err("microphone", alcErrorString(e));
 		return NULL;
 	}
 	

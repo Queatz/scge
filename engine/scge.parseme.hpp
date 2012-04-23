@@ -276,6 +276,7 @@ struct window {
 	~window();
 	
 	void close();
+	void set(const char*, bool = true);
 
 	void title(const char*);
 	void iconify(bool);
@@ -288,6 +289,16 @@ struct window {
 	glm::ivec2 size();
 	void position(int, int);
 	glm::ivec2 position();
+
+	glm::vec2 mouse();
+	void mouse(const char*);
+	void mouse(int, int);
+	bool button(short);
+	bool button(const char*);
+	glm::vec2 scroll();
+
+	bool key(const char*);
+	bool key_state(const char*);
 	
 	GLFWwindow win; //x
 };
@@ -304,8 +315,6 @@ typedef void (* _mousemove_callback_function)(int, int);
 typedef void (* _scroll_callback_function)(double);
 typedef void (* _key_callback_function)(const char*, int);
 typedef void (* _string_callback_function)(const char*);
-
-void key_repeat(bool = true);
 
 void use(window*);
 
@@ -361,17 +370,6 @@ void draw(const char*, unsigned int, unsigned int = 0);
 void stencil_clear(int = 0);
 void stencil_test(const char* = "always", int = 0);
 void stencil_op(const char* = "keep");
-
-glm::vec2 mouse_position();
-
-void mouse(const char* = "show");
-bool button(short);
-bool button(const char*);
-float wheel();
-void move_mouse(int, int);
-
-bool key(const char*);
-bool key_state(const char*);
 
 #endif
 

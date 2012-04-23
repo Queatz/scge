@@ -393,8 +393,7 @@ void midi_pan(int = 0, int = 63);
 
 void microphone_on();
 void microphone_off();
-void microphone_update();
-soundbyte* microphone_buffer();
+soundbyte* microphone_update();
 
 
 #endif

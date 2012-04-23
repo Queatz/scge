@@ -3,9 +3,8 @@ std::vector<ALuint> loaded_buffers;
 int alure_state = 0;
 
 ALCdevice* capture_device = NULL;
-unsigned int capture_samples_available = 0;
-unsigned int capture_samples_length = 0;
-ALshort* capture_samples = NULL;
+unsigned int capture_samples_available = 0; // Samples in cache
+unsigned int capture_samples_length = 0; // Last number of captured samples
 soundbyte capture_soundbyte;
 
 #ifndef _WIN32
@@ -144,6 +143,9 @@ void microphone_on() {
 		if(e != AL_NO_ERROR)
 			err("microphone_on", alcErrorString(e));
 	}
+
+	capture_soundbyte.data = NULL;
+	capture_soundbyte.frequency = CAPTURE_FREQ;
 	
 	alcCaptureStart(capture_device);
 }
@@ -158,9 +160,9 @@ void microphone_off() {
 	capture_device = NULL;
 }
 
-void microphone_update() {
+soundbyte* microphone_update() {
 	if(!capture_device)
-		return;
+		return NULL;
 	
 	ALCint samps;
 	alcGetIntegerv(capture_device, ALC_CAPTURE_SAMPLES, 1, &samps);
@@ -168,24 +170,21 @@ void microphone_update() {
 	ALenum e = alcGetError(capture_device);
 	if(e) {
 		err("microphone_update", alcErrorString(e));
-		return;
+		return NULL;
 	}
 	
 	// Resize if needed
 	if(samps > capture_samples_available) {
-		if(capture_samples)
-			delete capture_samples;
-		capture_samples = new ALshort[samps];
+		if(capture_soundbyte.data)
+			delete capture_soundbyte.data;
+		capture_soundbyte.data = new ALshort[samps];
 		capture_samples_available = samps;
 	}
 	
 	capture_samples_length = samps;
 	
-	alcCaptureSamples(capture_device, capture_samples, samps);
-}
-
-soundbyte* microphone_buffer() {
-	capture_soundbyte.data = capture_samples;
+	alcCaptureSamples(capture_device, capture_soundbyte.data, samps);
+	
 	capture_soundbyte.length = capture_samples_length;
 	capture_soundbyte.frequency = CAPTURE_FREQ;
 	return &capture_soundbyte;

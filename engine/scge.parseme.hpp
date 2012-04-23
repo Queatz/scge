@@ -365,10 +365,11 @@ void stencil(const char*, int = 0);
 
 #ifdef WITH_SOUND
 
-bool audio();
+bool audio_on();
 void audio_off();
-void audio_gain(float = 1.0);
-void audio_pan(float = 0.0);
+void audio(float);
+void audio(glm::vec3);
+void audio(const char*);
 void audio_soundfont(const char*);
 
 #ifndef _WIN32

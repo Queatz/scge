@@ -4,7 +4,7 @@ FLUIDSYNTH_API void dumberror(int level, char *message, void *data) {
 }
 #endif
 
-bool audio() {
+bool audio_on() {
 	if(!alureInitDevice(NULL, NULL)) {
 		err("audio", "could not initiate");
 		return false;
@@ -19,8 +19,8 @@ bool audio() {
 	alureUpdateInterval(0.05);
 	
 	atexit(audio_off);
-	//alDistanceModel(AL_NONE);
-	//TODO: audio_model(const char* s)
+	
+	alDistanceModel(AL_NONE);
 	
 	alure_state = 1;
 	return true;
@@ -70,12 +70,37 @@ void audio_off() {
 	alureShutdownDevice();
 }
 
-void audio_gain(float a) {
+void audio(float a) {
 	alListenerf(AL_GAIN, a);
 }
 
-void audio_pan(float a) {
-	alListener3f(AL_POSITION, -a, 0.0, 0.0);
+void audio(glm::vec3 a) {
+	alListener3f(AL_POSITION, a.x, a.y, a.z);
+}
+
+void audio(const char* a) {
+	ALenum b;
+	
+	if(!strcmp(a, "none"))
+		b = AL_NONE;
+	else if(!strcmp(a, "inverse"))
+		b = AL_INVERSE_DISTANCE;
+	else if(!strcmp(a, "inverse clamped"))
+		b = AL_INVERSE_DISTANCE_CLAMPED;
+	else if(!strcmp(a, "linear"))
+		b = AL_LINEAR_DISTANCE;
+	else if(!strcmp(a, "linear clamped"))
+		b = AL_LINEAR_DISTANCE_CLAMPED;
+	else if(!strcmp(a, "exponent"))
+		b = AL_EXPONENT_DISTANCE;
+	else if(!strcmp(a, "exponent clamped"))
+		b = AL_EXPONENT_DISTANCE_CLAMPED;
+	else {
+		err("audio", "invalid");
+		return;
+	}
+	
+	alDistanceModel(b);
 }
 
 void audio_soundfont(const char* a) {
@@ -91,7 +116,7 @@ void audio_soundfont(const char* a) {
 
 void microphone_on() {
 	if(alure_state == 0)
-		audio();
+		audio_on();
 	
 	if(!capture_device) {
 		alGetError();
@@ -222,7 +247,7 @@ buffer::buffer() {
 
 buffer::buffer(const char* a) {
 	if(alure_state == 0)
-		audio();
+		audio_on();
 	
 	buf = alureCreateBufferFromFile(a);
 	if(buf == AL_NONE) {
@@ -268,7 +293,7 @@ inline void reset_sound(sound* a) {
 
 sound::sound() {
 	if(alure_state == 0)
-		audio();
+		audio_on();
 	
 	reset_sound(this);
 	
@@ -278,7 +303,7 @@ sound::sound() {
 
 sound::sound(buffer* a) {
 	if(alure_state == 0)
-		audio();
+		audio_on();
 	
 	reset_sound(this);
 	
@@ -291,7 +316,7 @@ sound::sound(buffer* a) {
 
 sound::sound(const char* a, bool b) {
 	if(alure_state == 0)
-		audio();
+		audio_on();
 	
 	reset_sound(this);
 	

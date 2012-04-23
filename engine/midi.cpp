@@ -1,11 +1,5 @@
 #ifndef _WIN32
 
-int midi_status = 0;
-
-fluid_settings_t* midi_settings = NULL;
-fluid_synth_t* midi_synth = NULL;
-fluid_audio_driver_t* midi_device = NULL;
-
 void midi_on() {
 	midi_settings = new_fluid_settings();
 	fluid_settings_setstr(midi_settings, "audio.driver", "pulseaudio");

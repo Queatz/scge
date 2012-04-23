@@ -1,12 +1,3 @@
-std::vector<ALuint> loaded_sounds;
-std::vector<ALuint> loaded_buffers;
-int alure_state = 0;
-
-ALCdevice* capture_device = NULL;
-unsigned int capture_samples_available = 0; // Samples in cache
-unsigned int capture_samples_length = 0; // Last number of captured samples
-soundbyte capture_soundbyte;
-
 #ifndef _WIN32
 FLUIDSYNTH_API void dumberror(int level, char *message, void *data) {
 	;

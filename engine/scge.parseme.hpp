@@ -166,13 +166,6 @@ struct image {
 	bool external_cache;
 };
 
-struct fontface {
-	fontface(const char*);
-	~fontface();
-	
-	Shikoba::Face* data;//x
-};
-
 struct boxy {
 	float x1, y1, x2, y2;
 };
@@ -182,13 +175,20 @@ struct glyphmetrics {
 	boxy texcoords;
 };
 
-void use(fontface*);
-void font_size(unsigned int);
-glyphmetrics glyph(const char*);
-float line_height();
-float ascent();
-float descent();
-float advance(const char*, const char* = NULL);
+struct font {
+	font(const char*);
+	~font();
+	
+	void size(unsigned int);
+	glyphmetrics glyph(const char*);
+	float height();
+	float ascent();
+	float descent();
+	float advance(const char*, const char* = NULL);
+	
+	unsigned int _size;//x
+	Shikoba::Face* data;//x
+};
 
 struct shader {
 	shader(const char*, const char*, bool = false);

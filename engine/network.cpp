@@ -1,5 +1,3 @@
-bool connected = false;
-
 bool connection() {
 	if(enet_initialize() >= 0) {
 		atexit(connection_off);

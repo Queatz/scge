@@ -13,6 +13,7 @@ int glfw_state = 0;
 #include "font.cpp"
 #include "display.cpp"
 #include "window.cpp"
+#include "program.cpp"
 #include "pixelcache.cpp"
 #include "image.cpp"
 #include "vao.cpp"

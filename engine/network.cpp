@@ -37,8 +37,6 @@ const char* peer::state() {
 	}
 }
 
-int peercount = 0;
-
 int event::channel() {
 	return (int)evt.channelID;
 }

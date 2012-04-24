@@ -23,10 +23,7 @@ window::window(const char* title, int x, int y, bool fullscreen, bool resizeable
 	
 	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
 
-#ifdef _WIN32
-	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
-	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 1);
-#else
+#ifndef _WIN32
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
 	glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);

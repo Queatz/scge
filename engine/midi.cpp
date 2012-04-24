@@ -1,5 +1,3 @@
-#ifndef _WIN32
-
 void midi_on() {
 	midi_settings = new_fluid_settings();
 	fluid_settings_setstr(midi_settings, "audio.driver", "pulseaudio");
@@ -64,8 +62,6 @@ std::string soundfont::get_presets() {
 	return t;
 }
 
-#define RED //what?
-
 midi::midi(int c) : _channel(c) {}
 
 void midi::font(soundfont* f) {
@@ -91,4 +87,3 @@ void midi::stop(int key) {
 void midi::pan(int a) {
 	fluid_synth_cc(midi_synth, _channel, 10, a);
 }
-#endif

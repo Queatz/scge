@@ -27,13 +27,13 @@
 #ifdef WITH_GRAPHICS
 #define GLFW_NO_GLU 1
 #ifdef _WIN32
-#undef GL3_PROTOTYPES
-#include <GL/glew.h>
+#  undef GL3_PROTOTYPES
+#  include <GL/glew.h>
 #else
-#define GLFW_INCLUDE_GL3 1
-#ifndef GL3_PROTOTYPES
-#define GL3_PROTOTYPES 1
-#endif
+#  define GLFW_INCLUDE_GL3 1
+#  ifndef GL3_PROTOTYPES
+#    define GL3_PROTOTYPES 1
+#  endif
 #endif
 #include <GL/glfw3.h> // Graphics
 
@@ -45,11 +45,8 @@
 #ifdef WITH_SOUND
 #include <AL/alure.h> // Sound
 
-#ifndef _WIN32
 #include <fluidsynth.h>
 #include <aubio/aubio.h> // Pitch, etc
-#endif
-
 #endif
 
 #define GLM_SWIZZLE
@@ -68,7 +65,7 @@ struct soundbyte {
 	soundbyte(ALshort*, unsigned int);
 	~soundbyte();
 	
-	float calculate_frequency(unsigned int = 0, unsigned int = 0, const char* = "schmitt");
+	float pitch(unsigned int = 0, unsigned int = 0, const char* = "schmitt");
 	float get(unsigned int);
 	
 	ALshort* data;
@@ -109,7 +106,7 @@ struct sound {
 	void seek(float = NULL, const char* = "second");
 	bool playing();
 	int get(const char*);
-	float get_offset(const char* = "second");
+	float offset(const char* = "second");
 	void font(const char*);
 	
 	buffer* data;
@@ -129,7 +126,7 @@ struct pixelcache {
 	pixelcache(const pixelcache&);
 	pixelcache(int, int, bool = false);
 	~pixelcache();
-	void set_pixel(int, int, glm::vec4);
+	void pixel(int, int, glm::vec4);
 	glm::vec4 pixel(int, int);
 	bool save(const char*, const char* = NULL);
 	
@@ -210,7 +207,7 @@ struct program {
 	void uniform(const char*, glm::${p}${type}${n});
 /*$ $*/
 	void uniform(const char*, image*, int = 0);
-	void bind_font(const char*, int = 0);
+	void font(const char*, int = 0);
 	
 	void attribute(int, const char*);
 	
@@ -226,7 +223,7 @@ struct fbo {
 	~fbo();
 	
 	GLuint id;
-	bool buffer_is_mine; //x
+	bool buffer_is_mine;//x
 };
 
 struct vbo {
@@ -303,7 +300,7 @@ struct window {
 	bool screenshot(const char*, const char* = NULL);
 	glm::vec4 pixel(int, int, const char* = NULL);
 	
-	GLFWwindow win; //x
+	GLFWwindow win;//x
 };
 
 bool graphics();
@@ -371,7 +368,6 @@ void audio(glm::vec3);
 void audio(const char*);
 void audio_soundfont(const char*);
 
-#ifndef _WIN32
 void midi_on();
 void midi_off();
 
@@ -395,7 +391,6 @@ struct midi {
 	
 	int _channel;//x
 };
-#endif
 
 void microphone(bool);
 soundbyte* microphone();
@@ -446,16 +441,6 @@ struct host {
 };
 
 #endif
-
-// Extra
-
-struct noise {
-	noise(const char* = "simple", float = 0, float = 1);
-	float sample(float x, float y, float s = NULL);
-	float scale;
-	int seed;
-	int type;//x
-};
 
 // Python
 #ifdef WITH_PYTHON

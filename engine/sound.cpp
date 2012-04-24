@@ -146,8 +146,8 @@ void sound::pitch(float a) {
 	alSourcef(source, AL_PITCH, a);
 }
 
-void sound::pan(float a) {
-	alSource3f(source, AL_POSITION, a, 0.0, 0.0);
+void sound::position(glm::vec3 a) {
+	alSource3f(source, AL_POSITION, a.x, a.y, a.z);
 }
 
 void sound::repeat(bool a) {

@@ -101,7 +101,7 @@ struct sound {
 	void maximum_gain(float);
 	void minimum_gain(float);
 	void pitch(float);
-	void pan(float);
+	void position(glm::vec3);
 	void repeat(bool = true);
 	void seek(float = NULL, const char* = "second");
 	bool playing();

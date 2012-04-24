@@ -1,22 +1,19 @@
-window::window(const char* title, int x, int y, bool fullscreen, bool resizeable, int fsaa) : win(NULL) {
+window::window(const char* title, glm::ivec2 s, bool fullscreen, bool resizeable, int fsaa) : win(NULL) {
 	if(glfw_state == 0)
 		graphics();
 	
-	if(!x || !y) {
+	if(!s.x || !s.y) {
 		if(fullscreen) {
 			GLFWvidmode d;
 			glfwGetDesktopMode(&d);
-			x = d.width;
-			y = d.height;
+			s.x = d.width;
+			s.y = d.height;
 		}
 		else {
-			x = 320;
-			y = 240;
+			s.x = 320;
+			s.y = 240;
 		}
 	}
-	
-	if(!y)
-		y = x;
 	
 	if(fsaa)
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
@@ -30,7 +27,7 @@ window::window(const char* title, int x, int y, bool fullscreen, bool resizeable
 	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-	win = glfwOpenWindow(x, y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
+	win = glfwOpenWindow(s.x, s.y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
 	
 	if(!win) {
 		err("window", "could not initiate window");
@@ -100,12 +97,12 @@ glm::ivec2 window::size() {
 	return w;
 }
 
-void window::size(int w, int h) {
-	glfwSetWindowSize(win, w, h);
+void window::size(glm::ivec2 a) {
+	glfwSetWindowSize(win, a.x, a.y);
 }
 
-void window::position(int x, int y) {
-	glfwSetWindowPos(win, x, y);
+void window::position(glm::ivec2 a) {
+	glfwSetWindowPos(win, a.x, a.y);
 }
 
 glm::ivec2 window::position() {
@@ -143,6 +140,13 @@ void window::mouse(const char* a) {
 		err("window", "mouse", "invalid option");
 }
 
+void window::mouse(glm::ivec2 a) {
+	int w, h;
+	glfwGetWindowSize(win, &w, &h);
+	
+	glfwSetMousePos(win, a.x, h - a.y);
+}
+
 bool window::button(const char* a) {
 	return button(mouse_button_string_to_int(a));
 }
@@ -160,12 +164,6 @@ glm::vec2 window::scroll() {
 	return glm::vec2((float) x, (float) y);
 }
 
-void window::mouse(int a, int b) {
-	int w, h;
-	glfwGetWindowSize(win, &w, &h);
-	
-	glfwSetMousePos(win, a, h - b);
-}
 bool window::key(const char* a) {
 	if(!strcmp(a, "shift")) {
 		if(glfwGetKey(win, keyboard_key_string_to_int("left shift")) || glfwGetKey(win, keyboard_key_string_to_int("right shift")))
@@ -199,13 +197,13 @@ bool window::key_state(const char* a) {
 	return false;
 }
 
-glm::vec4 window::pixel(int x, int y, const char* f) {
+glm::vec4 window::pixel(glm::ivec2 a, const char* f) {
 	glfwMakeContextCurrent(win);
 	
 	int w, h;
 	glfwGetWindowSize(win, &w, &h);
 	
-	if(x < 0 || x >= w || y < 0 || y >= h)
+	if(a.x < 0 || a.x >= w || a.y < 0 || a.y >= h)
 		return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	
 	GLenum fmt = GL_RGB;
@@ -217,7 +215,7 @@ glm::vec4 window::pixel(int x, int y, const char* f) {
 	}
 	
 	GLfloat c[3];
-	glReadPixels(x, y, 1, 1, fmt, GL_FLOAT, c);
+	glReadPixels(a.x, a.y, 1, 1, fmt, GL_FLOAT, c);
 	return glm::vec4(c[0], c[1], c[2], 1.0);
 }
 
@@ -227,7 +225,7 @@ bool window::screenshot(const char* a, const char* b) {
 	int w, h;
 	glfwGetWindowSize(win, &w, &h);
 	
-	pixelcache p(w, h);
+	pixelcache p(glm::ivec2(w, h));
 	
 	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.data);
 	
@@ -235,5 +233,4 @@ bool window::screenshot(const char* a, const char* b) {
 		return true;
 	err("screenshot", "could not save");
 	return false;
-
 }

@@ -11,7 +11,8 @@ PyObject* _string_callback = NULL;
 
 void _size_callback_wrap(GLFWwindow w, int x, int y) {
 	PyObject* args;
-	args = Py_BuildValue("(Oii)", (window*) glfwGetWindowUserPointer(w), x, y);
+	glm::ivec2 s(x, y);
+	args = Py_BuildValue("(OO)", (window*) glfwGetWindowUserPointer(w), (PyObject *) &s);
 	PyEval_CallObject(_size_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -76,7 +77,8 @@ void _key_callback_wrap(GLFWwindow w, int x, int y) {
 
 void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 	PyObject* args;
-	args = Py_BuildValue("(Oii)", (window*) glfwGetWindowUserPointer(w), (float) x, (float) y);
+	glm::vec2 s = glm::vec2((float) x, (float) y);
+	args = Py_BuildValue("(OO)", (window*) glfwGetWindowUserPointer(w), (PyObject *) &s);
 	PyEval_CallObject(_scroll_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())
@@ -86,9 +88,11 @@ void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 	int u, h;
 	glfwGetWindowSize(w, &u, &h);
+	y = h - y;
+	glm::ivec2 a(x, y);
 	
 	PyObject* args;
-	args = Py_BuildValue("(Oii)", (window*) glfwGetWindowUserPointer(w), x, h - y);
+	args = Py_BuildValue("(OO)", (window*) glfwGetWindowUserPointer(w), (PyObject *) &a);
 	PyEval_CallObject(_mousemove_callback, args);
 	Py_DECREF(args);
 	if(PyErr_Occurred())

@@ -63,8 +63,20 @@ void poll() {
 	glfwPollEvents();
 }
 
-void viewport(int x, int y, int w, int h) {
-	glViewport(x, y, w, h);
+void viewport(glm::ivec2 a, glm::ivec2 b) {
+	glViewport(a.x, a.y, b.x, b.y);
+}
+
+void viewport(glm::ivec4 a) {
+	glViewport(a.x, a.y, a.z, a.w);
+}
+
+void scissor(glm::ivec2 a, glm::ivec2 b) {
+	glScissor(a.x, a.y, b.x, b.y);
+}
+
+void scissor(glm::ivec4 a) {
+	glScissor(a.x, a.y, a.z, a.w);
 }
 
 void polygon_mode(const char* a) {
@@ -223,10 +235,6 @@ void use(program* a) {
 
 void use() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void scissor(int a, int b, int c, int d) {
-	glScissor(a, b, c, d);
 }
 
 void stencil() {

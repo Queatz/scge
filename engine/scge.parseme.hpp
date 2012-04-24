@@ -124,36 +124,36 @@ struct sound {
 struct pixelcache {
 	pixelcache(const char*);
 	pixelcache(const pixelcache&);
-	pixelcache(int, int, bool = false);
+	pixelcache(glm::ivec2, bool = false);
 	~pixelcache();
-	void pixel(int, int, glm::vec4);
-	glm::vec4 pixel(int, int);
+	void pixel(glm::ivec2, glm::vec4);
+	glm::vec4 pixel(glm::ivec2);
 	bool save(const char*, const char* = NULL);
 	
-	int width, height;
+	glm::ivec2 size;
 	char colors;
 	GLubyte *data;//x
 };
 
 struct image {
 	image(const char*, bool = false);
-	image(int, int, bool = false, bool = false);
-	image(int, int, const char*);
+	image(glm::ivec2, bool = false, bool = false);
+	image(glm::ivec2, const char*);
 	image(pixelcache*);
 	~image();
 	
-	int width, height;
+	glm::ivec2 size;
 	char colors;
 	
 	void set(const char*);
 	
 	void from_pixelcache(pixelcache*);
-	void from_pixelcache(pixelcache*, int, int, int, int);
+	void from_pixelcache(pixelcache*, glm::ivec2, glm::ivec2);
 	void from_pixelcache();
-	void from_pixelcache(int, int, int, int);
+	void from_pixelcache(glm::ivec2, glm::ivec2);
 	void refresh_pixel_cache();
 	void discard_pixel_cache();
-	glm::vec4 pixel(int, int);
+	glm::vec4 pixel(glm::ivec2);
 	bool save(const char*, const char* = NULL);
 	
 	bool mipmaps;
@@ -218,7 +218,7 @@ struct fbo {
 	image* buffer;
 	image* depth;
 
-	fbo(int, int, bool = false, bool = false, bool = false, int = 0);
+	fbo(glm::ivec2, bool = false, bool = false, bool = false, int = 0);
 	fbo(image*);
 	~fbo();
 	
@@ -269,7 +269,7 @@ struct vao {
 };
 
 struct window {
-	window(const char* = "scge test", int = 0, int = 0, bool = false, bool = false, int = 0);
+	window(const char* = "scge test", glm::ivec2 = glm::ivec2(), bool = false, bool = false, int = 0);
 	~window();
 	
 	void close();
@@ -282,14 +282,14 @@ struct window {
 	bool active();
 	bool iconified();
 
-	void size(int, int);
+	void size(glm::ivec2);
 	glm::ivec2 size();
-	void position(int, int);
+	void position(glm::ivec2);
 	glm::ivec2 position();
 
 	glm::vec2 mouse();
 	void mouse(const char*);
-	void mouse(int, int);
+	void mouse(glm::ivec2);
 	bool button(short);
 	bool button(const char*);
 	glm::vec2 scroll();
@@ -298,7 +298,7 @@ struct window {
 	bool key_state(const char*);
 
 	bool screenshot(const char*, const char* = NULL);
-	glm::vec4 pixel(int, int, const char* = NULL);
+	glm::vec4 pixel(glm::ivec2, const char* = NULL);
 	
 	GLFWwindow win;//x
 };
@@ -306,12 +306,12 @@ struct window {
 bool graphics();
 void graphics_off();
 
-typedef void (* _resize_callback_function)(window*, int, int);
+typedef void (* _resize_callback_function)(window*, glm::ivec2);
 typedef int (* _close_callback_function)(window*);
 typedef void (* _focus_callback_function)(window*, int);
 typedef void (* _iconify_callback_function)(window*, int);
 typedef void (* _button_callback_function)(window*, const char*, int);
-typedef void (* _mousemove_callback_function)(window*, int, int);
+typedef void (* _mousemove_callback_function)(window*, glm::ivec2);
 typedef void (* _scroll_callback_function)(window*, glm::vec2);
 typedef void (* _key_callback_function)(window*, const char*, int);
 typedef void (* _string_callback_function)(window*, const char*);
@@ -337,8 +337,10 @@ void use(vao*);
 void use(program*);
 void use();
 
-void viewport(int, int, int, int);
-void scissor(int, int, int, int);
+void viewport(glm::ivec2, glm::ivec2);
+void viewport(glm::ivec4);
+void scissor(glm::ivec2, glm::ivec2);
+void scissor(glm::ivec4);
 
 void draw(const char*, unsigned int, unsigned int = 0);
 

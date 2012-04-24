@@ -22,7 +22,7 @@ fbo::fbo(image* a) {
 	glBindFramebuffer(GL_FRAMEBUFFER, last);
 }
 
-fbo::fbo(int b, int c, bool alpha, bool quality, bool ds, int multisample) {
+fbo::fbo(glm::ivec2 s, bool alpha, bool quality, bool ds, int multisample) {
 	if(glfw_state == 0)
 		graphics();
 	
@@ -35,13 +35,13 @@ fbo::fbo(int b, int c, bool alpha, bool quality, bool ds, int multisample) {
 	glBindFramebuffer(GL_FRAMEBUFFER, id);
 	
 	buffer_is_mine = true;
-	buffer = new image(b, c, alpha, quality);
+	buffer = new image(s, alpha, quality);
 	
 	glBindTexture(GL_TEXTURE_2D, buffer->id);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->id, 0);
 	
 	if(ds) {
-		depth = new image(b, c, "depth");
+		depth = new image(s, "depth");
 	
 		glBindTexture(GL_TEXTURE_2D, depth->id);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth->id, 0);

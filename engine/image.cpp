@@ -45,8 +45,8 @@ image::image(const char* a, bool m) {
 		return;
 	}
 	
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &size.x);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &size.y);
 	
 	if(m) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -60,7 +60,7 @@ image::image(const char* a, bool m) {
 	glBindTexture(GL_TEXTURE_2D, last);
 }
 
-image::image(int a, int b, bool alpha, bool quality) {
+image::image(glm::ivec2 a, bool alpha, bool quality) {
 	if(glfw_state == 0)
 		graphics();
 	
@@ -68,15 +68,14 @@ image::image(int a, int b, bool alpha, bool quality) {
 	mipmaps = false;
 	external_cache = false;
 	
-	width = a;
-	height = b;
+	size = a;
 	
 	GLint last;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
 	
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
-	glTexImage2D(GL_TEXTURE_2D, 0, alpha ? (quality ? GL_RGBA12 : GL_RGBA8) : (quality ? GL_RGB12 : GL_RGB8), a, b, 0, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, alpha ? (quality ? GL_RGBA12 : GL_RGBA8) : (quality ? GL_RGB12 : GL_RGB8), size.x, size.y, 0, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -84,7 +83,7 @@ image::image(int a, int b, bool alpha, bool quality) {
 	glBindTexture(GL_TEXTURE_2D, last);
 }
 
-image::image(int a, int b, const char* f) {
+image::image(glm::ivec2 a, const char* f) {
 	if(glfw_state == 0)
 		graphics();
 	
@@ -92,8 +91,7 @@ image::image(int a, int b, const char* f) {
 	mipmaps = false;
 	external_cache = false;
 	
-	width = a;
-	height = b;
+	size = a;
 	
 	GLint last;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
@@ -132,7 +130,7 @@ image::image(int a, int b, const char* f) {
 		ifmt = GL_R8;
 	}
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, a, b, 0, fmt, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, size.x, size.y, 0, fmt, GL_UNSIGNED_BYTE, NULL);
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -148,13 +146,12 @@ image::image(pixelcache* p) {
 	external_cache = true;
 	cache = p;
 	
-	width = p->width;
-	height = p->height;
+	size = p->size;
 	colors = p->colors;
 	
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
-	glTexImage2D(GL_TEXTURE_2D, 0, p->colors == 4 ? GL_RGBA8 : GL_RGB8, width, height, 0, p->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, p->colors == 4 ? GL_RGBA8 : GL_RGB8, size.x, size.y, 0, p->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -212,20 +209,20 @@ void image::from_pixelcache(pixelcache* a) {
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, a->data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, a->size.x, a->size.y, a->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, a->data);
 	
 	// Reset to the original texture
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, bind);
 }
 
-void image::from_pixelcache(pixelcache* a, int x, int y, int w, int h) {
+void image::from_pixelcache(pixelcache* a, glm::ivec2 pos, glm::ivec2 dim) {
 	GLint bind;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
-	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, a->data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, pos.x, pos.y, dim.x, dim.y, a->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, a->data);
 	
 	// Reset to the origional texture
 	if(bind != id)
@@ -243,14 +240,14 @@ void image::from_pixelcache() {
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, size.x, size.y, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
 	
 	// Reset to the origional texture
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, bind);
 }
 
-void image::from_pixelcache(int x, int y, int w, int h) {
+void image::from_pixelcache(glm::ivec2 pos, glm::ivec2 dim) {
 	if(!cache) {
 		err("image", "from_pixelcache", "no cache");
 		return;
@@ -261,7 +258,7 @@ void image::from_pixelcache(int x, int y, int w, int h) {
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
-	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, pos.x, pos.y, dim.x, dim.y, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
 	
 	// Reset to the origional texture
 	if(bind != id)
@@ -275,7 +272,7 @@ void image::refresh_pixel_cache() {
 		glBindTexture(GL_TEXTURE_2D, id);
 	
 	if(!cache)
-		cache = new pixelcache(width, height);
+		cache = new pixelcache(size);
 	
 	glGetTexImage(GL_TEXTURE_2D, 0, cache->colors == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cache->data);
 	
@@ -290,11 +287,11 @@ void image::discard_pixel_cache() {
 	cache = NULL;
 }
 
-glm::vec4 image::pixel(int x, int y) {
+glm::vec4 image::pixel(glm::ivec2 a) {
 	if(!cache)
 		refresh_pixel_cache();
 	
-	return cache->pixel(x, y);
+	return cache->pixel(a);
 }
 
 bool image::save(const char* a, const char* b) {

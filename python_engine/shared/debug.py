@@ -7,7 +7,7 @@ import numbers
 
 _initstate = 0
 
-def _setup():
+def _setup(wd):
 	global _program, _font_program, _vao, _font_vbo, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
 	
 	_font_vshader = scge.shader('vertex', '''#version 330 core
@@ -93,7 +93,7 @@ def _setup():
 	_vbo = scge.vbo((4 * 2 + 4 * 4 + 4 * 2) * 4, 'stream draw')
 
 	_vao = scge.vao()
-	scge.use_vao(_vao)
+	scge.use(_vao)
 	_vao.enable(0)
 	_vao.enable(1)
 	_vao.enable(2)
@@ -104,23 +104,22 @@ def _setup():
 	_font_vbo = scge.vbo((4 * 2 + 4 * 2) * 4, 'stream draw')
 	
 	_font_vao = scge.vao()
-	scge.use_vao(_font_vao)
+	scge.use(_font_vao)
 	_font_vao.enable(0)
 	_font_vao.enable(1)
 	_font_vao.attribute(0, _font_vbo, 'float', 2, 0, 4 * 4)
 	_font_vao.attribute(1, _font_vbo, 'float', 4, 2 * 4, 4 * 4)
 
-	scge.use_vao()
+	scge.use()
 	
-	p = scge.pixelcache(1, 1)
-	p.set_pixel(0, 0, glm.vec4(1))
+	p = scge.pixelcache(glm.ivec2(1, 1))
+	p.pixel(glm.ivec2(0, 0), glm.vec4(1))
 	_white = scge.image(p)
 	
 	_program.uniform('tex', _white)
 	_img = _white
 	
-	wd = scge.window_dimensions()
-	_matrix = glm.ortho(0, wd.x, 0, wd.y, -1, 1)
+	_matrix = glm.ortho(0, wd.size().x, 0, wd.size().y, -1, 1)
 	
 	_initstate = 1
 	
@@ -128,23 +127,20 @@ def _setup():
 	
 	color(1)
 
-def begin(defaultProgram = True):
+def begin(wd, defaultProgram = True):
 	global _usingDefaultProgram
 	if not _initstate:
-		_setup()
+		_setup(wd)
 	
-	scge.use_vao(_vao)
+	scge.use(_vao)
 	_usingDefaultProgram = defaultProgram
 	
 	if defaultProgram:
-		scge.use_program(_program)
+		scge.use(_program)
 		_program.uniform('matrix', _matrix)
 		_program.uniform('tex', _img)
 
-def end():
-	if _usingDefaultProgram:
-		scge.use_program()
-	scge.use_vao()
+def end(): pass
 
 def matrix(m):
 	global _matrix
@@ -211,26 +207,25 @@ def image(img = None):
 	_program.uniform('tex', _img)
 
 def draw(x = 0, y = 0, s = 1):
-	x2 = x + _img.width * s
-	y2 = y + _img.height * s
+	x2 = x + _img.size.x * s
+	y2 = y + _img.size.y * s
 	_vbo.data(struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0), (4 * 2 + 4 * 4) * 4)
 	_vbo.data(struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y), 0)
 	scge.draw('triangle fan', 4)
 
 def write(fnt, sze, sttr, x = 0, y = 0):
-	scge.font_size(sze)
-	scge.font_face(fnt)
-	scge.use_program(_font_program)
+	fnt.size(sze)
+	scge.use(_font_program)
 	_font_program.uniform('matrix', _matrix)#.translate(glm.vec3(x, y, 0)))
 	_font_program.uniform('color', _color)
-	scge.use_vao(_font_vao)
+	scge.use(_font_vao)
 
-	_program.bind_font('tex')
+	_program.font('tex')
 	lc = None
 	for c in sttr:
-		g = scge.glyph(c)
+		g = fnt.glyph(c)
 		if lc:
-			x += scge.advance(lc, c)
+			x += fnt.advance(lc, c)
 
 		_font_vbo.data(struct.pack('16f',
 			g.vertices.x1 + x,
@@ -258,5 +253,5 @@ def write(fnt, sze, sttr, x = 0, y = 0):
 		
 		lc = c
 
-	scge.use_vao(_vao)
-	scge.use_program(_program)
+	scge.use(_vao)
+	scge.use(_program)

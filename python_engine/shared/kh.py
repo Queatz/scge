@@ -74,10 +74,10 @@ def _handle(i, s):
 		else:
 			CALLBACK(i, PRESSED[i])
 
-def _keycallback(k, s):
+def _keycallback(w, k, s):
 	_handle(k, s)
 
-def _buttoncallback(b, s):
+def _buttoncallback(w, b, s):
 	_handle('mouse ' + b, s)
 
 def events(self):

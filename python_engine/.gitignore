@@ -1,7 +1,7 @@
-*
-!.gitignore
-!setup.py
-!scge.i
-!compile
-!shared
-!shared/*
+scge.i
+build/*
+scge/*
+scge_wrap.cxx
+scge_wrap.o
+scge.hpp
+_scge.so

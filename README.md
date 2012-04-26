@@ -32,6 +32,8 @@ Install all the requirements:
 * utf8-cpp (>=2.3.1)
 	* Get here: <http://utfcpp.sourceforge.net/>
 
+You also need Parseme <https://github.com/Queatz/Parseme>
+
 To compile and install, open terminal from this directory and run:
 
 ```bash

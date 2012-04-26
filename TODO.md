@@ -45,13 +45,6 @@ POPULARITY
 	* scge's been quite stable lately,
 	  time to show off what it can do in one enthralling game!
 
-
-DOCUMENTATION
-==================
-
-The current documentation is generated from the source, however it's just one big page.  Great documentation is needed asap.
-
-
 3D MODELS
 =========
 
@@ -114,39 +107,22 @@ VBO VERIFYING
 ============
 VBOs need to have some checking for 0 size.  This has caused many hideous segfaults.  Perhaps this needs to be part of an error checking modal.
 
-IBO CHECKUP
-===========
-*	Figure out if ibo's need to be different from vbo's
-*	Fix how they're used and drawn
-
 OF RANDOM LURE
 ==================
 
-* There is a random segfault that has something to do with networking.
-	* It seems to be when a client times out
-* Exiting while audio is playing is not completely smooth.
-* Fix multiple windows opening when calling window(), it should close the current one.
 * allow Python bytes() to be sent over the network.
 * FBOs and multisample needs to be verified
 * host.disconnect() to disconnect from all peers
 	* peers aren't kept track of (yet)
 * pixel() needs to be able to get from the front or back buffer
-
+https://github.com/Queatz/Parseme
 
 EVENTUALLY
 ==================
 
-* Rich text fonts
-	Possibly through callbacks per character
-	Only font face and size is dealt with,
-	user deals with color and anything else 
 * Complete implementation of GLM Python
 	* I think we can use Clang to write a function wrapper
-
-*	Midi on windows needs to be verified.
-*	aubio/pitch needs to be verified on windows.
-*	Joystick support
-
+x
 SUPPORT FOR OLDER HARDWARE
 ==================
 

@@ -102,39 +102,19 @@ POPULARITY
 * (ext.) 2D MMORPG specific subengine
 	* Everything to make a 2D MMORPG
 
-
-VBO VERIFYING
-============
-VBOs need to have some checking for 0 size.  This has caused many hideous segfaults.  Perhaps this needs to be part of an error checking modal.
-
 OF RANDOM LURE
 ==================
 
 * allow Python bytes() to be sent over the network.
+* VBOs need to have some checking for 0 size.  This has caused many hideous segfaults.  Perhaps this needs to be part of an error checking modal.
 * FBOs and multisample needs to be verified
 * host.disconnect() to disconnect from all peers
 	* peers aren't kept track of (yet)
 * pixel() needs to be able to get from the front or back buffer
-https://github.com/Queatz/Parseme
 
 EVENTUALLY
 ==================
 
 * Complete implementation of GLM Python
 	* I think we can use Clang to write a function wrapper
-x
-SUPPORT FOR OLDER HARDWARE
-==================
-
-scge only works with OpenGL 3+ at the moment.  Support for OpenGL 2.1 with extensions should be considered.
-
-
-
-
-
-
-
-
-
-
-
+* scge only works with OpenGL 3+ at the moment.  Support for OpenGL 2.1 with extensions should be considered.

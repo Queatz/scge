@@ -6,6 +6,7 @@ import struct
 import numbers
 
 _initstate = 0
+_texcoordsdirty = True
 
 def _setup(wd):
 	global _program, _font_program, _vao, _font_vbo, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
@@ -109,8 +110,6 @@ def _setup(wd):
 	_font_vao.enable(1)
 	_font_vao.attribute(0, _font_vbo, 'float', 2, 0, 4 * 4)
 	_font_vao.attribute(1, _font_vbo, 'float', 4, 2 * 4, 4 * 4)
-
-	scge.use()
 	
 	p = scge.pixelcache(glm.ivec2(1, 1))
 	p.pixel(glm.ivec2(0, 0), glm.vec4(1))
@@ -121,11 +120,11 @@ def _setup(wd):
 	
 	_matrix = glm.ortho(0, wd.size().x, 0, wd.size().y, -1, 1)
 	
-	_initstate = 1
-	
 	_usingDefaultProgram = True
 	
-	color(1)
+	color(glm.vec4(1))
+	
+	_initstate = 1
 
 def begin(wd, defaultProgram = True):
 	global _usingDefaultProgram
@@ -140,8 +139,6 @@ def begin(wd, defaultProgram = True):
 		_program.uniform('matrix', _matrix)
 		_program.uniform('tex', _img)
 
-def end(): pass
-
 def matrix(m):
 	global _matrix
 	_matrix = m
@@ -149,56 +146,47 @@ def matrix(m):
 
 def _expand_color(c):
 	if len(c) == 1:
-		return (c[0], c[0], c[0], 1)
+		return glm.vec4(c[0], c[0], c[0], 1)
 	elif len(c) == 2:
-		return (c[0], c[0], c[0], c[1])
+		return glm.vec4(c[0], c[0], c[0], c[1])
 	elif len(c) == 3:
-		return (c[0], c[1], c[2], 1)
+		return glm.vec4(c[0], c[1], c[2], 1)
 	elif len(c) == 4:
 		return c
-	return (1, 1, 1, 1)
+	return glm.vec4(1)
 
 def color(p1 = None, p2 = None, p3 = None, p4 = None):
 	global _color
-	if isinstance(p1, glm.Vector):
-		c = _expand_color(p1)
-		_color = glm.vec4(*c)
-		_vbo.data(struct.pack('ffff' * 4, *(c * 4)), (4 * 2) * 4)
-	elif isinstance(p1, numbers.Number):
-		c = _expand_color(((p1,) + ((p2,) + ((p3,) + ((p4,) if p4 is not None else ()) if p3 is not None else ()) if p2 is not None else ()) if p1 is not None else ()))
-		_color = glm.vec4(*c)
-		_vbo.data(struct.pack('ffff' * 4, *(c * 4)), (4 * 2) * 4)
+	if p1 is None:
+		_color = glm.vec4(1)
+		_vbo.data(bytes(_color) * 4, (4 * 2) * 4)
+	elif p2 is None:
+		_color = _expand_color(p1)
+		_vbo.data(bytes(_color) * 4, (4 * 2) * 4)
+	elif p3 is None or p4 is None:
+		raise Exception('Color must specify 1 point or all four.')
 	else:
-		if p1 is None:
-			c = (1,) * 4
-			_color = glm.vec4(*c)
-			_vbo.data(struct.pack('ffff' * 4, c), (4 * 2) * 4)
-		elif p2 is None:
-			c = _expand_color(p1)
-			_color = glm.vec4(*c)
-			_vbo.data(struct.pack('ffff' * 4, *(c * 4)), (4 * 2) * 4)
-		elif p3 is None or p4 is None:
-			print('Color must specify 1 point or all four.')
-		else:
-			_vbo.data(struct.pack('ffff' * 4, *(_expand_color(p1) + _expand_color(p2) + _expand_color(p3) + _expand_color(p4))), (4 * 2) * 4)
+		_vbo.data(bytes(_expand_color(p1)) + bytes(_expand_color(p2)) + bytes(_expand_color(p3)) + bytes(_expand_color(p4)), (4 * 2) * 4)
 
-def texcoord(p1 = (0, 0), p2 = (0, 0), p3 = (0, 0), p4 = (0, 0)):
-	_vbo.data(struct.pack('ff' * 4, *(p1 + p2 + p3 + p4)), (4 * 2 + 4 * 4) * 4)
+def texcoord(p1 = glm.vec2(0, 0), p2 = glm.vec2(0, 0), p3 = glm.vec2(0, 0), p4 = glm.vec2(0, 0)):
+	global _texcoordsdirty
+	_texcoordsdirty = True
+	_vbo.data(bytes(p1) + bytes(p2) + bytes(p3) + bytes(p4), (4 * 2 + 4 * 4) * 4)
 
-def quad(x, y, x2, y2):
-	_vbo.data(struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y), 0)
+def quad(a, b):
+	_vbo.data(struct.pack('ff' * 4, a.x, a.y, a.x, b.y, b.x, b.y, b.x, a.y), 0)
 	scge.draw('triangle fan', 4)
 
-def triangle(x, y, x2, y2, x3, y3):
-	_vbo.data(struct.pack('ff' * 3, x, y, x2, y2, x3, y3), 0)
+def triangle(a, b, c):
+	_vbo.data(bytes(a) + bytes(b) + bytes(c), 0)
 	scge.draw('triangle', 3)
 
-def line(x, y, x2, y2):
-	_vbo.data(struct.pack('ff' * 2, x, y, x2, y2), 0)
+def line(a, b):
+	_vbo.data(bytes(a) + bytes(b), 0)
 	scge.draw('line', 2)
 
-def point(x, y):
-	_vbo.data(struct.pack('ff' * 1, x, y), 0)
+def point(a):
+	_vbo.data(bytes(a), 0)
 	scge.draw('point', 1)
 
 def image(img = None):
@@ -206,17 +194,20 @@ def image(img = None):
 	_img = (img if img else _white)
 	_program.uniform('tex', _img)
 
-def draw(x = 0, y = 0, s = 1):
-	x2 = x + _img.size.x * s
-	y2 = y + _img.size.y * s
-	_vbo.data(struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0), (4 * 2 + 4 * 4) * 4)
-	_vbo.data(struct.pack('ff' * 4, x, y, x, y2, x2, y2, x2, y), 0)
+_itc = struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0)
+
+def draw(p = glm.vec2(0), s = glm.vec2(1)):
+	global _texcoordsdirty
+	q = p + glm.vec2(_img.size) * s
+	if _texcoordsdirty:
+		_vbo.data(_itc, (4 * 2 + 4 * 4) * 4)
+		_texcoordsdirty = False
+	_vbo.data(struct.pack('ff' * 4, p.x, p.y, p.x, q.y, q.x, q.y, q.x, p.y), 0)
 	scge.draw('triangle fan', 4)
 
-def write(fnt, sze, sttr, x = 0, y = 0):
-	fnt.size(sze)
+def write(fnt, sttr, p):
 	scge.use(_font_program)
-	_font_program.uniform('matrix', _matrix)#.translate(glm.vec3(x, y, 0)))
+	_font_program.uniform('matrix', _matrix)
 	_font_program.uniform('color', _color)
 	scge.use(_font_vao)
 
@@ -225,26 +216,26 @@ def write(fnt, sze, sttr, x = 0, y = 0):
 	for c in sttr:
 		g = fnt.glyph(c)
 		if lc:
-			x += fnt.advance(lc, c)
+			p.x += fnt.advance(lc, c)
 
 		_font_vbo.data(struct.pack('16f',
-			g.vertices.x1 + x,
-			g.vertices.y1 + y,
+			g.vertices.x1 + p.x,
+			g.vertices.y1 + p.y,
 			g.texcoords.x1,
 			g.texcoords.y1,
 
-			g.vertices.x1 + x,
-			g.vertices.y2 + y,
+			g.vertices.x1 + p.x,
+			g.vertices.y2 + p.y,
 			g.texcoords.x1,
 			g.texcoords.y2,
 
-			g.vertices.x2 + x,
-			g.vertices.y2 + y,
+			g.vertices.x2 + p.x,
+			g.vertices.y2 + p.y,
 			g.texcoords.x2,
 			g.texcoords.y2,
 
-			g.vertices.x2 + x,
-			g.vertices.y1 + y,
+			g.vertices.x2 + p.x,
+			g.vertices.y1 + p.y,
 			g.texcoords.x2,
 			g.texcoords.y1,
 		), 0)

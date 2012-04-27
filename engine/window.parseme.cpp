@@ -1,4 +1,10 @@
 window::window(const char* title, glm::ivec2 s, bool fullscreen, bool resizeable, int fsaa) : win(NULL) {
+#ifdef WITH_PYTHON
+/*$ CALLBACK $*/
+	_${n}_callback = NULL;
+/*$ $*/
+#endif
+
 	if(glfw_state == 0)
 		graphics();
 	
@@ -234,3 +240,18 @@ bool window::screenshot(const char* a, const char* b) {
 	err("screenshot", "could not save");
 	return false;
 }
+
+#ifdef WITH_PYTHON
+void window::callback(const char* e, PyObject* o) {
+/*$ CALLBACK $*/
+	${'else ' if I > 0 else ''}if(!strcmp(e, "${n}")) {
+		if(_${n}_callback)
+			Py_DECREF(_${n}_callback);
+		_${n}_callback = o;
+		Py_INCREF(o);
+	}
+/*$ $*/
+	else
+		err("window", "callback", "not understood");
+}
+#endif

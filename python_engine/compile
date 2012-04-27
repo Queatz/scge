@@ -6,15 +6,7 @@ swig -python -py3 -c++ scge.i
 g++ -c -x c++ -fPIC scge_wrap.cxx -I/usr/include/python3.2 -I/usr/include/freetype2
 g++ -shared scge_wrap.o -lscge -L. -o _scge.so
 
-#sudo rm scge_wrap.cxx
-sudo rm scge_wrap.o
-#sudo rm scge.hpp
+mv scge.py scge/__init__.py
+mv _scge.so scge/_scge.so
 
-if [ ! -d ./scge ]; then
-	mkdir ./scge
-fi
-
-sudo mv scge.py ./scge/__init__.py
-sudo mv _scge.so ./scge/_scge.so
-
-./pyinstall
+sudo python3 setup.py install

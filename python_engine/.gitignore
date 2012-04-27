@@ -1,7 +1,9 @@
 scge.i
 build/*
-scge/*
+dist/*
+scge.egg-info/*
 scge_wrap.cxx
 scge_wrap.o
 scge.hpp
-_scge.so
+scge/_scge.so
+scge/__init__.py

@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
 
-import os
+import os, fnmatch
 
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import setup
 
-shared = ['_scge.so']
-for r, d, f in os.walk('shared'):
-	for s in f:
-		shared.append(os.path.join(r, s))
+data = ['_scge.so']
 
-setup(name='scge',
-      version='0.1',
-      description='Simple C++ Game Engine',
-      author='JacobF',
-      author_email='queatz@gmail.com',
-      url='http://www.queatz.com',
-      packages=['scge'],
-      package_data={'scge': shared},
+for d in os.walk('scge'):
+	if not d[1]:
+		continue
+	
+	e = os.path.join(*d[1])
+	data += [os.path.join(e, x) for x in fnmatch.filter(d[2], '*.py')]
+
+setup(
+	install_requires=['distribute'],
+	name='scge',
+	version='0.1',
+	description='All Purpose General Engine',
+	author='Jacob Ferrero',
+	author_email='queatz@gmail.com',
+	url='http://www.queatz.com',
+	packages = ['scge'],
+	package_data = {'scge': data}
 )

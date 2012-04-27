@@ -21,12 +21,50 @@ PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '4x2', c = 4*2, row
 PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '3x4', c = 3*4, rows = 4))
 PROGRAM__UNIFORM.add(parseme.Round(type = 'mat', p = '', n = '4x3', c = 4*3, rows = 3))
 
+CALLBACK = parseme.Section('CALLBACK')
+CALLBACK.add(parseme.Round(n = 'size', g = 'WindowSize'))
+CALLBACK.add(parseme.Round(n = 'close', g = 'WindowClose'))
+CALLBACK.add(parseme.Round(n = 'dirty', g = 'WindowRefresh'))
+CALLBACK.add(parseme.Round(n = 'focus', g = 'WindowFocus'))
+CALLBACK.add(parseme.Round(n = 'iconify', g = 'WindowIconify'))
+CALLBACK.add(parseme.Round(n = 'button', g = 'MouseButton'))
+CALLBACK.add(parseme.Round(n = 'key', g = 'Key'))
+CALLBACK.add(parseme.Round(n = 'scroll', g = 'Scroll'))
+CALLBACK.add(parseme.Round(n = 'char', g = 'Char'))
+CALLBACK.add(parseme.Round(n = 'mousemove', g = 'MousePos'))
+CALLBACK.add(parseme.Round(n = 'enter', g = 'CursorEnter'))
+
+TYPEMAP = parseme.Section('TYPEMAP')
+et = []
+
+for p in ('', 'i'):
+	for n in range(2, 5):
+		et.append(('vec', p, str(n), n, 1))
+	
+for n in range(2, 5):
+	et.append(('mat', '', str(n), n, n))
+
+for n in (
+	(2, 3),
+	(2, 4),
+	(3, 2),
+	(3, 4),
+	(4, 2),
+	(4, 3)
+):
+	et.append(('mat', '', str(n[0]) + 'x' + str(n[1]), n[0], n[1]))
+
+for r in et:
+	TYPEMAP.add(parseme.Round(base = r[0], p = r[1], type = r[1] + r[0] + r[2], rows = r[3], cols = r[4], c = r[3] * r[4]))
+
 parseme.Project(
-	PROGRAM__UNIFORM
-).parse(*glob.glob('./engine/*.parseme*'))
+	PROGRAM__UNIFORM, CALLBACK, TYPEMAP
+).parse(*glob.glob('./*/*.parseme*'))
 """
 
 cd cmake
 cmake ..
 make
 sudo make install
+
+cd ..

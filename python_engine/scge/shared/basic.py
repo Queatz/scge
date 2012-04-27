@@ -3,7 +3,6 @@
 import scge
 import glm
 import struct
-import numbers
 
 _initstate = 0
 _texcoordsdirty = True
@@ -140,7 +139,7 @@ def begin(wd, defaultProgram = True):
 		_program.uniform('tex', _img)
 
 def matrix(m):
-	global _matrix
+	global _matrix, _program
 	_matrix = m
 	_program.uniform('matrix', m)
 

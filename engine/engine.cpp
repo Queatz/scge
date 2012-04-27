@@ -51,8 +51,4 @@ int peercount = 0;
 #include "network.cpp"
 #endif
 
-#ifdef WITH_PYTHON
-#include "python.cpp"
-#endif
-
 }

@@ -1,3 +1,5 @@
 program.cpp
 scge.hpp
 conf.h
+window.cpp
+display.cpp

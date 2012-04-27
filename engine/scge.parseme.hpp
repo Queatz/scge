@@ -300,21 +300,21 @@ struct window {
 	bool screenshot(const char*, const char* = NULL);
 	glm::vec4 pixel(glm::ivec2, const char* = NULL);
 	
+#ifdef WITH_PYTHON
+	void callback(const char*, PyObject*);
+#endif
+
+#ifdef WITH_PYTHON
+/*$ CALLBACK $*/
+	PyObject* _${n}_callback;
+/*$ $*/
+#endif
+	
 	GLFWwindow win;//x
 };
 
 bool graphics();
 void graphics_off();
-
-typedef void (* _resize_callback_function)(window*, glm::ivec2);
-typedef int (* _close_callback_function)(window*);
-typedef void (* _focus_callback_function)(window*, int);
-typedef void (* _iconify_callback_function)(window*, int);
-typedef void (* _button_callback_function)(window*, const char*, int);
-typedef void (* _mousemove_callback_function)(window*, glm::ivec2);
-typedef void (* _scroll_callback_function)(window*, glm::vec2);
-typedef void (* _key_callback_function)(window*, const char*, int);
-typedef void (* _string_callback_function)(window*, const char*);
 
 void use(window*);
 
@@ -442,11 +442,6 @@ struct host {
 	ENetHost* me;//x
 };
 
-#endif
-
-// Python
-#ifdef WITH_PYTHON
-void callback(const char*, PyObject*);
 #endif
 
 } // namespace scge

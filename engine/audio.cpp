@@ -66,15 +66,19 @@ void audio_off() {
 	alureShutdownDevice();
 }
 
-void audio(float a) {
+void audio_soundfont(const char* a) {
+	setenv("FLUID_SOUNDFONT", a, 1);
+}
+
+void listener::gain(float a) {
 	alListenerf(AL_GAIN, a);
 }
 
-void audio(glm::vec3 a) {
+void listener::position(glm::vec3 a) {
 	alListener3f(AL_POSITION, a.x, a.y, a.z);
 }
 
-void audio(const char* a) {
+void listener::attenuation(const char* a) {
 	ALenum b;
 	
 	if(!strcmp(a, "none"))
@@ -97,8 +101,4 @@ void audio(const char* a) {
 	}
 	
 	alDistanceModel(b);
-}
-
-void audio_soundfont(const char* a) {
-	setenv("FLUID_SOUNDFONT", a, 1);
 }

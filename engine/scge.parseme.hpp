@@ -366,10 +366,13 @@ void poll();
 
 bool audio_on();
 void audio_off();
-void audio(float);
-void audio(glm::vec3);
-void audio(const char*);
 void audio_soundfont(const char*);
+
+struct listener {
+	void gain(float);
+	void position(glm::vec3);
+	void attenuation(const char*);
+};
 
 void midi_on();
 void midi_off();

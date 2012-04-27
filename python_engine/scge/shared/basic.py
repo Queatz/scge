@@ -8,7 +8,9 @@ _initstate = 0
 _texcoordsdirty = True
 
 def _setup(wd):
-	global _program, _font_program, _vao, _font_vbo, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
+	global _wd, _program, _font_program, _vao, _font_vbo, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
+	
+	_wd = wd
 	
 	_font_vshader = scge.shader('vertex', '''#version 330 core
 	in vec2 coords;
@@ -93,7 +95,7 @@ def _setup(wd):
 	_vbo = scge.vbo((4 * 2 + 4 * 4 + 4 * 2) * 4, 'stream draw')
 
 	_vao = scge.vao()
-	scge.use(_vao)
+	_wd.use(_vao)
 	_vao.enable(0)
 	_vao.enable(1)
 	_vao.enable(2)
@@ -104,7 +106,7 @@ def _setup(wd):
 	_font_vbo = scge.vbo((4 * 2 + 4 * 2) * 4, 'stream draw')
 	
 	_font_vao = scge.vao()
-	scge.use(_font_vao)
+	_wd.use(_font_vao)
 	_font_vao.enable(0)
 	_font_vao.enable(1)
 	_font_vao.attribute(0, _font_vbo, 'float', 2, 0, 4 * 4)
@@ -130,11 +132,11 @@ def begin(wd, defaultProgram = True):
 	if not _initstate:
 		_setup(wd)
 	
-	scge.use(_vao)
+	_wd.use(_vao)
 	_usingDefaultProgram = defaultProgram
 	
 	if defaultProgram:
-		scge.use(_program)
+		_wd.use(_program)
 		_program.uniform('matrix', _matrix)
 		_program.uniform('tex', _img)
 
@@ -174,19 +176,19 @@ def texcoord(p1 = glm.vec2(0, 0), p2 = glm.vec2(0, 0), p3 = glm.vec2(0, 0), p4 =
 
 def quad(a, b):
 	_vbo.data(struct.pack('ff' * 4, a.x, a.y, a.x, b.y, b.x, b.y, b.x, a.y), 0)
-	scge.draw('triangle fan', 4)
+	_wd.draw('triangle fan', 4)
 
 def triangle(a, b, c):
 	_vbo.data(bytes(a) + bytes(b) + bytes(c), 0)
-	scge.draw('triangle', 3)
+	_wd.draw('triangle', 3)
 
 def line(a, b):
 	_vbo.data(bytes(a) + bytes(b), 0)
-	scge.draw('line', 2)
+	_wd.draw('line', 2)
 
 def point(a):
 	_vbo.data(bytes(a), 0)
-	scge.draw('point', 1)
+	_wd.draw('point', 1)
 
 def image(img = None):
 	global _img
@@ -202,13 +204,13 @@ def draw(p = glm.vec2(0), s = glm.vec2(1)):
 		_vbo.data(_itc, (4 * 2 + 4 * 4) * 4)
 		_texcoordsdirty = False
 	_vbo.data(struct.pack('ff' * 4, p.x, p.y, p.x, q.y, q.x, q.y, q.x, p.y), 0)
-	scge.draw('triangle fan', 4)
+	_wd.draw('triangle fan', 4)
 
 def write(fnt, sttr, p):
-	scge.use(_font_program)
+	_wd.use(_font_program)
 	_font_program.uniform('matrix', _matrix)
 	_font_program.uniform('color', _color)
-	scge.use(_font_vao)
+	_wd.use(_font_vao)
 
 	_program.font('tex')
 	lc = None
@@ -239,9 +241,9 @@ def write(fnt, sttr, p):
 			g.texcoords.y1,
 		), 0)
 
-		scge.draw('triangle fan', 4)
+		_wd.draw('triangle fan', 4)
 		
 		lc = c
 
-	scge.use(_vao)
-	scge.use(_program)
+	_wd.use(_vao)
+	_wd.use(_program)

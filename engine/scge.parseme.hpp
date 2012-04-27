@@ -300,6 +300,43 @@ struct window {
 	bool screenshot(const char*, const char* = NULL);
 	glm::vec4 pixel(glm::ivec2, const char* = NULL);
 	
+	void swap();
+
+	void polygon_mode(const char*);
+	void enable(const char*, bool = true);
+
+	void cull(const char* a);
+
+	void point_size(float);
+	void line_width(float);
+
+	void use(fbo*);
+	void use(vao*);
+	void use(program*);
+	void use();
+
+	void viewport(glm::ivec2, glm::ivec2);
+	void viewport(glm::ivec4);
+	void scissor(glm::ivec2, glm::ivec2);
+	void scissor(glm::ivec4);
+
+	void draw(const char*, unsigned int, unsigned int = 0);
+
+	void color(glm::vec4);
+	void color();
+	void color(const char*);
+	void color(bool, bool, bool, bool = true);
+	void color(bool);
+
+	void depth();
+	void depth(const char*);
+	void depth(bool);
+	void depth_offset(float, float = 0.0);
+
+	void stencil();
+	void stencil(int);
+	void stencil(const char*, int = 0);
+	
 #ifdef WITH_PYTHON
 	void callback(const char*, PyObject*);
 #endif
@@ -321,43 +358,7 @@ void use(window*);
 std::string display_modes();
 glm::ivec2 display_dimensions();
 
-void swap();
 void poll();
-
-void polygon_mode(const char*);
-void enable(const char*, bool = true);
-
-void cull(const char* a);
-
-void point_size(float);
-void line_width(float);
-
-void use(fbo*);
-void use(vao*);
-void use(program*);
-void use();
-
-void viewport(glm::ivec2, glm::ivec2);
-void viewport(glm::ivec4);
-void scissor(glm::ivec2, glm::ivec2);
-void scissor(glm::ivec4);
-
-void draw(const char*, unsigned int, unsigned int = 0);
-
-void color(glm::vec4);
-void color();
-void color(const char*);
-void color(bool, bool, bool, bool = true);
-void color(bool);
-
-void depth();
-void depth(const char*);
-void depth(bool);
-void depth_offset(float, float = 0.0);
-
-void stencil();
-void stencil(int);
-void stencil(const char*, int = 0);
 
 #endif
 

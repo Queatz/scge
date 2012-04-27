@@ -7,11 +7,7 @@ from setuptools import setup
 data = ['_scge.so']
 
 for d in os.walk('scge'):
-	if not d[1]:
-		continue
-	
-	e = os.path.join(*d[1])
-	data += [os.path.join(e, x) for x in fnmatch.filter(d[2], '*.py')]
+	data += [os.path.join(d[0], x)[5:] for x in fnmatch.filter(d[2], '*.py')]
 
 setup(
 	install_requires=['distribute'],

@@ -27,11 +27,6 @@ std::vector<ALuint> loaded_sounds;
 std::vector<ALuint> loaded_buffers;
 int alure_state = 0;
 
-ALCdevice* capture_device = NULL;
-unsigned int capture_samples_available = 0; // Samples in cache
-unsigned int capture_samples_length = 0; // Last number of captured samples
-soundbyte capture_soundbyte;
-
 int midi_status = 0;
 
 fluid_settings_t* midi_settings = NULL;
@@ -39,6 +34,7 @@ fluid_synth_t* midi_synth = NULL;
 fluid_audio_driver_t* midi_device = NULL;
 
 #include "audio.cpp"
+#include "microphone.cpp"
 #include "soundbyte.cpp"
 #include "buffer.cpp"
 #include "sound.cpp"

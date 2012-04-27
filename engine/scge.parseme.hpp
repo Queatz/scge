@@ -395,8 +395,17 @@ struct midi {
 	int _channel;//x
 };
 
-void microphone(bool);
-soundbyte* microphone();
+struct microphone {
+	microphone();
+	~microphone();
+	void enable(bool = true);
+	soundbyte* step();
+	
+	ALCdevice* _device;//x
+	unsigned int _samples_available;//x
+	unsigned int _samples_length;//x
+	soundbyte _soundbyte;//x
+};
 
 #endif
 

@@ -120,6 +120,11 @@ glm::ivec2 window::position() {
 void window::set(const char* a, bool b) {
 	if(!strcmp(a, "key repeat"))
 		glfwSetInputMode(win, GLFW_KEY_REPEAT, b ? GL_TRUE : GL_FALSE);
+	else if(!strcmp(a, "vsync")) {
+		glfwSwapInterval(b ? 1 : 0);
+		return;
+	}
+	
 	else
 		err("window", "set", "unknown parameter");
 }
@@ -299,11 +304,6 @@ void window::polygon_mode(const char* a) {
 
 void window::enable(const char* a, bool b) {
 	glfwMakeContextCurrent(win);
-	if(!strcmp(a, "vsync")) {
-		glfwSwapInterval(b ? 1 : 0);
-		return;
-	}
-	
 	GLint c = -1;
 	
 	if (!strcmp(a, "scissor"))

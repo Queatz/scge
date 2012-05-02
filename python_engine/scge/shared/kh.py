@@ -37,10 +37,10 @@ def _ks(k):
 
 def pressed(k, repeat = False):
 	k = _ks(k)
-	return k == 1 or repeat and k == 3
+	return k == 1 or repeat and k == 2
 
 def released(k):
-	return _ks(k) == 0
+	return _ks(k) == -1
 
 def down(k):
 	return _ks(k) > 0
@@ -63,7 +63,7 @@ def _handle(i, s):
 		else:
 			PRESSED[i] = 2
 	else:
-		PRESSED[i] = 0
+		PRESSED[i] = -1
 	
 	if CALLBACK:
 		if isinstance(CALLBACK, tuple):
@@ -74,15 +74,20 @@ def _handle(i, s):
 		else:
 			CALLBACK(i, PRESSED[i])
 
-def _keycallback(w, k, s):
+def _keycallback(k, s):
 	_handle(k, s)
 
-def _buttoncallback(w, b, s):
+def _buttoncallback(b, s):
 	_handle('mouse ' + b, s)
 
-def events(self):
+def events():
 	for k in PRESSED:
-		yield k, PRESSED[k]
+		if PRESSED[k] == -1:
+			yield k, 'released'
+		elif PRESSED[k] == 1:
+			yield k, 'pressed'
+		elif PRESSED[k] == 2:
+			yield k, 'repeated'
 
 def set_callback(f):
 	"Callbacks accept 2 parameters: key (a string), state (0 released | 1 pressed | 2 repeated)"
@@ -94,12 +99,12 @@ def set_callbacks(kf, bf):
 	global CALLBACK
 	CALLBACK = kf, bf
 
-def watch(poll = True):
+def watch(w, poll = True):
 	global SETUP, PRESSED, BLOCKALLEXCEPT
 	if not SETUP:
-		scge.set_callback('key', _keycallback)
-		scge.set_callback('button', _buttoncallback)
-		scge.key_repeat(True)
+		w.callback('key', _keycallback)
+		w.callback('button', _buttoncallback)
+		w.set('key repeat')
 		SETUP = True
 	
 	BLOCKALLEXCEPT = False

@@ -260,5 +260,6 @@ def advance(fnt, sttr):
 		g = fnt.glyph(c)
 		if lc:
 			a += fnt.advance(lc, c)
+		lc = c
 	
 	return a

@@ -197,16 +197,21 @@ def image(img = None):
 
 _itc = struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0)
 
-def draw(p = glm.vec2(0), s = glm.vec2(1)):
+def draw(p = glm.vec2(0), s = glm.vec2(1), r = 0, o = glm.vec2(0)):
 	global _texcoordsdirty
+	
+	_program.uniform('matrix', _matrix.translate(glm.vec3(p - o, 0)).scale(glm.vec3(s * _img.size, 0)).rotate(r, glm.vec3(0, 0, 1)))
+	
 	q = p + glm.vec2(_img.size) * s
 	if _texcoordsdirty:
 		_vbo.data(_itc, (4 * 2 + 4 * 4) * 4)
 		_texcoordsdirty = False
-	_vbo.data(struct.pack('ff' * 4, p.x, p.y, p.x, q.y, q.x, q.y, q.x, p.y), 0)
+	_vbo.data(struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0), 0)
 	_wd.draw('triangle fan', 4)
+	
+	_program.uniform('matrix', _matrix)
 
-def write(fnt, sttr, p):
+def write(fnt, sttr, p = glm.vec2(0)):
 	_wd.use(_font_program)
 	_font_program.uniform('matrix', _matrix)
 	_font_program.uniform('color', _color)
@@ -247,3 +252,13 @@ def write(fnt, sttr, p):
 
 	_wd.use(_vao)
 	_wd.use(_program)
+
+def advance(fnt, sttr):
+	lc = None
+	a = 0
+	for c in sttr:
+		g = fnt.glyph(c)
+		if lc:
+			a += fnt.advance(lc, c)
+	
+	return a

@@ -173,7 +173,7 @@ struct glyphmetrics {
 };
 
 struct font {
-	font(const char*);
+	font(const char*, unsigned int = 0);
 	~font();
 	
 	void size(unsigned int);

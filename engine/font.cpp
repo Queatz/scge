@@ -9,11 +9,14 @@ void setup_font() {
 	atexit(setdown_font);
 }
 
-font::font(const char* a) {
+font::font(const char* a, unsigned int s) {
 	if(font_library == NULL)
 		setup_font();
 	
 	data = new Shikoba::Face(font_library, a);
+	
+	if(s)
+		data->size(s);
 }
 
 font::~font() {

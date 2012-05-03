@@ -40,11 +40,18 @@ float font::descent() {
 }
 
 float font::advance(const char* a, const char* b) {
-	return data->advance(utf8::unchecked::next(a), utf8::unchecked::next(b));
+	if(*a == 0x0 || (b && *b == 0x0))
+		return 0.0;
+
+	return data->advance(utf8::unchecked::next(a), b ? utf8::unchecked::next(b) : 0);
 }
 
 glyphmetrics font::glyph(const char* a) {
 	glyphmetrics g;
+	
+	if(*a == 0x0)
+		return g;
+	
 	const Shikoba::Glyph * s = data->glyph(utf8::unchecked::next(a));
 
 	// XXX FIXME //

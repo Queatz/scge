@@ -2,7 +2,7 @@
 void _size_callback_wrap(GLFWwindow w, int x, int y) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_size_callback)
+	if(!z || !z->_size_callback)
 		return;
 	
 	PyObject* args;
@@ -53,7 +53,7 @@ void _dirty_callback_wrap(GLFWwindow w) {
 void _enter_callback_wrap(GLFWwindow w, int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_enter_callback)
+	if(!z || !z->_enter_callback)
 		return;
 	
 	PyObject* args;
@@ -68,7 +68,7 @@ void _enter_callback_wrap(GLFWwindow w, int x) {
 void _focus_callback_wrap(GLFWwindow w, int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_focus_callback)
+	if(!z || !z->_focus_callback)
 		return;
 	
 	PyObject* args;
@@ -83,7 +83,7 @@ void _focus_callback_wrap(GLFWwindow w, int x) {
 void _iconify_callback_wrap(GLFWwindow w, int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_iconify_callback)
+	if(!z || !z->_iconify_callback)
 		return;
 	
 	PyObject* args;
@@ -98,7 +98,7 @@ void _iconify_callback_wrap(GLFWwindow w, int x) {
 void _button_callback_wrap(GLFWwindow w, int x, int y) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_button_callback)
+	if(!z || !z->_button_callback)
 		return;
 	
 	PyObject* args;
@@ -113,7 +113,7 @@ void _button_callback_wrap(GLFWwindow w, int x, int y) {
 void _key_callback_wrap(GLFWwindow w, int x, int y) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_key_callback)
+	if(!z || !z->_key_callback)
 		return;
 	
 	PyObject* args;
@@ -128,7 +128,7 @@ void _key_callback_wrap(GLFWwindow w, int x, int y) {
 void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_scroll_callback)
+	if(!z || !z->_scroll_callback)
 		return;
 	
 	PyObject* args;
@@ -150,7 +150,7 @@ void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_mousemove_callback)
+	if(!z || !z->_mousemove_callback)
 		return;
 	
 	int u, h;
@@ -177,7 +177,7 @@ void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 void _char_callback_wrap(GLFWwindow w, int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
-	if(!z->_char_callback)
+	if(!z || !z->_char_callback)
 		return;
 	
 	PyObject* args;

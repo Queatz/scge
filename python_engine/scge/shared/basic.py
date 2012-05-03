@@ -169,7 +169,7 @@ def color(p1 = None, p2 = None, p3 = None, p4 = None):
 	else:
 		_vbo.data(bytes(_expand_color(p1)) + bytes(_expand_color(p2)) + bytes(_expand_color(p3)) + bytes(_expand_color(p4)), (4 * 2) * 4)
 
-def texcoord(p1 = glm.vec2(0, 0), p2 = glm.vec2(0, 0), p3 = glm.vec2(0, 0), p4 = glm.vec2(0, 0)):
+def texcoord(p1 = glm.vec2(0), p2 = glm.vec2(0, 1), p3 = glm.vec2(1), p4 = glm.vec2(1, 0)):
 	global _texcoordsdirty
 	_texcoordsdirty = True
 	_vbo.data(bytes(p1) + bytes(p2) + bytes(p3) + bytes(p4), (4 * 2 + 4 * 4) * 4)

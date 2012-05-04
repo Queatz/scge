@@ -448,7 +448,7 @@ struct host {
 	// Close the server
 	~host();
 	
-	event* service(int = 0);
+	event* service(float = 0.0);
 	void commune();
 	
 #ifdef WITH_PYTHON

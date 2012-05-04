@@ -123,11 +123,11 @@ host::~host() {
 	enet_host_destroy(me);
 }
 
-event* host::service(int a) {
+event* host::service(float a) {
 	ENetEvent t;
 	int h;
 	
-	h = enet_host_service(me, &t, a);
+	h = enet_host_service(me, &t, (int)(a * 1000.0));
 	
 	if(h > 0) {
 		peer* p;

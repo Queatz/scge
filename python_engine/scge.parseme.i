@@ -50,4 +50,7 @@ $?}
 }
 /*$ $*/
 
+%newobject scge::event::data;
+%newobject scge::host::service;
+
 %include "scge.hpp"

@@ -158,11 +158,11 @@ void sound::repeat(bool a) {
 
 void sound::seek(float a, const char* b) {
 	if(a) {
-		if(strcmp(b, "second"))
+		if(!strcmp(b, "second"))
 			alSourcef(source, AL_SEC_OFFSET, a);
-		else if(strcmp(b, "sample"))
+		else if(!strcmp(b, "sample"))
 			alSourcef(source, AL_SAMPLE_OFFSET, a);
-		else if(strcmp(b, "byte"))
+		else if(!strcmp(b, "byte"))
 			alSourcef(source, AL_BYTE_OFFSET, a);
 		else
 			err("sound", "seek", "invalid specifier");
@@ -179,13 +179,13 @@ bool sound::playing() {
 
 int sound::get(const char* b) {
 	ALint a;
-	if(strcmp(b, "bits"))
+	if(!strcmp(b, "bits"))
 		alGetSourcei(bufs[0], AL_BITS, &a);
-	else if(strcmp(b, "channels"))
+	else if(!strcmp(b, "channels"))
 		alGetSourcei(bufs[0], AL_CHANNELS, &a);
-	else if(strcmp(b, "frequency"))
+	else if(!strcmp(b, "frequency"))
 		alGetSourcei(bufs[0], AL_FREQUENCY, &a);
-	else if(strcmp(b, "bytes"))
+	else if(!strcmp(b, "bytes"))
 		alGetSourcei(bufs[0], AL_SIZE, &a);
 	else {
 		err("sound", "get", "invalid request");
@@ -196,11 +196,11 @@ int sound::get(const char* b) {
 
 float sound::offset(const char* b) {
 	ALfloat a;
-	if(strcmp(b, "second"))
+	if(!strcmp(b, "second"))
 		alGetSourcef(source, AL_SEC_OFFSET, &a);
-	else if(strcmp(b, "sample"))
+	else if(!strcmp(b, "sample"))
 		alGetSourcef(source, AL_SAMPLE_OFFSET, &a);
-	else if(strcmp(b, "byte"))
+	else if(!strcmp(b, "byte"))
 		alGetSourcef(source, AL_BYTE_OFFSET, &a);
 	else {
 		err("sound", "get", "invalid request");

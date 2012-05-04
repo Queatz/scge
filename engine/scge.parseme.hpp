@@ -103,7 +103,7 @@ struct sound {
 	void pitch(float);
 	void position(glm::vec3);
 	void repeat(bool = true);
-	void seek(float = NULL, const char* = "second");
+	void seek(float = 0.0, const char* = "second");
 	bool playing();
 	int get(const char*);
 	float offset(const char* = "second");
@@ -427,27 +427,38 @@ struct peer {
 };
 
 struct event {
+	event();
+	~event();	
 	int channel();
 	const char* type();
-	const char* data();
+#ifdef WITH_PYTHON
+	PyObject* data();
+#else
+	const void* data();
+#endif
+	unsigned int length();
 	peer* who();
-	void resolve();
 	
 	ENetEvent evt;//x
 };
 
 struct host {
 	// Create a new host on [port], with max connections of, with max numbr of channels, with limited downstream, with limited upstream
-	host(int = NULL, int = 32, int = 1, int = 0, int = 0);
+	host(int = 0, int = 32, int = 1, int = 0, int = 0);
 	// Close the server
 	~host();
 	
-	event service(int = 0);
+	event* service(int = 0);
 	void commune();
 	
-	void send(peer*, const char* = "", int = 0, bool = true, bool = true);
-	void broadcast(const char* = "", int = 0, bool = true, bool = true);
-	
+#ifdef WITH_PYTHON
+	void send(peer*, PyObject*, int = 0, bool = true, bool = true);
+	void broadcast(PyObject*, int = 0, bool = true, bool = true);
+#else
+	void send(peer*, const void* = NULL, unsigned int = 0, int = 0, bool = true, bool = true);
+	void broadcast(const void* = NULL, unsigned int = 0, int = 0, bool = true, bool = true);
+#endif
+
 	peer* connect(const char* = "localhost", int = 2000, int = 1, unsigned int = 0);
 	void disconnect(peer*, unsigned int = 0);
 	

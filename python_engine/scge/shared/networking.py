@@ -30,18 +30,21 @@ class Client:
 		if not self.connected:
 			self.queue.append(data)
 		else:
-			self.host.send(self.server, repr(data))
+			self.host.send(self.server, repr(data).encode())
 	
 	def update(self):
 		"Call this regularly."
 		while True:
 			e = self.host.service()
 			
-			if not e.who():
+			if not e:
 				break
 			
 			if e.type() == 'receive':
-				self.message(leval(e.data()))
+				try:
+					self.message(leval(e.data().decode()))
+				except:
+					traceback.print_exc()
 			elif e.type() == 'connect':
 				self.connected = True
 				while self.queue:
@@ -68,7 +71,7 @@ class Peer:
 	
 	def send(self, data):
 		"Send some data to the remote client."
-		self.server.host.send(self.peer, repr(data))
+		self.server.host.send(self.peer, repr(data).encode())
 
 class Server:
 	"A server."
@@ -92,20 +95,19 @@ class Server:
 	
 	def send(self, peer, data):
 		"Send some string to a client."
-		self.host.send(peer.peer, repr(data))
+		self.host.send(peer.peer, repr(data).encode())
 	
 	def update(self):
 		"Call this regularly."
 		while True:
 			e = self.host.service()
 			
-			if not e.who():
+			if not e:
 				break
 			
 			if e.type() == 'receive':
 				try:
-					print(e.data())
-					self.clients[e.who().id].message(leval(e.data()))
+					self.clients[e.who().id].message(leval(e.data().decode()))
 				except:
 					traceback.print_exc()
 			elif e.type() == 'connect':

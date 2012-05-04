@@ -218,7 +218,7 @@ def draw(p = None, s = None, r = 0, o = None):
 	
 	_program.uniform('matrix', _matrix)
 
-def write(fnt, sttr, p = None):
+def write(fnt, sttr, p = None, mw = None):
 	if p is None: p = glm.vec2(0)
 	s = glm.vec2(p)
 	_wd.use(_font_program)
@@ -229,15 +229,20 @@ def write(fnt, sttr, p = None):
 	_program.font('tex')
 	lc = None
 	for c in sttr:
-		if c == '\n':
+		if lc:
+			a = fnt.advance(lc, c)
+		else:
+			a = 0
+		
+		if c == '\n' or mw and p.x + a + fnt.advance(c) > mw:
 			p.x = s.x
 			p.y -= fnt.height()
 			lc = None
 			continue
 		
 		g = fnt.glyph(c)
-		if lc:
-			p.x += fnt.advance(lc, c)
+		
+		p.x += a
 
 		_font_vbo.data(struct.pack('16f',
 			g.vertices.x1 + p.x,

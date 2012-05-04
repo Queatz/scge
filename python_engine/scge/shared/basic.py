@@ -169,8 +169,12 @@ def color(p1 = None, p2 = None, p3 = None, p4 = None):
 	else:
 		_vbo.data(bytes(_expand_color(p1)) + bytes(_expand_color(p2)) + bytes(_expand_color(p3)) + bytes(_expand_color(p4)), (4 * 2) * 4)
 
-def texcoord(p1 = glm.vec2(0), p2 = glm.vec2(0, 1), p3 = glm.vec2(1), p4 = glm.vec2(1, 0)):
+def texcoord(p1 = None, p2 = None, p3 = None, p4 = None):
 	global _texcoordsdirty
+	if p1 is None: p1 = glm.vec2(0)
+	if p2 is None: p2 = glm.vec2(0, 1)
+	if p3 is None: p3 = glm.vec2(1)
+	if p4 is None: p4 = glm.vec2(1, 0)
 	_texcoordsdirty = True
 	_vbo.data(bytes(p1) + bytes(p2) + bytes(p3) + bytes(p4), (4 * 2 + 4 * 4) * 4)
 
@@ -197,7 +201,10 @@ def image(img = None):
 
 _itc = struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0)
 
-def draw(p = glm.vec2(0), s = glm.vec2(1), r = 0, o = glm.vec2(0)):
+def draw(p = None, s = None, r = 0, o = None):
+	if p is None: p = glm.vec2(0)
+	if s is None: p = glm.vec2(1)
+	if o is None: p = glm.vec2(0)
 	global _texcoordsdirty
 	
 	_program.uniform('matrix', _matrix.translate(glm.vec3(p - o, 0)).scale(glm.vec3(s * _img.size, 0)).rotate(r, glm.vec3(0, 0, 1)))
@@ -211,7 +218,8 @@ def draw(p = glm.vec2(0), s = glm.vec2(1), r = 0, o = glm.vec2(0)):
 	
 	_program.uniform('matrix', _matrix)
 
-def write(fnt, sttr, p = glm.vec2(0)):
+def write(fnt, sttr, p = None):
+	if p is None: p = glm.vec2(0)
 	_wd.use(_font_program)
 	_font_program.uniform('matrix', _matrix)
 	_font_program.uniform('color', _color)

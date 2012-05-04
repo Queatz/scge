@@ -16,8 +16,6 @@ bool audio_on() {
 	
 	atexit(audio_off);
 	
-	alDistanceModel(AL_NONE);
-	
 	alure_state = 1;
 	return true;
 }
@@ -58,11 +56,11 @@ void audio_off() {
 			alSourcei(*i, AL_BUFFER, 0);
 			alDeleteSources(1, &(*i));
 		}
-	
+
 	if(!loaded_buffers.empty())
 		for(std::vector<ALuint>::iterator i = loaded_buffers.begin(); i != loaded_buffers.end();i++)
 			alDeleteBuffers(1, &(*i));
-	
+
 	alureShutdownDevice();
 }
 

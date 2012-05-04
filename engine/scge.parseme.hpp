@@ -110,7 +110,7 @@ struct sound {
 	void font(const char*);
 	
 	buffer* data;
-	bool is_stream, looping;
+	bool streaming, looping;
 	unsigned int pending;
 	ALuint source;//x
 	ALuint bufs[NUM_BUFS];//x

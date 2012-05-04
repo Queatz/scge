@@ -1,9 +1,10 @@
 inline void reset_sound(sound* a) {
-	a->is_stream = false;
+	a->streaming = false;
 	a->looping = false;
 	a->pending = 0;
 	a->data = NULL;
 	a->source = 0;
+	a->stream = NULL;
 	
 	int i;
 	for(i = 0; i < NUM_BUFS; i++)
@@ -39,9 +40,9 @@ sound::sound(const char* a, bool b) {
 	
 	reset_sound(this);
 	
-	is_stream = b;
+	streaming = b;
 
-	if(is_stream) {
+	if(streaming) {
 		stream = alureCreateStreamFromFile(a, 19200, NUM_BUFS, bufs);
 		if(!stream)
 			err("sound", "could not load");
@@ -54,10 +55,7 @@ sound::sound(const char* a, bool b) {
 	alGenSources(1, &source);
 	sound_loaded(source);
 	
-	//alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
-	// TODO is3D (really just positioned)
-	
-	if(!is_stream)
+	if(!streaming && bufs[0] != AL_NONE)
 		alSourcei(source, AL_BUFFER, bufs[0]);
 }
 
@@ -66,20 +64,19 @@ sound::~sound() {
 }
 
 void sound::clear() {
-	alureStopSource(source, AL_FALSE);
-	
-	if(is_stream)
-		alureDestroyStream(stream, NUM_BUFS, bufs);
-	
 	if(source) {
+		alureStopSource(source, AL_FALSE);
 		alSourcei(source, AL_BUFFER, 0);
 		alDeleteSources(1, &source);
 		sound_unloaded(source);
 	}
 	
-	reset_sound(this);
+	if(stream)
+		alureDestroyStream(stream, NUM_BUFS, bufs);
+	else if(bufs[0])
+		alDeleteBuffers(1, &bufs[0]);
 	
-	alDeleteBuffers(NUM_BUFS, bufs);
+	reset_sound(this);
 }
 
 void play_ended(void* userdata, ALuint source) {
@@ -106,7 +103,7 @@ void sound::play(unsigned int repeats, bool b, bool c) {
 		}
 	}
 	
-	if(is_stream) {
+	if(streaming) {
 		alureRewindStream(stream);
 		alurePlaySourceStream(source, stream, NUM_BUFS, (looping ? -1 : repeats), NULL, NULL);
 	} else {
@@ -152,7 +149,7 @@ void sound::position(glm::vec3 a) {
 
 void sound::repeat(bool a) {
 	looping = a;
-	if(!is_stream)
+	if(!streaming)
 		alSourcei(source, AL_LOOPING, (a ? AL_TRUE : AL_FALSE));
 }
 

@@ -220,6 +220,7 @@ def draw(p = None, s = None, r = 0, o = None):
 
 def write(fnt, sttr, p = None):
 	if p is None: p = glm.vec2(0)
+	s = glm.vec2(p)
 	_wd.use(_font_program)
 	_font_program.uniform('matrix', _matrix)
 	_font_program.uniform('color', _color)
@@ -228,6 +229,12 @@ def write(fnt, sttr, p = None):
 	_program.font('tex')
 	lc = None
 	for c in sttr:
+		if c == '\n':
+			p.x = s.x
+			p.y -= fnt.height()
+			lc = None
+			continue
+		
 		g = fnt.glyph(c)
 		if lc:
 			p.x += fnt.advance(lc, c)

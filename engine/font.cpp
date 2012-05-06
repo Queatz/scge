@@ -57,12 +57,12 @@ glyphmetrics font::glyph(const char* a) {
 
 	// XXX FIXME //
 	g.vertices.x1 = s->vertices[0];
-	g.vertices.x2 = s->vertices[1];
-	g.vertices.y1 = s->vertices[2];
+	g.vertices.x2 = s->vertices[2];
+	g.vertices.y1 = s->vertices[1];
 	g.vertices.y2 = s->vertices[3];
 	g.texcoords.x1 = s->texcoords[0];
-	g.texcoords.x2 = s->texcoords[1];
-	g.texcoords.y1 = s->texcoords[2];
+	g.texcoords.x2 = s->texcoords[2];
+	g.texcoords.y1 = s->texcoords[1];
 	g.texcoords.y2 = s->texcoords[3];
 
 	return g;

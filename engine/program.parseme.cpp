@@ -96,7 +96,7 @@ void program::font(const char* a, int b) {
 	GLint act;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &act);
 	glActiveTexture(GL_TEXTURE0 + b);
-	glBindTexture(GL_TEXTURE_2D, font_library->texture());
+	glBindTexture(GL_TEXTURE_RECTANGLE, font_library->texture());
 	
 	uniform(a, b);
 }

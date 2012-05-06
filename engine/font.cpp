@@ -7,10 +7,6 @@ void setup_font() {
 		graphics();
 	font_library = new Shikoba::Library();
 	
-	glBindTexture(GL_TEXTURE_2D, font_library->texture());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
 	atexit(setdown_font);
 }
 
@@ -60,14 +56,14 @@ glyphmetrics font::glyph(const char* a) {
 	const Shikoba::Glyph * s = data->glyph(utf8::unchecked::next(a));
 
 	// XXX FIXME //
-	g.vertices.x1 = s->vertices.x1;
-	g.vertices.x2 = s->vertices.x2;
-	g.vertices.y1 = s->vertices.y1;
-	g.vertices.y2 = s->vertices.y2;
-	g.texcoords.x1 = s->texcoords.x1;
-	g.texcoords.x2 = s->texcoords.x2;
-	g.texcoords.y1 = s->texcoords.y1;
-	g.texcoords.y2 = s->texcoords.y2;
+	g.vertices.x1 = s->vertices[0];
+	g.vertices.x2 = s->vertices[1];
+	g.vertices.y1 = s->vertices[2];
+	g.vertices.y2 = s->vertices[3];
+	g.texcoords.x1 = s->texcoords[0];
+	g.texcoords.x2 = s->texcoords[1];
+	g.texcoords.y1 = s->texcoords[2];
+	g.texcoords.y2 = s->texcoords[3];
 
 	return g;
 }

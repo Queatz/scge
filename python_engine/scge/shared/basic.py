@@ -13,6 +13,7 @@ def _setup(wd):
 	_wd = wd
 	
 	_font_vshader = scge.shader('vertex', '''#version 330 core
+	
 	in vec2 coords;
 	in vec2 texcoords;
 
@@ -28,16 +29,18 @@ def _setup(wd):
 	''')
 	
 	_font_fshader = scge.shader('fragment', '''#version 330 core
+	#extension GL_ARB_texture_rectangle : require
+	
 	in vec2 texcoord;
 	
-	uniform sampler2D tex;
+	uniform sampler2DRect tex;
 	uniform vec4 color;
 
 	out vec4 frag;
 
 	void main() {
 		frag = color;
-		frag.a *= texture2D(tex, texcoord).r;
+		frag.a *= texture2DRect(tex, texcoord).r;
 		if(frag.a == 0.)
 			discard;
 	}
@@ -203,8 +206,8 @@ _itc = struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0)
 
 def draw(p = None, s = None, r = 0, o = None):
 	if p is None: p = glm.vec2(0)
-	if s is None: p = glm.vec2(1)
-	if o is None: p = glm.vec2(0)
+	if s is None: s = glm.vec2(1)
+	if o is None: o = glm.vec2(0)
 	global _texcoordsdirty
 	
 	_program.uniform('matrix', _matrix.translate(glm.vec3(p - o, 0)).scale(glm.vec3(s * _img.size, 0)).rotate(r, glm.vec3(0, 0, 1)))

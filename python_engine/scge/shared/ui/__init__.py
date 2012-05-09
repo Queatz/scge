@@ -393,10 +393,10 @@ class Element:
 				self.dirty = False
 				return
 			
-			scge.viewport(*b)
-			scge.scissor(*_clip)
-			self.interface._clip = _clip
-			self.interface._viewport = b
+			self.interface._clip = glm.ivec4(_clip)
+			self.interface._viewport = glm.ivec4(b)
+			self.interface.window.viewport(self.interface._viewport)
+			self.interface.window.scissor(self.interface._clip)
 		
 		if isinstance(self.dirty, tuple):
 			drawc = True
@@ -596,9 +596,12 @@ class Element:
 # # # INTERFACE # # #
 
 class Interface:
-	def __init__(self, e = None):
+	def __init__(self, w, e = None):
 		# List of callbacks that will be handled
 		self.timeouts = []
+		
+		# Window of the interface
+		self.window = w
 		
 		# Current element that has focus
 		self.active = None
@@ -618,7 +621,7 @@ class Interface:
 		
 		# Mouse position caches
 		self.mouse_position_in_over = None
-		self.mouse_global = (0, 0)
+		self.mouse_global = glm.ivec2(0, 0)
 		self._mouse_moved_this_tick = False
 		
 		# There is a delay when changing the element to scroll so the mouse doesn't get caught
@@ -635,12 +638,11 @@ class Interface:
 		else:
 			# Default body shall be solid clear color
 			self.body = Element(self)
-			self.body.draw = lambda: scge.clear()
+			self.body.draw = lambda: self.interface.window.color()
 			self.body.soliddraw = True
 		
 		# Default to covering the whole window
-		dd = scge.window_dimensions()
-		self.body.style.size = Offset(dd.x, dd.y)
+		self.body.style.size = Offset(*w.size())
 	
 	# Event functions
 	
@@ -685,7 +687,7 @@ class Interface:
 				else:
 					a = self.active
 			
-				for e in a.loopTraverse(scge.key('shift')):
+				for e in a.loopTraverse(self.window.key('shift')):
 					if e.focusable and (not self.active or not self.active.childOf(e)):
 						a = e
 						break
@@ -727,34 +729,34 @@ class Interface:
 						self.over.click(b)
 					self.over.mouseup(b)
 	
-	def mousemove(self, x = None, y = None):
+	def mousemove(self, p = None):
 		"Call this when the mouse moves."
 		
 		# We don't need overloads of mousemoves
 		# But we might want them for precision in some apps...
-		if x:
-			self._mouse_moved_this_tick = (x, y)
+		if p:
+			self._mouse_moved_this_tick = glm.ivec2(p)
 		elif not self._mouse_moved_this_tick:
 			self._mouse_moved_this_tick = True
 	
-	def _mousemove(self, x, y):
+	def _mousemove(self, p):
 		# Moving the mouse cancels the scroll timeout
 		self.scroll_time = 0
 		
 		# Calling mousemove() with no position arguments assumes the mouse moved in z
-		if x is not None:
-			self.mouse_global = (x, y)
+		if p is not None:
+			self.mouse_global = glm.ivec2(p)
 			if self.dragging:
 				self.body.dirty = True
 		else:
 			if not self.mouse_global:
 				return
-			x, y = self.mouse_global
+			p = self.mouse_global
 		
 		# Captures get all mousemove events
 		if self.captured:
 			go = self.captured.globalOffset()
-			mouse_position_in_over = (x - go.x, y - go.y)
+			mouse_position_in_over = p - go
 			
 			if self.mouse_position_in_over != mouse_position_in_over:
 				self.mouse_position_in_over = mouse_position_in_over
@@ -768,7 +770,7 @@ class Interface:
 			return
 		
 		# Find the element the mouse is now on
-		over, go = self.body.getElementAt(Offset(x - self.body.style.offset.x, y - self.body.style.offset.y))
+		over, go = self.body.getElementAt(Offset(p.x - self.body.style.offset.x, p.y - self.body.style.offset.y))
 		
 		if over is None and self.over is None:
 			return
@@ -778,7 +780,7 @@ class Interface:
 		
 		# Handle move events
 		if over is self.over:
-			mouse_position_in_over = (x - go.x, y - go.y)
+			mouse_position_in_over = p - go
 			if mouse_position_in_over != self.mouse_position_in_over:
 				self.mouse_position_in_over = mouse_position_in_over
 				if self.dragging:
@@ -793,7 +795,7 @@ class Interface:
 					self.over.mouseoff()
 			self.over = over
 			if self.over:
-				self.mouse_position_in_over = (x - go.x, y - go.y)
+				self.mouse_position_in_over = p - go
 				if self.dragging:
 					self.over.dragon(self.dragging.drag)
 					self.over.dragmove(self.dragging.drag, Offset(*self.mouse_position_in_over))
@@ -924,9 +926,9 @@ class Interface:
 		
 		if self._mouse_moved_this_tick:
 			if self._mouse_moved_this_tick is True:
-				self._mousemove(None, None)
+				self._mousemove(None)
 			else:
-				self._mousemove(*self._mouse_moved_this_tick)
+				self._mousemove(self._mouse_moved_this_tick)
 			self._mouse_moved_this_tick = False
 		
 		t = 0
@@ -948,8 +950,8 @@ class Interface:
 		return True
 	
 	def reclip(self):
-		scge.viewport(*self._viewport)
-		scge.scissor(*self._clip)
+		self.window.viewport(*self._viewport)
+		self.window.scissor(*self._clip)
 	
 	def draw(self):
 		"Draw the interface."
@@ -969,12 +971,12 @@ class Interface:
 			self.body.dirty = True
 		
 		if self.body.dirty:
-			scge.enable('scissor')
+			self.window.enable('scissor')
 			self.body._draw(Bounds(self.body.style.offset, self.body.style.size), Offset(self.body.style.offset))
 			self.body.dirty = False
-			scge.enable('scissor', False)
+			self.window.enable('scissor', False)
 		
-			scge.viewport(*Bounds(self.body.style.offset, self.body.style.size))
+			self.window.viewport(glm.ivec4(Bounds(self.body.style.offset, self.body.style.size)))
 			
 			if self.dragging:
 				self.dragging.drag.draw()

@@ -53,10 +53,8 @@ class Strip(dict):
 		if k is not None:
 			del self[k]
 		
-		if self.parent is not None and len(self.here) == 0 and len(self) == 0:
+		if self.parent is not None and not self.here and not self:
 			self.parent[0].discard(self.parent[1])
-
-
 
 class Scape:
 	"Dimentionless and boundless optimized search map."

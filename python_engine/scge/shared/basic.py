@@ -7,6 +7,11 @@ import struct
 _initstate = 0
 _texcoordsdirty = True
 
+s_f = struct.sizeof('=f')
+s_f2_4 = s_f * 2 * 4
+s_f6_4 = s_f * 6 * 4
+s_f8_4 = s_f * 8 * 4
+
 def _setup(wd):
 	global _wd, _program, _font_program, _vao, _font_vbo, _font_vao, _vbo, _initstate, _matrix, _white, _img, _color
 	
@@ -95,7 +100,7 @@ def _setup(wd):
 	_program.attribute(2, 'texcoords')
 	_program.link()
 
-	_vbo = scge.vbo((4 * 2 + 4 * 4 + 4 * 2) * 4, 'stream draw')
+	_vbo = scge.vbo(s_f8_4, 'stream draw')
 
 	_vao = scge.vao()
 	_wd.use(_vao)
@@ -103,17 +108,17 @@ def _setup(wd):
 	_vao.enable(1)
 	_vao.enable(2)
 	_vao.attribute(0, _vbo, 'float', 2, 0)
-	_vao.attribute(1, _vbo, 'float', 4, (4 * 2) * 4)
-	_vao.attribute(2, _vbo, 'float', 2, (4 * 2 + 4 * 4) * 4)
+	_vao.attribute(1, _vbo, 'float', 4, s_f2_4)
+	_vao.attribute(2, _vbo, 'float', 2, s_f6_4)
 	
-	_font_vbo = scge.vbo((4 * 2 + 4 * 2) * 4, 'stream draw')
+	_font_vbo = scge.vbo(s_f6_4, 'stream draw')
 	
 	_font_vao = scge.vao()
 	_wd.use(_font_vao)
 	_font_vao.enable(0)
 	_font_vao.enable(1)
-	_font_vao.attribute(0, _font_vbo, 'float', 2, 0, 4 * 4)
-	_font_vao.attribute(1, _font_vbo, 'float', 4, 2 * 4, 4 * 4)
+	_font_vao.attribute(0, _font_vbo, 'float', 2, 0, s_f * 4)
+	_font_vao.attribute(1, _font_vbo, 'float', 4, s_f * 2, s_f * 4)
 	
 	p = scge.pixelcache(glm.ivec2(1, 1))
 	p.pixel(glm.ivec2(0, 0), glm.vec4(1))
@@ -163,26 +168,37 @@ def color(p1 = None, p2 = None, p3 = None, p4 = None):
 	global _color
 	if p1 is None:
 		_color = glm.vec4(1)
-		_vbo.data(bytes(_color) * 4, (4 * 2) * 4)
+		_vbo.data(bytes(_color) * 4, s_f2_4)
 	elif p2 is None:
 		_color = _expand_color(p1)
-		_vbo.data(bytes(_color) * 4, (4 * 2) * 4)
+		_vbo.data(bytes(_color) * 4, s_f2_4)
 	elif p3 is None or p4 is None:
 		raise Exception('Color must specify 1 point or all four.')
 	else:
-		_vbo.data(bytes(_expand_color(p1)) + bytes(_expand_color(p2)) + bytes(_expand_color(p3)) + bytes(_expand_color(p4)), (4 * 2) * 4)
+		_vbo.data(bytes(_expand_color(p1)) + bytes(_expand_color(p2)) + bytes(_expand_color(p3)) + bytes(_expand_color(p4)), s_f2_4)
 
 def texcoord(p1 = None, p2 = None, p3 = None, p4 = None):
 	global _texcoordsdirty
-	if p1 is None: p1 = glm.vec2(0)
-	if p2 is None: p2 = glm.vec2(0, 1)
-	if p3 is None: p3 = glm.vec2(1)
-	if p4 is None: p4 = glm.vec2(1, 0)
+	
+	if p1 is None:
+		p1 = glm.vec2(0)
+		p2 = glm.vec2(0, 1)
+		p3 = glm.vec2(1)
+		p4 = glm.vec2(1, 0)
+	elif p2 is None:
+		p2 = p3 = p4 = p1
+	elif p3 is None:
+		p3 = p2
+		p4 = glm.vec2(p3.x, p1.y)
+		p2 = glm.vec2(p1.x, p3.y)
+	else:
+		raise Exception('Texcoord accepts zero, one, two, or four arguments.')
+	
 	_texcoordsdirty = True
-	_vbo.data(bytes(p1) + bytes(p2) + bytes(p3) + bytes(p4), (4 * 2 + 4 * 4) * 4)
+	_vbo.data(bytes(p1) + bytes(p2) + bytes(p3) + bytes(p4), s_f6_4)
 
 def quad(a, b):
-	_vbo.data(struct.pack('ff' * 4, a.x, a.y, a.x, b.y, b.x, b.y, b.x, a.y), 0)
+	_vbo.data(struct.pack('ffffffff', a.x, a.y, a.x, b.y, b.x, b.y, b.x, a.y))
 	_wd.draw('triangle fan', 4)
 
 def triangle(a, b, c):
@@ -202,9 +218,10 @@ def image(img = None):
 	_img = (img if img else _white)
 	_program.uniform('tex', _img)
 
-_itc = struct.pack('ff' * 4, 0, 0, 0, 1, 1, 1, 1, 0)
+_itc = struct.pack('ffffffff', 0, 0, 0, 1, 1, 1, 1, 0)
 
-def draw(p = None, s = None, r = 0, o = None):
+def draw(p = None, s = None, r = None, o = None):
+	if r is None: r = 0
 	if p is None: p = glm.vec2(0)
 	if s is None: s = glm.vec2(1)
 	if o is None: o = glm.vec2(0)
@@ -213,7 +230,7 @@ def draw(p = None, s = None, r = 0, o = None):
 	_program.uniform('matrix', _matrix.translate(glm.vec3(p, 0)).scale(glm.vec3(s, 1)).rotate(r, glm.vec3(0, 0, 1)).translate(glm.vec3(-o, 0)).scale(glm.vec3(_img.size, 1)))
 	q = p + glm.vec2(_img.size) * s
 	if _texcoordsdirty:
-		_vbo.data(_itc, (4 * 2 + 4 * 4) * 4)
+		_vbo.data(_itc, s_f8_4)
 		_texcoordsdirty = False
 	_vbo.data(_itc, 0)
 	_wd.draw('triangle fan', 4)
@@ -246,7 +263,7 @@ def write(fnt, sttr, p = None, mw = None):
 		
 		p.x += a
 
-		_font_vbo.data(struct.pack('16f',
+		_font_vbo.data(struct.pack('ffffffffffffffff',
 			g.vertices.x1 + p.x,
 			g.vertices.y1 + p.y,
 			g.texcoords.x1,

@@ -7,7 +7,7 @@ import struct
 _initstate = 0
 _texcoordsdirty = True
 
-s_f = struct.sizeof('=f')
+s_f = struct.calcsize('=f')
 s_f2_4 = s_f * 2 * 4
 s_f6_4 = s_f * 6 * 4
 s_f8_4 = s_f * 8 * 4

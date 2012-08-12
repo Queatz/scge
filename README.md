@@ -31,8 +31,9 @@ Install all the requirements:
 	* Need latest: <http://enet.bespin.org/SourceDistro.html>
 * utf8-cpp (>=2.3.1)
 	* Get here: <http://utfcpp.sourceforge.net/>
-
-You also need Parseme <https://github.com/Queatz/Parseme>
+* fluidsynth <http://fluidsynth.sf.net/>
+* aubio <http://aubio.org/>
+* parseme <https://github.com/Queatz/Parseme>
 
 To compile and install, open terminal from this directory and run:
 

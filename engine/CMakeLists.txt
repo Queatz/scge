@@ -14,7 +14,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.in ${CMAKE_CURRENT_SOURCE_DIR}/c
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 if(${WITH_GRAPHICS})
-	target_link_libraries(scge glfw3 freeimage Shikoba)
+	target_link_libraries(scge glfw freeimage Shikoba)
 endif()
 
 if(${WITH_SOUND})

@@ -31,7 +31,7 @@ CALLBACK.add(parseme.Round(n = 'button', g = 'MouseButton'))
 CALLBACK.add(parseme.Round(n = 'key', g = 'Key'))
 CALLBACK.add(parseme.Round(n = 'scroll', g = 'Scroll'))
 CALLBACK.add(parseme.Round(n = 'char', g = 'Char'))
-CALLBACK.add(parseme.Round(n = 'mousemove', g = 'MousePos'))
+CALLBACK.add(parseme.Round(n = 'mousemove', g = 'CursorPos'))
 CALLBACK.add(parseme.Round(n = 'enter', g = 'CursorEnter'))
 
 TYPEMAP = parseme.Section('TYPEMAP')

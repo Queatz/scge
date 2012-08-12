@@ -25,7 +25,6 @@
 #endif
 
 #ifdef WITH_GRAPHICS
-#define GLFW_NO_GLU 1
 #ifdef _WIN32
 #  undef GL3_PROTOTYPES
 #  include <GL/glew.h>
@@ -278,7 +277,6 @@ struct window {
 	void title(const char*);
 	void iconify(bool);
 	
-	bool opened();
 	bool active();
 	bool iconified();
 

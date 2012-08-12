@@ -220,12 +220,11 @@ std::string display_modes() {
 	if(glfw_state == 0)
 		graphics();
 	
-	GLFWvidmode m[128] = {0};
 	std::ostringstream s;
 	std::string l;
 	int i, c;
 	
-	c = glfwGetVideoModes(m, 128);
+	GLFWvidmode *m = glfwGetVideoModes(&c);
 	
 	for(i = 0; i < c; i++) {
 		if(i > 0) s << " ";

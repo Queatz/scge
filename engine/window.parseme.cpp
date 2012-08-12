@@ -22,18 +22,18 @@ window::window(const char* title, glm::ivec2 s, bool fullscreen, bool resizeable
 	}
 	
 	if(fsaa)
-		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, fsaa);
+		glfwWindowHint(GLFW_FSAA_SAMPLES, fsaa);
 	
-	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
+	glfwWindowHint(GLFW_WINDOW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
 
 #ifndef _WIN32
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
-	glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-	win = glfwOpenWindow(s.x, s.y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
+	win = glfwCreateWindow(s.x, s.y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
 	
 	if(!win) {
 		err("window", "could not initiate window");
@@ -69,16 +69,12 @@ window::~window() {
 }
 
 void window::close() {
-	glfwIsWindow(win);
+	glfwDestroyWindow(win);
 	win = NULL;
 }
 
 void window::title(const char* a) {
 	glfwSetWindowTitle(win, a);
-}
-
-bool window::opened() {
-	return glfwIsWindow(win) ? true : false;
 }
 
 bool window::active() {
@@ -135,7 +131,7 @@ glm::vec2 window::mouse() {
 	
 	int x, y;
 	glm::vec2 r;
-	glfwGetMousePos(win, &x, &y);
+	glfwGetCursorPos(win, &x, &y);
 	r = glm::vec2(x, h - y);
 	return r;
 }
@@ -155,7 +151,7 @@ void window::mouse(glm::ivec2 a) {
 	int w, h;
 	glfwGetWindowSize(win, &w, &h);
 	
-	glfwSetMousePos(win, a.x, h - a.y);
+	glfwSetCursorPos(win, a.x, h - a.y);
 }
 
 bool window::button(const char* a) {
@@ -262,7 +258,7 @@ void window::callback(const char* e, PyObject* o) {
 #endif
 void window::swap() {
 	glfwMakeContextCurrent(win);
-	glfwSwapBuffers();
+	glfwSwapBuffers(win);
 }
 
 void window::viewport(glm::ivec2 a, glm::ivec2 b) {

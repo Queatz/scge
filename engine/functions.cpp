@@ -35,6 +35,8 @@ const char* read_file(const char* a) {
 
 // Utility functions
 
+#ifdef WITH_GRAPHICS
+
 char key_int_to_char(int a) {
 	if(a < 256) return (char) a;
 	return 0;
@@ -399,6 +401,10 @@ GLenum common_type_from_string(const char* a) {
 	}
 }
 
+#endif
+
+#ifdef WITH_SOUND
+
 const char * alErrorString(ALenum code) {
 	if(code == AL_NO_ERROR)
 		return "no error";
@@ -437,3 +443,5 @@ ALint al_format_from_string(const char* a) {
 	
 	return AL_FORMAT_MONO8;
 }
+
+#endif

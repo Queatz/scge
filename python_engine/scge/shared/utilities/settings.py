@@ -2,7 +2,7 @@ import os, numbers, ast
 
 # Simple class to handle settings
 class Settings:
-	"Settings manager.  It can be used like a dictionary."
+	"""Settings manager.  It can be used like a dictionary."""
 	def __init__(self, data = None):
 		self.data = {}
 		
@@ -15,7 +15,7 @@ class Settings:
 		return str(self.data)
 	
 	def __repr__(self):
-		return 'Settings('+str(self.data)+')'
+		return 'Settings(' + str(self.data) + ')'
 	
 	def __bool__(self):
 		return bool(self.data)
@@ -36,13 +36,13 @@ class Settings:
 			raise ValueError("Only string numbers, dicts, and sets may be used as settings' values.")
 		
 		if isinstance(k, str):
-			if k.find('\n') != -1:
+			if '\n' in k:
 				raise AttributeError("Settings may not contain linebreaks.")
-			if k.find('=') != -1:
+			if '=' in k:
 				raise AttributeError("Settings may not contain equals signs.")
 			
 		if isinstance(v, str):
-			if k.find('\n') != -1:
+			if '\n' in k:
 				raise ValueError("Settings' values may not contain linebreaks.")
 		
 		self.data[k] = v
@@ -52,7 +52,7 @@ class Settings:
 			del self.data[k]
 	
 	def save(self, filename):
-		"Save settings to file."
+		"""Save settings to file."""
 		s = ''
 		
 		for l in self.data:
@@ -70,7 +70,7 @@ class Settings:
 		return False
 	
 	def load(self, filename):
-		"Load settings from file."
+		"""Load settings from file."""
 		if type(filename) == str and os.path.isfile(filename):
 			f = open(filename, 'r')
 			for l in f:

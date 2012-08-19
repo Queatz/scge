@@ -1,8 +1,10 @@
-image::image(const char* a, bool m) {
+image::image(const char * a, bool m) {
+	GLint last;
+	
 	if(glfw_state == 0)
 		graphics();
 
-	FIBITMAP *bm = FreeImage_Load(fif_from_string(a), a, 0);
+	FIBITMAP * bm = FreeImage_Load(fif_from_string(a), a, 0);
 	
 	if(!bm) {
 		err("image", "could not load");
@@ -11,19 +13,20 @@ image::image(const char* a, bool m) {
 	
 	bool has_alpha = FreeImage_IsTransparent(bm);
 	
-	FIBITMAP *tmp = bm;
+	FIBITMAP * tmp = bm;
+	
 	if(has_alpha)
 		bm = FreeImage_ConvertTo32Bits(bm);
 	else
 		bm = FreeImage_ConvertTo24Bits(bm);
+	
 	FreeImage_Unload(tmp);
 	
 	
-	BYTE *bits = new BYTE[FreeImage_GetHeight(bm) * FreeImage_GetPitch(bm)];
+	BYTE * bits = new BYTE[FreeImage_GetHeight(bm) * FreeImage_GetPitch(bm)];
 	
 	FreeImage_ConvertToRawBits(bits, bm, FreeImage_GetPitch(bm), (has_alpha ? 32 : 24), FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, FALSE);
 	
-	GLint last;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
 	
 	glGenTextures(1, &id);
@@ -61,6 +64,8 @@ image::image(const char* a, bool m) {
 }
 
 image::image(glm::ivec2 a, bool alpha, bool quality) {
+	GLint last;
+	
 	if(glfw_state == 0)
 		graphics();
 	
@@ -70,7 +75,6 @@ image::image(glm::ivec2 a, bool alpha, bool quality) {
 	
 	size = a;
 	
-	GLint last;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last);
 	
 	glGenTextures(1, &id);
@@ -83,7 +87,7 @@ image::image(glm::ivec2 a, bool alpha, bool quality) {
 	glBindTexture(GL_TEXTURE_2D, last);
 }
 
-image::image(glm::ivec2 a, const char* f) {
+image::image(glm::ivec2 a, const char * f) {
 	if(glfw_state == 0)
 		graphics();
 	
@@ -138,7 +142,7 @@ image::image(glm::ivec2 a, const char* f) {
 	glBindTexture(GL_TEXTURE_2D, last);
 }
 
-image::image(pixelcache* p) {
+image::image(pixelcache * p) {
 	if(glfw_state == 0)
 		graphics();
 	
@@ -164,9 +168,11 @@ image::~image() {
 		delete cache;
 }
 
-void image::set(const char* a) {
+void image::set(const char * a) {
 	GLint bind;
+	
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
@@ -175,12 +181,14 @@ void image::set(const char* a) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		else
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	} else if (!strcmp(a, "nearest")) {
 		if(mipmaps)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 		else
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}  else if (!strcmp(a, "nearest mipmap")) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -198,14 +206,16 @@ void image::set(const char* a) {
 	else
 		err("image", "set", "invalid value");
 	
-	// Reset to the origional texture
+	// Reset to the original texture
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, bind);
 }
 
-void image::from_pixelcache(pixelcache* a) {
+void image::from_pixelcache(pixelcache * a) {
 	GLint bind;
+	
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
@@ -216,9 +226,11 @@ void image::from_pixelcache(pixelcache* a) {
 		glBindTexture(GL_TEXTURE_2D, bind);
 }
 
-void image::from_pixelcache(pixelcache* a, glm::ivec2 pos, glm::ivec2 dim) {
+void image::from_pixelcache(pixelcache * a, glm::ivec2 pos, glm::ivec2 dim) {
 	GLint bind;
+	
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
@@ -230,13 +242,15 @@ void image::from_pixelcache(pixelcache* a, glm::ivec2 pos, glm::ivec2 dim) {
 }
 
 void image::from_pixelcache() {
+	GLint bind;
+	
 	if(!cache) {
 		err("image", "from_pixelcache", "no cache");
 		return;
 	}
 	
-	GLint bind;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
@@ -254,7 +268,9 @@ void image::from_pixelcache(glm::ivec2 pos, glm::ivec2 dim) {
 	}
 	
 	GLint bind;
+	
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
@@ -267,7 +283,9 @@ void image::from_pixelcache(glm::ivec2 pos, glm::ivec2 dim) {
 
 void image::refresh_pixel_cache() {
 	GLint bind;
+	
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &bind);
+	
 	if(bind != id)
 		glBindTexture(GL_TEXTURE_2D, id);
 	
@@ -284,6 +302,7 @@ void image::refresh_pixel_cache() {
 void image::discard_pixel_cache() {
 	if(!external_cache && cache)
 		delete cache;
+	
 	cache = NULL;
 }
 
@@ -294,7 +313,7 @@ glm::vec4 image::pixel(glm::ivec2 a) {
 	return cache->pixel(a);
 }
 
-bool image::save(const char* a, const char* b) {
+bool image::save(const char * a, const char * b) {
 	if(!cache)
 		refresh_pixel_cache();
 	

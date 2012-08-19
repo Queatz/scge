@@ -1,8 +1,9 @@
-fbo::fbo(image* a) {
+fbo::fbo(image * a) {
+	GLint last, lastt;
+	
 	if(glfw_state == 0)
 		graphics();
 	
-	GLint last, lastt;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &last);
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &lastt);
 	
@@ -23,12 +24,13 @@ fbo::fbo(image* a) {
 }
 
 fbo::fbo(glm::ivec2 s, bool alpha, bool quality, bool ds, int multisample) {
+	GLint last, lastt;
+	
 	if(glfw_state == 0)
 		graphics();
 	
 	glGenFramebuffers(1, &id);
 	
-	GLint last, lastt;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &last);
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &lastt);
 	
@@ -59,5 +61,6 @@ fbo::~fbo() {
 		delete buffer;
 	if(depth)
 		delete depth;
+	
 	glDeleteFramebuffers(1, &id);
 }

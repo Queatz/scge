@@ -1,4 +1,4 @@
-window::window(const char* title, glm::ivec2 s, bool fullscreen, bool resizeable, int fsaa) : win(NULL) {
+window::window(const char * title, glm::ivec2 s, bool fullscreen, bool resizeable, int fsaa) : win(NULL) {
 #ifdef WITH_PYTHON
 /*$ CALLBACK $*/
 	_${n}_callback = NULL;
@@ -73,7 +73,7 @@ void window::close() {
 	win = NULL;
 }
 
-void window::title(const char* a) {
+void window::title(const char * a) {
 	glfwSetWindowTitle(win, a);
 }
 
@@ -113,30 +113,25 @@ glm::ivec2 window::position() {
 	return w;
 }
 
-void window::set(const char* a, bool b) {
+void window::set(const char * a, bool b) {
 	if(!strcmp(a, "key repeat"))
 		glfwSetInputMode(win, GLFW_KEY_REPEAT, b ? GL_TRUE : GL_FALSE);
-	else if(!strcmp(a, "vsync")) {
+	else if(!strcmp(a, "vsync"))
 		glfwSwapInterval(b ? 1 : 0);
-		return;
-	}
-	
 	else
 		err("window", "set", "unknown parameter");
 }
 
 glm::vec2 window::mouse() {
-	int w, h;
-	glfwGetWindowSize(win, &w, &h);
+	int w, h, x, y;
 	
-	int x, y;
-	glm::vec2 r;
+	glfwGetWindowSize(win, &w, &h);
 	glfwGetCursorPos(win, &x, &y);
-	r = glm::vec2(x, h - y);
-	return r;
+	
+	return glm::vec2(x, h - y);
 }
 
-void window::mouse(const char* a) {
+void window::mouse(const char * a) {
 	if(!strcmp(a, "show"))
 		glfwSetInputMode(win, GLFW_CURSOR_MODE, GLFW_CURSOR_NORMAL);
 	else if(!strcmp(a, "hide"))
@@ -149,12 +144,13 @@ void window::mouse(const char* a) {
 
 void window::mouse(glm::ivec2 a) {
 	int w, h;
+	
 	glfwGetWindowSize(win, &w, &h);
 	
 	glfwSetCursorPos(win, a.x, h - a.y);
 }
 
-bool window::button(const char* a) {
+bool window::button(const char * a) {
 	return button(mouse_button_string_to_int(a));
 }
 
@@ -167,11 +163,13 @@ bool window::button(short a) {
 
 glm::vec2 window::scroll() {
 	double x, y;
+	
 	glfwGetScrollOffset(win, &x, &y);
+	
 	return glm::vec2((float) x, (float) y);
 }
 
-bool window::key(const char* a) {
+bool window::key(const char * a) {
 	if(!strcmp(a, "shift")) {
 		if(glfwGetKey(win, keyboard_key_string_to_int("left shift")) || glfwGetKey(win, keyboard_key_string_to_int("right shift")))
 			return true;
@@ -198,22 +196,23 @@ bool window::key(const char* a) {
 	return false;
 }
 
-bool window::key_state(const char* a) {
+bool window::key_state(const char * a) {
 	//if(glfwGetKeyState(win, keyboard_key_string_to_int(a)))
 	//	return true;
 	return false;
 }
 
-glm::vec4 window::pixel(glm::ivec2 a, const char* f) {
-	glfwMakeContextCurrent(win);
-	
+glm::vec4 window::pixel(glm::ivec2 a, const char * f) {
 	int w, h;
+	
+	glfwMakeContextCurrent(win);
 	glfwGetWindowSize(win, &w, &h);
 	
 	if(a.x < 0 || a.x >= w || a.y < 0 || a.y >= h)
 		return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	
 	GLenum fmt = GL_RGB;
+	
 	if(w) {
 		if(!strcmp(f, "depth"))
 			fmt = GL_DEPTH_COMPONENT;
@@ -222,14 +221,16 @@ glm::vec4 window::pixel(glm::ivec2 a, const char* f) {
 	}
 	
 	GLfloat c[3];
+	
 	glReadPixels(a.x, a.y, 1, 1, fmt, GL_FLOAT, c);
+	
 	return glm::vec4(c[0], c[1], c[2], 1.0);
 }
 
-bool window::screenshot(const char* a, const char* b) {
-	glfwMakeContextCurrent(win);
-	
+bool window::screenshot(const char * a, const char * b) {
 	int w, h;
+	
+	glfwMakeContextCurrent(win);
 	glfwGetWindowSize(win, &w, &h);
 	
 	pixelcache p(glm::ivec2(w, h));
@@ -238,12 +239,14 @@ bool window::screenshot(const char* a, const char* b) {
 	
 	if (p.save(a, b))
 		return true;
+	
 	err("screenshot", "could not save");
+	
 	return false;
 }
 
 #ifdef WITH_PYTHON
-void window::callback(const char* e, PyObject* o) {
+void window::callback(const char * e, PyObject * o) {
 /*$ CALLBACK $*/
 	${'else ' if II > 0 else ''}if(!strcmp(e, "${n}")) {
 		if(_${n}_callback)
@@ -281,9 +284,10 @@ void window::scissor(glm::ivec4 a) {
 	glScissor(a.x, a.y, a.z, a.w);
 }
 
-void window::polygon_mode(const char* a) {
-	glfwMakeContextCurrent(win);
+void window::polygon_mode(const char * a) {
 	int c = -1;
+	
+	glfwMakeContextCurrent(win);
 	
 	if (!strcmp(a, "dot"))
 		c = GL_POINT;
@@ -298,9 +302,10 @@ void window::polygon_mode(const char* a) {
 		err("polygon_mode", "invalid option");
 }
 
-void window::enable(const char* a, bool b) {
-	glfwMakeContextCurrent(win);
+void window::enable(const char * a, bool b) {
 	GLint c = -1;
+	
+	glfwMakeContextCurrent(win);
 	
 	if (!strcmp(a, "scissor"))
 		c = GL_SCISSOR_TEST;
@@ -335,9 +340,10 @@ void window::enable(const char* a, bool b) {
 		err("enable", "invalid option");
 }
 
-void window::cull(const char* a) {
-	glfwMakeContextCurrent(win);
+void window::cull(const char * a) {
 	GLint c = -1;
+	
+	glfwMakeContextCurrent(win);
 	
 	if (!strcmp(a, "front"))
 		c = GL_FRONT;
@@ -352,7 +358,7 @@ void window::cull(const char* a) {
 		err("cull", "invalid option");
 }
 
-void display_set_blend_mode_from_string(const char* a) {
+void display_set_blend_mode_from_string(const char * a) {
 	if(!strcmp(a, "subtract")) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
@@ -379,7 +385,6 @@ void display_set_blend_mode_from_string(const char* a) {
 
 void window::color() {
 	glfwMakeContextCurrent(win);
-	glfwMakeContextCurrent(win);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -388,7 +393,7 @@ void window::color(glm::vec4 a) {
 	glClearColor(a.r, a.g, a.b, a.a);
 }
 
-void window::color(const char* a) {
+void window::color(const char * a) {
 	glfwMakeContextCurrent(win);
 	display_set_blend_mode_from_string(a);
 }
@@ -408,7 +413,7 @@ void window::depth() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void window::depth(const char* a) {
+void window::depth(const char * a) {
 	glfwMakeContextCurrent(win);
 	glDepthFunc(comparison_string_to_gl(a));
 }
@@ -433,17 +438,17 @@ void window::line_width(float a) {
 	glLineWidth(a);
 }
 
-void window::use(fbo* a) {
+void window::use(fbo * a) {
 	glfwMakeContextCurrent(win);
 	glBindFramebuffer(GL_FRAMEBUFFER, a->id);
 }
 
-void window::use(vao* a) {
+void window::use(vao * a) {
 	glfwMakeContextCurrent(win);
 	glBindVertexArray(a->id);
 }
 
-void window::use(program* a) {
+void window::use(program * a) {
 	glfwMakeContextCurrent(win);
 	glUseProgram(a->id);
 }
@@ -463,9 +468,10 @@ void window::stencil(int a) {
 	glClearStencil(a);
 }
 
-void window::stencil(const char* a, int b) {
-	glfwMakeContextCurrent(win);
+void window::stencil(const char * a, int b) {
 	GLenum e = comparison_string_to_gl(a);
+	
+	glfwMakeContextCurrent(win);
 
 	if(e)
 		glStencilFunc(e, b, 1);
@@ -496,7 +502,7 @@ void window::stencil(const char* a, int b) {
 	}
 }
 
-void window::draw(const char* a, unsigned int count, unsigned int first) {
+void window::draw(const char * a, unsigned int count, unsigned int first) {
 	glfwMakeContextCurrent(win);
 	glDrawArrays(primitive_from_string(a), first, count);
 }

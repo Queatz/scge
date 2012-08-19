@@ -15,15 +15,17 @@ void midi_on() {
 void midi_off() {
 	if (midi_device)
 		delete_fluid_audio_driver(midi_device);
+	
 	if (midi_synth)
 		delete_fluid_synth(midi_synth);
+	
 	if (midi_settings)
 		delete_fluid_settings(midi_settings);
 	
 	midi_status = 0;
 }
 
-soundfont::soundfont(const char* a) {
+soundfont::soundfont(const char * a) {
 	if(midi_status < 1)
 		midi_on();
 	
@@ -38,7 +40,7 @@ soundfont::soundfont(const char* a) {
 }
 
 std::string soundfont::get_presets() {
-	fluid_sfont_t *f = fluid_synth_get_sfont_by_id(midi_synth, id);
+	fluid_sfont_t * f = fluid_synth_get_sfont_by_id(midi_synth, id);
 	fluid_preset_t p;
 	std::ostringstream s;
 	std::string t;
@@ -64,11 +66,11 @@ std::string soundfont::get_presets() {
 
 midi::midi(int c) : _channel(c) {}
 
-void midi::font(soundfont* f) {
+void midi::font(soundfont * f) {
 	fluid_synth_sfont_select(midi_synth, _channel, (unsigned int)f->id);
 }
 
-void midi::preset(soundfont* sf, unsigned int bank, unsigned int preset) {
+void midi::preset(soundfont * sf, unsigned int bank, unsigned int preset) {
 	fluid_synth_program_select(midi_synth, _channel, sf->id, bank, preset);
 }
 

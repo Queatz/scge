@@ -15,8 +15,8 @@ microphone::microphone() : _device(NULL), _samples_available(0), _samples_length
 			return;
 		}
 		
-		ALenum e;
-		e = alcGetError(_device);
+		ALenum e = alcGetError(_device);
+		
 		if(e != AL_NO_ERROR)
 			err("microphone", alcErrorString(e));
 	}
@@ -42,14 +42,16 @@ void microphone::enable(bool a) {
 		alcCaptureStop(_device);
 }
 
-soundbyte* microphone::step() {
+soundbyte * microphone::step() {
 	if(!_device)
 		return NULL;
 	
 	ALCint samps;
+	
 	alcGetIntegerv(_device, ALC_CAPTURE_SAMPLES, 1, &samps);
 	
 	ALenum e = alcGetError(_device);
+	
 	if(e) {
 		err("microphone", alcErrorString(e));
 		return NULL;
@@ -64,10 +66,11 @@ soundbyte* microphone::step() {
 	}
 	
 	_samples_length = samps;
-	
+
 	alcCaptureSamples(_device, _soundbyte.data, samps);
 	
 	_soundbyte.length = _samples_length;
 	_soundbyte.frequency = CAPTURE_FREQ;
+	
 	return &_soundbyte;
 }

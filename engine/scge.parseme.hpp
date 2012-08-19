@@ -1,6 +1,6 @@
 #ifdef WITH_PYTHON
-#include <Python.h>
-#include <glm/python.hpp>
+#  include <Python.h>
+#  include <glm/python.hpp>
 #endif
 
 #include <cstdlib>
@@ -9,9 +9,11 @@
 #include <stack>
 #include <list>
 #include <cmath>
+
 #ifndef M_PI
-#define M_PI 3.141592653589793
+#  define M_PI 3.141592653589793
 #endif
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -21,31 +23,28 @@
 #include <utf8.h>
 
 #ifdef WITH_NETWORK
-#include <enet/enet.h> // Networking
+#  include <enet/enet.h>
 #endif
 
 #ifdef WITH_GRAPHICS
-#ifdef _WIN32
-#  undef GL3_PROTOTYPES
-#  include <GL/glew.h>
-#else
-#  define GLFW_INCLUDE_GL3 1
-#  ifndef GL3_PROTOTYPES
-#    define GL3_PROTOTYPES 1
+#  ifdef _WIN32
+#    undef GL3_PROTOTYPES
+#    include <GL/glew.h>
+#  else
+#    define GLFW_INCLUDE_GL3 1
+#    ifndef GL3_PROTOTYPES
+#      define GL3_PROTOTYPES 1
+#    endif
 #  endif
-#endif
-#include <GL/glfw3.h> // Graphics
-
-#include "FreeImagePlus.h" // Images
-
-#include <Shikoba.hpp> // Font rendering
+#  include <GL/glfw3.h>
+#  include "FreeImagePlus.h"
+#  include <Shikoba.hpp>
 #endif
 
 #ifdef WITH_SOUND
-#include <AL/alure.h> // Sound
-
-#include <fluidsynth.h>
-#include <aubio/aubio.h> // Pitch, etc
+#  include <AL/alure.h>
+#  include <fluidsynth.h>
+#  include <aubio/aubio.h>
 #endif
 
 #define GLM_SWIZZLE
@@ -61,31 +60,31 @@ namespace scge {
 
 struct soundbyte {
 	soundbyte();
-	soundbyte(ALshort*, unsigned int);
+	soundbyte(ALshort *, unsigned int);
 	~soundbyte();
 	
-	float pitch(unsigned int = 0, unsigned int = 0, const char* = "schmitt");
+	float pitch(unsigned int = 0, unsigned int = 0, const char * = "schmitt");
 	float get(unsigned int);
 	
-	ALshort* data;
+	ALshort * data;
 	unsigned int length;
 	unsigned int frequency;
 };
 
 struct buffer {
-	buffer(const char*);
+	buffer(const char *);
 	buffer();
 	~buffer();
 	
 	void clear();
-	void data(const void*, const char*, unsigned int, unsigned int);
+	void data(const void *, const char *, unsigned int, unsigned int);
 	
 	ALuint buf;
 };
 
 struct sound {
-	sound(buffer*);
-	sound(const char*, bool = false);
+	sound(buffer *);
+	sound(const char *, bool = false);
 	sound();
 	~sound();
 	
@@ -102,18 +101,18 @@ struct sound {
 	void pitch(float);
 	void position(glm::vec3);
 	void repeat(bool = true);
-	void seek(float = 0.0, const char* = "second");
+	void seek(float = 0.0, const char * = "second");
 	bool playing();
-	int get(const char*);
-	float offset(const char* = "second");
-	void font(const char*);
+	int get(const char *);
+	float offset(const char * = "second");
+	void font(const char *);
 	
-	buffer* data;
+	buffer * data;
 	bool streaming, looping;
 	unsigned int pending;
 	ALuint source;//x
 	ALuint bufs[NUM_BUFS];//x
-	alureStream* stream;//x
+	alureStream * stream;//x
 };
 
 #endif
@@ -121,44 +120,42 @@ struct sound {
 #ifdef WITH_GRAPHICS
 
 struct pixelcache {
-	pixelcache(const char*);
+	pixelcache(const char *);
 	pixelcache(const pixelcache&);
 	pixelcache(glm::ivec2, bool = false);
 	~pixelcache();
 	void pixel(glm::ivec2, glm::vec4);
 	glm::vec4 pixel(glm::ivec2);
-	bool save(const char*, const char* = NULL);
+	bool save(const char *, const char * = NULL);
 	
 	glm::ivec2 size;
 	char colors;
-	GLubyte *data;//x
+	GLubyte * data;//x
 };
 
 struct image {
-	image(const char*, bool = false);
+	image(const char *, bool = false);
 	image(glm::ivec2, bool = false, bool = false);
-	image(glm::ivec2, const char*);
-	image(pixelcache*);
+	image(glm::ivec2, const char *);
+	image(pixelcache *);
 	~image();
 	
-	glm::ivec2 size;
-	char colors;
+	void set(const char *);
 	
-	void set(const char*);
-	
-	void from_pixelcache(pixelcache*);
-	void from_pixelcache(pixelcache*, glm::ivec2, glm::ivec2);
+	void from_pixelcache(pixelcache *);
+	void from_pixelcache(pixelcache *, glm::ivec2, glm::ivec2);
 	void from_pixelcache();
 	void from_pixelcache(glm::ivec2, glm::ivec2);
 	void refresh_pixel_cache();
 	void discard_pixel_cache();
 	glm::vec4 pixel(glm::ivec2);
-	bool save(const char*, const char* = NULL);
+	bool save(const char *, const char * = NULL);
 	
+	glm::ivec2 size;
+	char colors;
 	bool mipmaps;
-	
 	GLuint id;
-	pixelcache* cache;
+	pixelcache * cache;
 	bool external_cache;
 };
 
@@ -172,22 +169,22 @@ struct glyphmetrics {
 };
 
 struct font {
-	font(const char*, unsigned int = 0);
+	font(const char *, unsigned int = 0);
 	~font();
 	
 	void size(unsigned int);
-	glyphmetrics glyph(const char*);
+	glyphmetrics glyph(const char *);
 	float height();
 	float ascent();
 	float descent();
-	float advance(const char*, const char* = NULL);
+	float advance(const char *, const char * = NULL);
 	
 	unsigned int _size;//x
-	Shikoba::Face* data;//x
+	Shikoba::Face * data;//x
 };
 
 struct shader {
-	shader(const char*, const char*, bool = false);
+	shader(const char *, const char *, bool = false);
 	~shader();
 	
 	GLint id;
@@ -197,28 +194,28 @@ struct program {
 	program();
 	~program();
 	
-	void attach(shader*);
+	void attach(shader *);
 	void link();
 
-	void uniform(const char*, int);
-	void uniform(const char*, float);
+	void uniform(const char *, int);
+	void uniform(const char *, float);
 /*$ PROGRAM::UNIFORM $*/
-	void uniform(const char*, glm::${p}${type}${n});
+	void uniform(const char *, glm::${p}${type}${n});
 /*$ $*/
-	void uniform(const char*, image*, int = 0);
-	void font(const char*, int = 0);
+	void uniform(const char *, image *, int = 0);
+	void font(const char *, int = 0);
 	
-	void attribute(int, const char*);
+	void attribute(int, const char *);
 	
 	GLhandleARB id;
 };
 
 struct fbo {
-	image* buffer;
-	image* depth;
+	image * buffer;
+	image * depth;
 
 	fbo(glm::ivec2, bool = false, bool = false, bool = false, int = 0);
-	fbo(image*);
+	fbo(image *);
 	~fbo();
 	
 	GLuint id;
@@ -226,13 +223,13 @@ struct fbo {
 };
 
 struct vbo {
-	vbo(int, const char* = "static draw");
-	void data(const void*, int, int);
+	vbo(int, const char * = "static draw");
+	void data(const void *, int, int);
 #ifdef WITH_PYTHON
-	vbo(PyObject*, const char* = "static draw");
-	void data(PyObject*, int = 0);
+	vbo(PyObject *, const char * = "static draw");
+	void data(PyObject *, int = 0);
 #endif
-	void data(vbo*, int = 0, int = 0, int = -1);
+	void data(vbo *, int = 0, int = 0, int = -1);
 	~vbo();
 	
 	GLuint id;
@@ -240,16 +237,16 @@ struct vbo {
 };
 
 struct ibo {
-	ibo(int, const char* = "int", const char* = "static draw");
-	void data(const void*, int, int);
+	ibo(int, const char * = "int", const char * = "static draw");
+	void data(const void *, int, int);
 #ifdef WITH_PYTHON
-	ibo(PyObject*, const char* = "int", const char* = "static draw");
-	void data(PyObject*, int = 0);
+	ibo(PyObject *, const char * = "int", const char * = "static draw");
+	void data(PyObject *, int = 0);
 #endif
-	void data(ibo*, int = 0, int = 0, int = -1);
+	void data(ibo *, int = 0, int = 0, int = -1);
 	~ibo();
 	
-	void draw(const char*, unsigned int, unsigned int = 0);
+	void draw(const char *, unsigned int, unsigned int = 0);
 	
 	GLenum storage;
 	GLuint id;
@@ -260,7 +257,7 @@ struct vao {
 	vao();
 	~vao();
 	
-	void attribute(unsigned int, vbo*, const char*, int, int = 0, int = 0, bool = false, bool = false);
+	void attribute(unsigned int, vbo *, const char *, int, int = 0, int = 0, bool = false, bool = false);
 	void enable(unsigned int, bool = true);
 	void divisor(unsigned int, unsigned int = 0);
 	
@@ -268,13 +265,13 @@ struct vao {
 };
 
 struct window {
-	window(const char* = "scge test", glm::ivec2 = glm::ivec2(), bool = false, bool = false, int = 0);
+	window(const char * = "scge test", glm::ivec2 = glm::ivec2(), bool = false, bool = false, int = 0);
 	~window();
 	
 	void close();
-	void set(const char*, bool = true);
+	void set(const char *, bool = true);
 
-	void title(const char*);
+	void title(const char *);
 	void iconify(bool);
 	
 	bool active();
@@ -286,31 +283,31 @@ struct window {
 	glm::ivec2 position();
 
 	glm::vec2 mouse();
-	void mouse(const char*);
+	void mouse(const char *);
 	void mouse(glm::ivec2);
 	bool button(short);
-	bool button(const char*);
+	bool button(const char *);
 	glm::vec2 scroll();
 
-	bool key(const char*);
-	bool key_state(const char*);
+	bool key(const char *);
+	bool key_state(const char *);
 
-	bool screenshot(const char*, const char* = NULL);
-	glm::vec4 pixel(glm::ivec2, const char* = NULL);
+	bool screenshot(const char *, const char * = NULL);
+	glm::vec4 pixel(glm::ivec2, const char * = NULL);
 	
 	void swap();
 
-	void polygon_mode(const char*);
-	void enable(const char*, bool = true);
+	void polygon_mode(const char *);
+	void enable(const char *, bool = true);
 
-	void cull(const char* a);
+	void cull(const char * a);
 
 	void point_size(float);
 	void line_width(float);
 
-	void use(fbo*);
-	void use(vao*);
-	void use(program*);
+	void use(fbo *);
+	void use(vao *);
+	void use(program *);
 	void use();
 
 	void viewport(glm::ivec2, glm::ivec2);
@@ -318,30 +315,30 @@ struct window {
 	void scissor(glm::ivec2, glm::ivec2);
 	void scissor(glm::ivec4);
 
-	void draw(const char*, unsigned int, unsigned int = 0);
+	void draw(const char *, unsigned int, unsigned int = 0);
 
 	void color(glm::vec4);
 	void color();
-	void color(const char*);
+	void color(const char *);
 	void color(bool, bool, bool, bool = true);
 	void color(bool);
 
 	void depth();
-	void depth(const char*);
+	void depth(const char *);
 	void depth(bool);
 	void depth_offset(float, float = 0.0);
 
 	void stencil();
 	void stencil(int);
-	void stencil(const char*, int = 0);
+	void stencil(const char *, int = 0);
 	
 #ifdef WITH_PYTHON
-	void callback(const char*, PyObject*);
+	void callback(const char *, PyObject *);
 #endif
 
 #ifdef WITH_PYTHON
 /*$ CALLBACK $*/
-	PyObject* _${n}_callback;
+	PyObject * _${n}_callback;
 /*$ $*/
 #endif
 	
@@ -351,7 +348,7 @@ struct window {
 bool graphics();
 void graphics_off();
 
-void use(window*);
+void use(window *);
 
 std::string display_modes();
 glm::ivec2 display_dimensions();
@@ -364,19 +361,19 @@ void poll();
 
 bool audio_on();
 void audio_off();
-void audio_soundfont(const char*);
+void audio_soundfont(const char *);
 
 struct listener {
 	void gain(float);
 	void position(glm::vec3);
-	void attenuation(const char*);
+	void attenuation(const char *);
 };
 
 void midi_on();
 void midi_off();
 
 struct soundfont {
-	soundfont(const char* = NULL);
+	soundfont(const char * = NULL);
 	
 	std::string get_presets();
 	
@@ -386,8 +383,8 @@ struct soundfont {
 struct midi {
 	midi(int = 0);
 	
-	void preset(soundfont*, unsigned int = 0, unsigned int = 0);
-	void font(soundfont*);
+	void preset(soundfont *, unsigned int = 0, unsigned int = 0);
+	void font(soundfont *);
 	void bank(unsigned int = 0);
 	void play(int = 60, int = 100);
 	void stop(int = 60);
@@ -400,9 +397,9 @@ struct microphone {
 	microphone();
 	~microphone();
 	void enable(bool = true);
-	soundbyte* step();
+	soundbyte * step();
 	
-	ALCdevice* _device;//x
+	ALCdevice * _device;//x
 	unsigned int _samples_available;//x
 	unsigned int _samples_length;//x
 	soundbyte _soundbyte;//x
@@ -419,23 +416,23 @@ void connection_off();
 
 struct peer {
 	int id;
-	const char* state();
+	const char * state();
 	
-	ENetPeer* who;//x
+	ENetPeer * who;//x
 };
 
 struct event {
 	event();
 	~event();	
 	int channel();
-	const char* type();
+	const char * type();
 #ifdef WITH_PYTHON
-	PyObject* data();
+	PyObject * data();
 #else
-	const void* data();
+	const void * data();
 #endif
 	unsigned int length();
-	peer* who();
+	peer * who();
 	
 	ENetEvent evt;//x
 };
@@ -446,22 +443,22 @@ struct host {
 	// Close the server
 	~host();
 	
-	event* service(float = 0.0);
+	event * service(float = 0.0);
 	void commune();
 	
 #ifdef WITH_PYTHON
-	void send(peer*, PyObject*, int = 0, bool = true, bool = true);
-	void broadcast(PyObject*, int = 0, bool = true, bool = true);
+	void send(peer *, PyObject *, int = 0, bool = true, bool = true);
+	void broadcast(PyObject *, int = 0, bool = true, bool = true);
 #else
-	void send(peer*, const void* = NULL, unsigned int = 0, int = 0, bool = true, bool = true);
-	void broadcast(const void* = NULL, unsigned int = 0, int = 0, bool = true, bool = true);
+	void send(peer *, const void * = NULL, unsigned int = 0, int = 0, bool = true, bool = true);
+	void broadcast(const void * = NULL, unsigned int = 0, int = 0, bool = true, bool = true);
 #endif
 
-	peer* connect(const char* = "localhost", int = 2000, int = 1, unsigned int = 0);
-	void disconnect(peer*, unsigned int = 0);
+	peer * connect(const char * = "localhost", int = 2000, int = 1, unsigned int = 0);
+	void disconnect(peer *, unsigned int = 0);
 	
 	ENetAddress address;//x
-	ENetHost* me;//x
+	ENetHost * me;//x
 };
 
 #endif

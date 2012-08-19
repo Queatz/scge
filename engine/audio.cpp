@@ -1,4 +1,4 @@
-FLUIDSYNTH_API void dumberror(int level, char *message, void *data) {
+FLUIDSYNTH_API void dumberror(int level, char * message, void * data) {
 	;
 }
 
@@ -7,6 +7,7 @@ bool audio_on() {
 		err("audio", "could not initiate");
 		return false;
 	}
+	
 	fluid_set_log_function(FLUID_WARN, dumberror, NULL);
 	fluid_set_log_function(FLUID_ERR, dumberror, NULL);
 	fluid_set_log_function(FLUID_INFO, dumberror, NULL);
@@ -52,19 +53,19 @@ void audio_off() {
 		err("audio_off", "could not stop");
 	
 	if(!loaded_sounds.empty())
-		for(std::vector<ALuint>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end();i++) {
+		for(std::vector<ALuint>::iterator i = loaded_sounds.begin(); i != loaded_sounds.end(); i++) {
 			alSourcei(*i, AL_BUFFER, 0);
 			alDeleteSources(1, &(*i));
 		}
 
 	if(!loaded_buffers.empty())
-		for(std::vector<ALuint>::iterator i = loaded_buffers.begin(); i != loaded_buffers.end();i++)
+		for(std::vector<ALuint>::iterator i = loaded_buffers.begin(); i != loaded_buffers.end(); i++)
 			alDeleteBuffers(1, &(*i));
 
 	alureShutdownDevice();
 }
 
-void audio_soundfont(const char* a) {
+void audio_soundfont(const char * a) {
 	setenv("FLUID_SOUNDFONT", a, 1);
 }
 
@@ -76,7 +77,7 @@ void listener::position(glm::vec3 a) {
 	alListener3f(AL_POSITION, a.x, a.y, a.z);
 }
 
-void listener::attenuation(const char* a) {
+void listener::attenuation(const char * a) {
 	ALenum b;
 	
 	if(!strcmp(a, "none"))

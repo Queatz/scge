@@ -1,23 +1,23 @@
-void err(const char* a, const char* b, const char* c) {
+void err(const char * a, const char * b, const char * c) {
 	std::cout << "\033[1;34m" << a << " \033[1;31m" << b << "\033[0m " << c << std::endl;
 }
 
-void err(const char* b, const char* c) {
+void err(const char * b, const char * c) {
 	std::cout << " \033[1;31m" << b << "\033[0m " << c << std::endl;
 }
 
-void note(const char* a, const char* b, const char* c) {
+void note(const char * a, const char * b, const char * c) {
 	std::cout << "\033[1;34m" << a << " \033[1;33m" << b << "\033[0m " << c << std::endl;
 }
 
-void note(const char* b, const char* c) {
+void note(const char * b, const char * c) {
 	std::cout << " \033[1;33m" << b << "\033[0m " << c << std::endl;
 }
 
-const char* read_file(const char* a) {
-	FILE *fp;
+const char * read_file(const char * a) {
+	FILE * fp;
 	long len;
-	char *buf;
+	char * buf;
 	
 	fp = fopen(a, "rb");
 	if(!fp)
@@ -42,7 +42,7 @@ char key_int_to_char(int a) {
 	return 0;
 }
 
-const char* int_to_button_name(int a) {
+const char * int_to_button_name(int a) {
 	if(a == GLFW_MOUSE_BUTTON_LEFT)
 		return "left";
 	if(a == GLFW_MOUSE_BUTTON_MIDDLE)
@@ -52,7 +52,7 @@ const char* int_to_button_name(int a) {
 	return "";
 }
 
-const char* int_to_key_name(int a) {
+const char * int_to_key_name(int a) {
 	switch(a) {
 	case 'A': return "a";
 	case 'B': return "b";
@@ -163,7 +163,7 @@ const char* int_to_key_name(int a) {
 	return "unknown";
 }
 
-int mouse_button_string_to_int(const char* a) {
+int mouse_button_string_to_int(const char * a) {
 	if(!strcmp(a, "left"))
 		return GLFW_MOUSE_BUTTON_LEFT + 1;
 	if(!strcmp(a, "middle"))
@@ -173,7 +173,7 @@ int mouse_button_string_to_int(const char* a) {
 	return -1;
 }
 
-int keyboard_key_string_to_int(const char* a) {
+int keyboard_key_string_to_int(const char * a) {
 	if(!strcmp(a, "a")
 	|| !strcmp(a, "b")
 	|| !strcmp(a, "c")
@@ -285,7 +285,7 @@ int keyboard_key_string_to_int(const char* a) {
 	return -1;
 }
 
-GLenum primitive_from_string(const char* a) {
+GLenum primitive_from_string(const char * a) {
 		if (!strcmp(a, "triangle"))
 			return GL_TRIANGLES;
 		else if (!strcmp(a, "triangle strip"))
@@ -303,7 +303,7 @@ GLenum primitive_from_string(const char* a) {
 		return 0;
 }
 
-FREE_IMAGE_FORMAT fif_from_string(const char* a = NULL, const char* b = NULL) {
+FREE_IMAGE_FORMAT fif_from_string(const char * a = NULL, const char * b = NULL) {
 	if(b) {
 		if(!strcmp(b, "png"))
 			return FIF_PNG;
@@ -335,7 +335,7 @@ int default_from_fif(FREE_IMAGE_FORMAT a) {
 		return 0;
 }
 
-GLenum comparison_string_to_gl(const char* a) {
+GLenum comparison_string_to_gl(const char * a) {
 	if(!strcmp(a, "=="))
 		return GL_EQUAL;
 	else if(!strcmp(a, "!="))
@@ -356,7 +356,7 @@ GLenum comparison_string_to_gl(const char* a) {
 	return 0;
 }
 
-GLenum buffer_usage_from_string(const char* t) {
+GLenum buffer_usage_from_string(const char * t) {
 	if(!strcmp(t, "static draw"))
 		return GL_STATIC_DRAW;
 	else if(!strcmp(t, "static read"))
@@ -378,7 +378,7 @@ GLenum buffer_usage_from_string(const char* t) {
 	return GL_STATIC_DRAW;
 }
 
-GLenum common_type_from_string(const char* a) {
+GLenum common_type_from_string(const char * a) {
 	if(!strcmp(a, "float"))
 		return GL_FLOAT;
 	else if(!strcmp(a, "byte"))
@@ -431,7 +431,7 @@ const char * alcErrorString(ALenum code) {
 	return "unknown error";
 }
 
-ALint al_format_from_string(const char* a) {
+ALint al_format_from_string(const char * a) {
 	if(!strcmp(a, "mono 8"))
 		return AL_FORMAT_MONO8;
 	else if(!strcmp(a, "mono 16"))

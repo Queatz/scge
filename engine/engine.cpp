@@ -7,6 +7,7 @@ namespace scge {
 #include "functions.cpp"
 
 #ifdef WITH_GRAPHICS
+
 Shikoba::Library * font_library = NULL;
 int glfw_state = 0;
 
@@ -20,18 +21,20 @@ int glfw_state = 0;
 #include "vbo.cpp"
 #include "ibo.cpp"
 #include "fbo.cpp"
+
 #endif
 
 #ifdef WITH_SOUND
+
 std::vector<ALuint> loaded_sounds;
 std::vector<ALuint> loaded_buffers;
 int alure_state = 0;
 
 int midi_status = 0;
 
-fluid_settings_t* midi_settings = NULL;
-fluid_synth_t* midi_synth = NULL;
-fluid_audio_driver_t* midi_device = NULL;
+fluid_settings_t * midi_settings = NULL;
+fluid_synth_t * midi_synth = NULL;
+fluid_audio_driver_t * midi_device = NULL;
 
 #include "audio.cpp"
 #include "microphone.cpp"
@@ -39,12 +42,15 @@ fluid_audio_driver_t* midi_device = NULL;
 #include "buffer.cpp"
 #include "sound.cpp"
 #include "midi.cpp"
+
 #endif
 
 #ifdef WITH_NETWORK
+
 bool connected = false;
 int peercount = 0;
 #include "network.cpp"
+
 #endif
 
 }

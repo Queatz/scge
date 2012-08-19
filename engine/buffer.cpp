@@ -3,7 +3,7 @@ buffer::buffer() {
 	buffer_loaded(buf);
 }
 
-buffer::buffer(const char* a) {
+buffer::buffer(const char * a) {
 	if(alure_state == 0)
 		audio_on();
 	
@@ -25,10 +25,11 @@ void buffer::clear() {
 		alDeleteBuffers(1, &buf);
 		buffer_unloaded(buf);
 	}
+	
 	buf = 0;
 }
 
-void buffer::data(const void* bufdata, const char* fmt, unsigned int bytes, unsigned int freq) {
+void buffer::data(const void * bufdata, const char * fmt, unsigned int bytes, unsigned int freq) {
 	if(!buf) {
 		err("buffer", "data", "no buffer");
 		return;

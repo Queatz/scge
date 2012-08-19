@@ -5,12 +5,13 @@ void setdown_font() {
 void setup_font() {
 	if(glfw_state == 0)
 		graphics();
+	
 	font_library = new Shikoba::Library();
 	
 	atexit(setdown_font);
 }
 
-font::font(const char* a, unsigned int s) {
+font::font(const char * a, unsigned int s) {
 	if(font_library == NULL)
 		setup_font();
 	
@@ -40,14 +41,14 @@ float font::descent() {
 	return data->descender();
 }
 
-float font::advance(const char* a, const char* b) {
+float font::advance(const char * a, const char * b) {
 	if(*a == 0x0 || (b && *b == 0x0))
 		return 0.0;
 
 	return data->advance(utf8::unchecked::next(a), b ? utf8::unchecked::next(b) : 0);
 }
 
-glyphmetrics font::glyph(const char* a) {
+glyphmetrics font::glyph(const char * a) {
 	glyphmetrics g;
 	
 	if(*a == 0x0)

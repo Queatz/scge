@@ -1,4 +1,4 @@
-inline void reset_sound(sound* a) {
+inline void reset_sound(sound * a) {
 	a->streaming = false;
 	a->looping = false;
 	a->pending = 0;
@@ -7,6 +7,7 @@ inline void reset_sound(sound* a) {
 	a->stream = NULL;
 	
 	int i;
+	
 	for(i = 0; i < NUM_BUFS; i++)
 		a->bufs[i] = 0;
 }
@@ -21,7 +22,7 @@ sound::sound() {
 	sound_loaded(source);
 }
 
-sound::sound(buffer* a) {
+sound::sound(buffer * a) {
 	if(alure_state == 0)
 		audio_on();
 	
@@ -31,10 +32,11 @@ sound::sound(buffer* a) {
 	sound_loaded(source);
 	
 	data = a;
+	
 	alSourcei(source, AL_BUFFER, data->buf);
 }
 
-sound::sound(const char* a, bool b) {
+sound::sound(const char * a, bool b) {
 	if(alure_state == 0)
 		audio_on();
 	
@@ -44,10 +46,12 @@ sound::sound(const char* a, bool b) {
 
 	if(streaming) {
 		stream = alureCreateStreamFromFile(a, 19200, NUM_BUFS, bufs);
+		
 		if(!stream)
 			err("sound", "could not load");
 	} else {
 		bufs[0] = alureCreateBufferFromFile(a);
+		
 		if(bufs[0] == AL_NONE)
 			err("sound", "could not load");
 	}
@@ -79,17 +83,19 @@ void sound::clear() {
 	reset_sound(this);
 }
 
-void play_ended(void* userdata, ALuint source) {
-	sound* a = (sound*)userdata;
+void play_ended(void * userdata, ALuint source) {
+	sound * a = (sound *)userdata;
 	
 	if(a->pending > 0) {
 		a->pending--;
+		
 		alurePlaySource(a->source, play_ended, a);
 	}
 }
 
 void sound::play(unsigned int repeats, bool b, bool c) {
 	ALint d;
+	
 	alGetSourcei(source, AL_SOURCE_STATE, &d);
 	
 	if(b) {
@@ -99,6 +105,7 @@ void sound::play(unsigned int repeats, bool b, bool c) {
 		if(d == AL_PLAYING || pending > 0) {
 			if(!c)
 				pending += repeats + 1;
+			
 			return;
 		}
 	}
@@ -108,8 +115,10 @@ void sound::play(unsigned int repeats, bool b, bool c) {
 		alurePlaySourceStream(source, stream, NUM_BUFS, (looping ? -1 : repeats), NULL, NULL);
 	} else {
 		pending = repeats;
+		
 		if(d == AL_PLAYING)
 			alureStopSource(source, AL_FALSE);
+		
 		alurePlaySource(source, play_ended, this);
 	}	
 }
@@ -153,7 +162,7 @@ void sound::repeat(bool a) {
 		alSourcei(source, AL_LOOPING, (a ? AL_TRUE : AL_FALSE));
 }
 
-void sound::seek(float a, const char* b) {
+void sound::seek(float a, const char * b) {
 	if(a) {
 		if(!strcmp(b, "second"))
 			alSourcef(source, AL_SEC_OFFSET, a);
@@ -170,12 +179,15 @@ void sound::seek(float a, const char* b) {
 
 bool sound::playing() {
 	ALint a;
+	
 	alGetSourcei(source, AL_SOURCE_STATE, &a);
+	
 	return a == AL_PLAYING;
 }
 
-int sound::get(const char* b) {
+int sound::get(const char * b) {
 	ALint a;
+	
 	if(!strcmp(b, "bits"))
 		alGetSourcei(bufs[0], AL_BITS, &a);
 	else if(!strcmp(b, "channels"))
@@ -188,11 +200,13 @@ int sound::get(const char* b) {
 		err("sound", "get", "invalid request");
 		return 0;
 	}
+	
 	return a;
 }
 
-float sound::offset(const char* b) {
+float sound::offset(const char * b) {
 	ALfloat a;
+	
 	if(!strcmp(b, "second"))
 		alGetSourcef(source, AL_SEC_OFFSET, &a);
 	else if(!strcmp(b, "sample"))
@@ -203,10 +217,11 @@ float sound::offset(const char* b) {
 		err("sound", "get", "invalid request");
 		return 0.0;
 	}
+	
 	return a;
 }
 
-void sound::font(const char* a) {
+void sound::font(const char * a) {
 	if(stream)
 		alureSetStreamPatchset(stream, a);
 }

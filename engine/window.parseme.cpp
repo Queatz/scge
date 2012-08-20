@@ -42,6 +42,8 @@ window::window(const char * title, glm::ivec2 s, bool fullscreen, bool resizeabl
 	
 	glfwSetWindowUserPointer(win, this);
 	
+	glfwMakeContextCurrent(win);
+	
 #ifdef _WIN32
 	if(glewInit() != GLEW_OK)
 		err("window", "(windows) extensions unsupported");

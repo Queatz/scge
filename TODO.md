@@ -105,7 +105,6 @@ POPULARITY
 OF RANDOM LURE
 ==================
 
-* allow Python bytes() to be sent over the network.
 * VBOs need to have some checking for 0 size.  This has caused many hideous segfaults.  Perhaps this needs to be part of an error checking modal.
 * FBOs and multisample needs to be verified
 * host.disconnect() to disconnect from all peers

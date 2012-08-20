@@ -32,7 +32,7 @@ shader::shader(const char * a, const char * b, bool isfile) {
 	
 	glCompileShader(id);
 	
-	int compiled;
+	GLint compiled;
 	
 	glGetShaderiv(id, GL_COMPILE_STATUS, &compiled);
 	

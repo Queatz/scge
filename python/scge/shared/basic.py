@@ -238,7 +238,11 @@ def draw(p = None, s = None, r = None, o = None):
 	_program.uniform('matrix', _matrix)
 
 def write(fnt, sttr, p = None, mw = None):
-	if p is None: p = glm.vec2(0)
+	if p is None:
+		p = glm.vec2(0)
+	else:
+		p = glm.vec2(p)
+	
 	s = glm.vec2(p)
 	_wd.use(_font_program)
 	_font_program.uniform('matrix', _matrix)

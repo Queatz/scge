@@ -197,8 +197,12 @@ def texcoord(p1 = None, p2 = None, p3 = None, p4 = None):
 	_texcoordsdirty = True
 	_vbo.data(bytes(p1) + bytes(p2) + bytes(p3) + bytes(p4), s_f6_4)
 
-def quad(a, b):
-	_vbo.data(struct.pack('ffffffff', a.x, a.y, a.x, b.y, b.x, b.y, b.x, a.y))
+def quad(a, b = None):
+	if b is None:
+		_vbo.data(struct.pack('ffffffff', a.x, a.y, a.x, a.w, a.z, a.w, a.z, a.y))
+	else:
+		_vbo.data(struct.pack('ffffffff', a.x, a.y, a.x, b.y, b.x, b.y, b.x, a.y))
+	
 	_wd.draw('triangle fan', 4)
 
 def triangle(a, b, c):
@@ -238,7 +242,11 @@ def draw(p = None, s = None, r = None, o = None):
 	_program.uniform('matrix', _matrix)
 
 def write(fnt, sttr, p = None, mw = None):
-	if p is None: p = glm.vec2(0)
+	if p is None:
+		p = glm.vec2(0)
+	else:
+		p = glm.vec2(p)
+	
 	s = glm.vec2(p)
 	_wd.use(_font_program)
 	_font_program.uniform('matrix', _matrix)

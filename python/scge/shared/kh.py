@@ -46,6 +46,7 @@ def down(k):
 	return _ks(k) > 0
 
 def block(k):
+	global PRESSED
 	if k not in PRESSED: return False
 	PRESSED[k] = 4
 
@@ -56,7 +57,7 @@ def blockall(*a):
 	BLOCKALLEXCEPT = a
 
 def _handle(i, s):
-	global PRESSED
+	global PRESSED, CALLBACK
 	if s == 1:
 		if i not in PRESSED:
 			PRESSED[i] = 1
@@ -81,6 +82,7 @@ def _buttoncallback(b, s):
 	_handle('mouse ' + b, s)
 
 def events():
+	global PRESSED
 	for k in PRESSED:
 		if PRESSED[k] == -1:
 			yield k, 'released'
@@ -99,13 +101,17 @@ def set_callbacks(kf, bf):
 	global CALLBACK
 	CALLBACK = kf, bf
 
+def setup_callback(w):
+	global SETUP
+	w.callback('key', _keycallback)
+	w.callback('button', _buttoncallback)
+	w.set('key repeat')
+	SETUP = True
+
 def watch(w, poll = True):
 	global SETUP, PRESSED, BLOCKALLEXCEPT
 	if not SETUP:
-		w.callback('key', _keycallback)
-		w.callback('button', _buttoncallback)
-		w.set('key repeat')
-		SETUP = True
+		setup_callback(w)
 	
 	BLOCKALLEXCEPT = False
 	
@@ -113,13 +119,7 @@ def watch(w, poll = True):
 		if PRESSED[k] == 0:
 			del PRESSED[k]
 	
-	dellist = []
-	for i in PRESSED:
-		if PRESSED[i] < 1:
-			dellist.append(i)
-		elif PRESSED[i] == 1 or PRESSED[i] == 2:
-			PRESSED[i] = 3
-	for i in dellist:
-		del PRESSED[i]
+	PRESSED = {k: 3 if v < 4 else v for k, v in PRESSED.items() if v > 0}
+	
 	if poll:
 		scge.poll()

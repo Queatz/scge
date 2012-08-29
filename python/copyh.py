@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-import os
-
 h = open('../engine/conf.h', 'r')
 i = open('../engine/scge.hpp', 'r')
 o = open('scge.hpp', 'w')

@@ -1,3 +1,3 @@
 #! /usr/bin/env sh
 
-sudo ./compile && cd python/ && sudo ./compile && cd ..
+./compile && cd python/ && ./compile && cd ..

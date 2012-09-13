@@ -231,7 +231,7 @@ def draw(p = None, s = None, r = None, o = None):
 	if o is None: o = glm.vec2(0)
 	global _texcoordsdirty
 	
-	_program.uniform('matrix', _matrix.translate(glm.vec3(p, 0)).scale(glm.vec3(s, 1)).rotate(r, glm.vec3(0, 0, 1)).translate(glm.vec3(-o, 0)).scale(glm.vec3(_img.size, 1)))
+	_program.uniform('matrix', _matrix.translate(glm.vec3(p, 0)).rotate(r, glm.vec3(0, 0, 1)).scale(glm.vec3(s, 1)).translate(glm.vec3(-o, 0)).scale(glm.vec3(_img.size, 1)))
 	q = p + glm.vec2(_img.size) * s
 	if _texcoordsdirty:
 		_vbo.data(_itc, s_f8_4)

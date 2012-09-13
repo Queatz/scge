@@ -1,6 +1,6 @@
-#! /usr/bin/env sh
+#!/bin/bash
 
-sudo python3 copyh.py
+python3 copyh.py
 
 swig -python -py3 -c++ scge.i
 g++ -c -x c++ -fPIC scge_wrap.cxx -I/usr/include/python3.2 -I/usr/include/freetype2
@@ -9,4 +9,5 @@ g++ -shared scge_wrap.o -lscge -L. -o _scge.so
 mv scge.py scge/__init__.py
 mv _scge.so scge/_scge.so
 
+python3 setup.py build
 sudo python3 setup.py install

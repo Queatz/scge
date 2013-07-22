@@ -19,7 +19,7 @@ Install all the requirements:
 * glfw (**>=3**) <https://github.com/elmindreda/glfw>
 * GLEW (only on Windows) <http://glew.sourceforge.net/>
 * freeimage <http://freeimage.sourceforge.net/>
-* freetype2 <http://www.fluidsynth.org/>
+* freetype2 <http://www.freetype.org/>
 * Shikoba <https://github.com/Queatz/Shikoba>
 * alure (>=1.1) <http://kcat.strangesoft.net/alure.html#download>
 * openal 1.1 <http://connect.creativelabs.com/openal/>

@@ -234,7 +234,7 @@ def draw(p = None, s = None, r = None, o = None):
 	_program.uniform('matrix', _matrix.translate(glm.vec3(p, 0)).rotate(r, glm.vec3(0, 0, 1)).scale(glm.vec3(s, 1)).translate(glm.vec3(-o, 0)).scale(glm.vec3(_img.size, 1)))
 	q = p + glm.vec2(_img.size) * s
 	if _texcoordsdirty:
-		_vbo.data(_itc, s_f8_4)
+		_vbo.data(_itc, s_f6_4)
 		_texcoordsdirty = False
 	_vbo.data(_itc, 0)
 	_wd.draw('triangle fan', 4)

@@ -10,10 +10,9 @@ window::window(const char * title, glm::ivec2 s, bool fullscreen, bool resizeabl
 	
 	if(!s.x || !s.y) {
 		if(fullscreen) {
-			GLFWvidmode d;
-			glfwGetDesktopMode(&d);
-			s.x = d.width;
-			s.y = d.height;
+			const GLFWvidmode * d = glfwGetVideoMode(glfwGetPrimaryMonitor());;
+			s.x = d->width;
+			s.y = d->height;
 		}
 		else {
 			s.x = 320;
@@ -22,23 +21,29 @@ window::window(const char * title, glm::ivec2 s, bool fullscreen, bool resizeabl
 	}
 	
 	if(fsaa)
-		glfwWindowHint(GLFW_FSAA_SAMPLES, fsaa);
+		glfwWindowHint(GLFW_SAMPLES, fsaa);
 	
-	glfwWindowHint(GLFW_WINDOW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
 
 #ifndef _WIN32
-	glfwWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-	win = glfwCreateWindow(s.x, s.y, (fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOWED), title, NULL);
+	win = glfwCreateWindow(s.x, s.y, title, (fullscreen ? glfwGetPrimaryMonitor() : NULL), NULL);
 	
 	if(!win) {
 		err("window", "could not initiate window");
 		return;
 	}
+	
+#ifdef WITH_PYTHON
+/*$ CALLBACK $*/
+	glfwSet${g}Callback(win, _${n}_callback_wrap);
+/*$ $*/
+#endif
 	
 	glfwSetWindowUserPointer(win, this);
 	
@@ -80,11 +85,11 @@ void window::title(const char * a) {
 }
 
 bool window::active() {
-	return glfwGetWindowParam(win, GLFW_ACTIVE) ? true : false;
+	return glfwGetWindowAttrib(win, GLFW_FOCUSED) ? true : false;
 }
 
 bool window::iconified() {
-	return glfwGetWindowParam(win, GLFW_ICONIFIED) ? true : false;
+	return glfwGetWindowAttrib(win, GLFW_ICONIFIED) ? true : false;
 }
 
 void window::iconify(bool i) {
@@ -117,7 +122,7 @@ glm::ivec2 window::position() {
 
 void window::set(const char * a, bool b) {
 	if(!strcmp(a, "key repeat"))
-		glfwSetInputMode(win, GLFW_KEY_REPEAT, b ? GL_TRUE : GL_FALSE);
+		glfwSetInputMode(win, GLFW_REPEAT, b ? GL_TRUE : GL_FALSE);
 	else if(!strcmp(a, "vsync"))
 		glfwSwapInterval(b ? 1 : 0);
 	else
@@ -125,21 +130,22 @@ void window::set(const char * a, bool b) {
 }
 
 glm::vec2 window::mouse() {
-	int w, h, x, y;
+	int w, h;
+	double x, y;
 	
 	glfwGetWindowSize(win, &w, &h);
 	glfwGetCursorPos(win, &x, &y);
 	
-	return glm::vec2(x, h - y);
+	return glm::vec2((int) x, h - (int) y);
 }
 
 void window::mouse(const char * a) {
 	if(!strcmp(a, "show"))
-		glfwSetInputMode(win, GLFW_CURSOR_MODE, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	else if(!strcmp(a, "hide"))
-		glfwSetInputMode(win, GLFW_CURSOR_MODE, GLFW_CURSOR_HIDDEN);
+		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 	else if(!strcmp(a, "capture"))
-		glfwSetInputMode(win, GLFW_CURSOR_MODE, GLFW_CURSOR_CAPTURED);
+		glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	else
 		err("window", "mouse", "invalid option");
 }
@@ -161,14 +167,6 @@ bool window::button(short a) {
 		return false;
 	
 	return glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_1 + a - 1) == GLFW_PRESS;
-}
-
-glm::vec2 window::scroll() {
-	double x, y;
-	
-	glfwGetScrollOffset(win, &x, &y);
-	
-	return glm::vec2((float) x, (float) y);
 }
 
 bool window::key(const char * a) {

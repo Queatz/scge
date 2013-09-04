@@ -1,5 +1,5 @@
 #ifdef WITH_PYTHON
-void _size_callback_wrap(GLFWwindow w, int x, int y) {
+void _size_callback_wrap(GLFWwindow * w, int x, int y) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_size_callback)
@@ -21,11 +21,11 @@ void _size_callback_wrap(GLFWwindow w, int x, int y) {
 		PyErr_Print();
 }
 
-int _close_callback_wrap(GLFWwindow w) {
+void _close_callback_wrap(GLFWwindow * w) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_close_callback)
-		return 1;
+		return;
 	
 	PyObject* result;
 	int ret;
@@ -34,11 +34,9 @@ int _close_callback_wrap(GLFWwindow w) {
 	
 	if(PyErr_Occurred())
 		PyErr_Print();
-	
-	return ret;
 }
 
-void _dirty_callback_wrap(GLFWwindow w) {
+void _dirty_callback_wrap(GLFWwindow * w) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_dirty_callback)
@@ -50,7 +48,7 @@ void _dirty_callback_wrap(GLFWwindow w) {
 		PyErr_Print();
 }
 
-void _enter_callback_wrap(GLFWwindow w, int x) {
+void _enter_callback_wrap(GLFWwindow * w, int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_enter_callback)
@@ -65,7 +63,7 @@ void _enter_callback_wrap(GLFWwindow w, int x) {
 		PyErr_Print();
 }
 
-void _focus_callback_wrap(GLFWwindow w, int x) {
+void _focus_callback_wrap(GLFWwindow * w, int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_focus_callback)
@@ -80,7 +78,7 @@ void _focus_callback_wrap(GLFWwindow w, int x) {
 		PyErr_Print();
 }
 
-void _iconify_callback_wrap(GLFWwindow w, int x) {
+void _iconify_callback_wrap(GLFWwindow * w, int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_iconify_callback)
@@ -95,7 +93,7 @@ void _iconify_callback_wrap(GLFWwindow w, int x) {
 		PyErr_Print();
 }
 
-void _button_callback_wrap(GLFWwindow w, int x, int y) {
+void _button_callback_wrap(GLFWwindow * w, int x, int y, int mod) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_button_callback)
@@ -110,7 +108,7 @@ void _button_callback_wrap(GLFWwindow w, int x, int y) {
 		PyErr_Print();
 }
 
-void _key_callback_wrap(GLFWwindow w, int x, int y) {
+void _key_callback_wrap(GLFWwindow * w, int x, int scancode, int y, int mod) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_key_callback)
@@ -125,7 +123,7 @@ void _key_callback_wrap(GLFWwindow w, int x, int y) {
 		PyErr_Print();
 }
 
-void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
+void _scroll_callback_wrap(GLFWwindow * w, double x, double y) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_scroll_callback)
@@ -147,7 +145,9 @@ void _scroll_callback_wrap(GLFWwindow w, double x, double y) {
 		PyErr_Print();
 }
 
-void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
+void _mousemove_callback_wrap(GLFWwindow * w, double _x, double _y) {
+	int x = (int) _x, y = (int) _y;
+	
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_mousemove_callback)
@@ -174,7 +174,7 @@ void _mousemove_callback_wrap(GLFWwindow w, int x, int y) {
 		PyErr_Print();
 }
 
-void _char_callback_wrap(GLFWwindow w, int x) {
+void _char_callback_wrap(GLFWwindow * w, unsigned int x) {
 	window* z = (window*) glfwGetWindowUserPointer(w);
 	
 	if(!z || !z->_char_callback)
@@ -201,10 +201,6 @@ bool graphics() {
 		return false;
 	}
 	
-/*$ CALLBACK $*/
-	glfwSet${g}Callback(_${n}_callback_wrap);
-/*$ $*/
-	
 	FreeImage_Initialise();
 		
 	glfw_state = 1;
@@ -224,7 +220,7 @@ std::string display_modes() {
 	std::string l;
 	int i, c;
 	
-	GLFWvidmode *m = glfwGetVideoModes(&c);
+	const GLFWvidmode * m = glfwGetVideoModes(glfwGetPrimaryMonitor(), &c);
 	
 	for(i = 0; i < c; i++) {
 		if(i > 0) s << " ";
@@ -239,13 +235,12 @@ glm::ivec2 display_dimensions() {
 	if(glfw_state == 0)
 		graphics();
 	
-	GLFWvidmode a;
-	glfwGetDesktopMode(&a);
+	const GLFWvidmode * a = glfwGetVideoMode(glfwGetPrimaryMonitor());
 	
-	return glm::ivec2(a.width, a.height);
+	return glm::ivec2(a->width, a->height);
 }
 
-void use(window* w) {
+void use(window * w) {
 	if(w->win)
 		glfwMakeContextCurrent(w->win);
 }

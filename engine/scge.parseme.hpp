@@ -28,15 +28,15 @@
 
 #ifdef WITH_GRAPHICS
 #  ifdef _WIN32
-#    undef GL3_PROTOTYPES
+#    undef GL_GLEXT_PROTOTYPES
 #    include <GL/glew.h>
 #  else
-#    define GLFW_INCLUDE_GL3 1
-#    ifndef GL3_PROTOTYPES
-#      define GL3_PROTOTYPES 1
+#    define GLFW_INCLUDE_GLCOREARB 1
+#    ifndef GL_GLEXT_PROTOTYPES
+#      define GL_GLEXT_PROTOTYPES 1
 #    endif
 #  endif
-#  include <GL/glfw3.h>
+#  include <GLFW/glfw3.h>
 #  include "FreeImagePlus.h"
 #  include <Shikoba.hpp>
 #endif
@@ -207,7 +207,7 @@ struct program {
 	
 	void attribute(int, const char *);
 	
-	GLhandleARB id;
+	GLuint id;//x
 };
 
 struct fbo {
@@ -287,7 +287,6 @@ struct window {
 	void mouse(glm::ivec2);
 	bool button(short);
 	bool button(const char *);
-	glm::vec2 scroll();
 
 	bool key(const char *);
 	bool key_state(const char *);
@@ -342,7 +341,7 @@ struct window {
 /*$ $*/
 #endif
 	
-	GLFWwindow win;//x
+	GLFWwindow * win;//x
 };
 
 bool graphics();

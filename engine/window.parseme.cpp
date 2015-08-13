@@ -25,13 +25,6 @@ window::window(const char * title, glm::ivec2 s, bool fullscreen, bool resizeabl
 	
 	glfwWindowHint(GLFW_RESIZABLE, resizeable ? GL_TRUE : GL_FALSE);
 
-#ifndef _WIN32
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
-
 	win = glfwCreateWindow(s.x, s.y, title, (fullscreen ? glfwGetPrimaryMonitor() : NULL), NULL);
 	
 	if(!win) {
@@ -39,6 +32,10 @@ window::window(const char * title, glm::ivec2 s, bool fullscreen, bool resizeabl
 		return;
 	}
 	
+	printf("opengl = %d.%d\n",
+		glfwGetWindowAttrib(win, GLFW_CONTEXT_VERSION_MAJOR),
+		glfwGetWindowAttrib(win, GLFW_CONTEXT_VERSION_MINOR));
+
 #ifdef WITH_PYTHON
 /*$ CALLBACK $*/
 	glfwSet${g}Callback(win, _${n}_callback_wrap);

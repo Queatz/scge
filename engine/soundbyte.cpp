@@ -30,7 +30,7 @@ float soundbyte::pitch(unsigned int max_samples, unsigned int nblocks, const cha
 	
 	for(n = 0; n < nblocks; n++) {
 		for(i = 0; i < hop; i++)
-			fvec_write_sample(smpls, (smpl_t) data[offset + n * hop + i] / 32768, i);
+			fvec_set_sample(smpls, (smpl_t) data[offset + n * hop + i] / 32768, i);
 		
 		aubio_pitch_do(p, smpls, freq);
 	}
